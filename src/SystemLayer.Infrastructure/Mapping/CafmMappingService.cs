@@ -19,7 +19,7 @@ public class CafmMappingService
     /// <summary>
     /// Maps CreateWorkOrderRequest to CAFM model
     /// </summary>
-    public CafmCreateWorkOrderRequest MapToCreateWorkOrderRequest(CreateWorkOrderRequest request, string sessionToken, string correlationId)
+    public virtual CafmCreateWorkOrderRequest MapToCreateWorkOrderRequest(CreateWorkOrderRequest request, string sessionToken, string correlationId)
     {
         try
         {
@@ -58,7 +58,7 @@ public class CafmMappingService
     /// <summary>
     /// Maps CAFM CreateWorkOrderResponse to System Layer DTO
     /// </summary>
-    public CreateWorkOrderResponse MapFromCreateWorkOrderResponse(CafmCreateWorkOrderResponse cafmResponse, string correlationId)
+    public virtual CreateWorkOrderResponse MapFromCreateWorkOrderResponse(CafmCreateWorkOrderResponse cafmResponse, string correlationId)
     {
         try
         {
@@ -89,7 +89,7 @@ public class CafmMappingService
     /// <summary>
     /// Maps GetLocationRequest to CAFM model
     /// </summary>
-    public CafmGetLocationRequest MapToGetLocationRequest(GetLocationRequest request, string sessionToken, string correlationId)
+    public virtual CafmGetLocationRequest MapToGetLocationRequest(GetLocationRequest request, string sessionToken, string correlationId)
     {
         try
         {
@@ -113,7 +113,7 @@ public class CafmMappingService
     /// <summary>
     /// Maps CAFM GetLocationResponse to System Layer DTO
     /// </summary>
-    public LocationResponse MapFromGetLocationResponse(CafmGetLocationResponse cafmResponse, string correlationId)
+    public virtual LocationResponse MapFromGetLocationResponse(CafmGetLocationResponse cafmResponse, string correlationId)
     {
         try
         {
@@ -150,7 +150,7 @@ public class CafmMappingService
     /// <summary>
     /// Maps GetBreakdownTaskRequest to CAFM model
     /// </summary>
-    public CafmGetBreakdownTaskRequest MapToGetBreakdownTaskRequest(GetBreakdownTaskRequest request, string sessionToken, string correlationId)
+    public virtual CafmGetBreakdownTaskRequest MapToGetBreakdownTaskRequest(GetBreakdownTaskRequest request, string sessionToken, string correlationId)
     {
         try
         {
@@ -174,7 +174,7 @@ public class CafmMappingService
     /// <summary>
     /// Maps CAFM GetBreakdownTaskResponse to System Layer DTO
     /// </summary>
-    public BreakdownTaskResponse MapFromGetBreakdownTaskResponse(CafmGetBreakdownTaskResponse cafmResponse, string correlationId)
+    public virtual BreakdownTaskResponse MapFromGetBreakdownTaskResponse(CafmGetBreakdownTaskResponse cafmResponse, string correlationId)
     {
         try
         {
@@ -217,7 +217,7 @@ public class CafmMappingService
     /// <summary>
     /// Maps GetInstructionSetsRequest to CAFM model
     /// </summary>
-    public CafmGetInstructionSetsRequest MapToGetInstructionSetsRequest(GetInstructionSetsRequest request, string sessionToken, string correlationId)
+    public virtual CafmGetInstructionSetsRequest MapToGetInstructionSetsRequest(GetInstructionSetsRequest request, string sessionToken, string correlationId)
     {
         try
         {
@@ -242,7 +242,7 @@ public class CafmMappingService
     /// <summary>
     /// Maps CAFM GetInstructionSetsResponse to System Layer DTO
     /// </summary>
-    public GetInstructionSetsResponse MapFromGetInstructionSetsResponse(CafmGetInstructionSetsResponse cafmResponse, string correlationId)
+    public virtual GetInstructionSetsResponse MapFromGetInstructionSetsResponse(CafmGetInstructionSetsResponse cafmResponse, string correlationId)
     {
         try
         {

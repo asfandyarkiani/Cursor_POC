@@ -1,11 +1,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
-using Polly.CircuitBreaker;
 using Polly.Extensions.Http;
-using Polly.Timeout;
 using SystemLayer.Application.Interfaces;
 using SystemLayer.Infrastructure.Configuration;
 using SystemLayer.Infrastructure.Mapping;
@@ -66,8 +64,9 @@ public static class ServiceCollectionExtensions
                     onRetry: (outcome, timespan, retryCount, context) =>
                     {
                         var logger = serviceProvider.GetRequiredService<ILogger<CafmClient>>();
-                        logger.LogWarning("Retry attempt {RetryCount} for CAFM request after {Delay}ms", 
-                            retryCount, timespan.TotalMilliseconds);
+                        var errorMessage = outcome.Exception?.Message ?? "HTTP error";
+                        logger.LogWarning("Retry attempt {RetryCount} for CAFM request after {Delay}ms. Error: {Error}", 
+                            retryCount, timespan.TotalMilliseconds, errorMessage);
                     });
             
             // Circuit breaker policy
@@ -76,11 +75,12 @@ public static class ServiceCollectionExtensions
                 .CircuitBreakerAsync(
                     handledEventsAllowedBeforeBreaking: resilienceOptions.CircuitBreaker.FailureThreshold,
                     durationOfBreak: TimeSpan.FromSeconds(resilienceOptions.CircuitBreaker.DurationSeconds),
-                    onBreak: (exception, duration) =>
+                    onBreak: (result, duration) =>
                     {
                         var logger = serviceProvider.GetRequiredService<ILogger<CafmClient>>();
-                        logger.LogWarning("CAFM circuit breaker opened for {Duration}s due to: {Exception}", 
-                            duration.TotalSeconds, exception.Message);
+                        var errorMessage = result.Exception?.Message ?? "HTTP error";
+                        logger.LogWarning("CAFM circuit breaker opened for {Duration}s due to: {Error}", 
+                            duration.TotalSeconds, errorMessage);
                     },
                     onReset: () =>
                     {
@@ -111,9 +111,10 @@ public static class ServiceCollectionExtensions
     {
         if (keyVaultOptions.Enabled && !string.IsNullOrEmpty(keyVaultOptions.VaultUrl))
         {
-            builder.AddAzureKeyVault(
-                new Uri(keyVaultOptions.VaultUrl),
-                new Azure.Identity.DefaultAzureCredential());
+            // TODO: Add Azure.Identity package reference to enable Key Vault integration
+            // builder.AddAzureKeyVault(
+            //     new Uri(keyVaultOptions.VaultUrl),
+            //     new Azure.Identity.DefaultAzureCredential());
         }
         
         return builder;
