@@ -1,0 +1,6 @@
+@SystemLayer.Api_HostAddress = http://localhost:5195
+
+GET {{SystemLayer.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
