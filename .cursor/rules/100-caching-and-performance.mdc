@@ -1,0 +1,38 @@
+---
+description: "Caching and performance rules"
+globs:
+  - **/*.cs
+alwaysApply: false
+---
+
+## 10. Caching & Performance
+
+### Caching Strategy
+
+####  DO:
+- Use Redis caching via `AGI.ApiEcoSys.Cache` library
+- Cache idempotent operations and read-only data
+- Follow existing caching patterns if they exist
+- Use `AddRedisCacheLibrary(builder.Configuration)` extension method
+
+####  DON'T:
+- Implement custom in-memory caching that conflicts with Redis
+- Cache operations that require real-time data
+- Cache without considering cache invalidation strategy
+
+### Performance Considerations
+
+####  DO:
+- Use `async`/`await` throughout (no blocking calls)
+- Let `ExecutionTimingMiddleware` track performance automatically
+- Use appropriate HTTP client timeouts and retry policies
+- Consider caching for frequently accessed, rarely changing data
+
+####  DON'T:
+- Use `.Result` or `.Wait()` on async calls (causes deadlocks)
+- Block threads with synchronous I/O operations
+- Ignore timeout configurations
+- Over-fetch data (request only what's needed)
+
+---
+

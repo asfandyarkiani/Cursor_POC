@@ -1,0 +1,25 @@
+---
+description: "General principles for System Layer coding and architecture"
+globs:
+  - **/*.cs
+  - **/*.csproj
+  - appsettings*.json
+alwaysApply: true
+---
+
+## 1. General Principles
+
+###  DO:
+- **Follow existing architecture patterns**: Extend the current layered architecture (Functions → Handlers → Atomic Handlers → SOAP/HTTP calls) rather than introducing new paradigms
+- **Maintain .NET 8.0 / Azure Functions v4 stack**: All code must target `net8.0` and use Azure Functions v4 patterns
+- **Use dependency injection consistently**: All services, handlers, and middleware must be registered and injected via DI container
+- **Preserve existing patterns**: When adding new features, follow the exact same patterns used in existing code
+
+###  DON'T:
+- Introduce alternative frameworks (e.g., ASP.NET Core Controllers, Minimal APIs, gRPC)
+- Change target framework or hosting model
+- Use `new` keyword to instantiate services that should be DI-managed
+- Create new architectural layers without explicit approval
+
+---
+

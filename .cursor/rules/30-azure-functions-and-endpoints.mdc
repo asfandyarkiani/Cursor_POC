@@ -1,0 +1,65 @@
+---
+description: "Azure Functions endpoint patterns and request handling"
+globs:
+  - Functions/**/*.cs
+alwaysApply: false
+---
+
+## 3. Azure Functions & Endpoints
+
+### Function Signature Pattern
+
+####  DO:
+```csharp
+[MRIAuthentication]  // If MRI session required
+[Function("FunctionName")]
+public async Task<BaseResponseDTO> Run(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req, 
+    FunctionContext context)
+{
+    // Implementation
+}
+```
+
+####  DON'T:
+- Change return type from `BaseResponseDTO` without explicit requirement
+- Modify HTTP trigger authorization level without security review
+- Remove `FunctionContext` parameter if session handling is needed
+
+### Request Handling
+
+####  DO:
+- Read request body using: `await req.ReadBodyAsync<T>()`
+- Validate null/invalid payloads immediately
+- Throw `RequestValidationFailureException` with appropriate `ErrorConstants` for validation failures
+- Call `request.ValidateAPIRequestParameters()` if the pattern exists
+- Extract `SessionId` from `context.Items[InfoConstants.SESSION_ID]` when needed
+- Log key events: request received, validation failures, processing start/end
+
+####  DON'T:
+- Parse JSON manually (use `ReadBodyAsync`)
+- Skip validation steps
+- Throw generic exceptions for validation errors
+- Continue processing with invalid or null request data
+
+### Session Management in Functions
+
+####  DO:
+```csharp
+if (context.Items.TryGetValue(InfoConstants.SESSION_ID, out var sessionIdObj) && 
+    sessionIdObj is string sessionId)
+{
+    request.SessionId = sessionId;
+}
+else
+{
+    throw new BaseException(ErrorConstants.SESSION_ID_NOT_FOUND_IN_CONTEXT);
+}
+```
+
+####  DON'T:
+- Silently continue when session ID is missing
+- Manually authenticate/logout from MRI (middleware handles this)
+
+---
+

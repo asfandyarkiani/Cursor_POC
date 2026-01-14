@@ -1,0 +1,53 @@
+---
+description: "Testing expectations and safety guidelines"
+globs:
+  - **/*.cs
+  - **/*Tests*/**
+  - **/*.csproj
+alwaysApply: false
+---
+
+## 11. Testing & Safety Guidelines
+
+### Safe Code Changes
+
+####  DO:
+- Prefer additive changes (new functions, handlers, DTO properties) over breaking changes
+- Maintain backward compatibility when extending existing APIs
+- Keep public contracts stable unless explicitly required to change
+- Test changes in isolation before integration
+
+####  DON'T:
+- Delete or rename existing endpoints without explicit approval
+- Remove public DTO properties without coordination
+- Break existing API contracts without versioning strategy
+- Make changes that affect multiple features without understanding dependencies
+
+### Consistency Checklist
+
+When adding a new feature, ensure ALL of the following are completed:
+
+####  DO:
+- [ ] Create/update DTOs in appropriate folders (`DTO/` or `DTO/DownsteamDTOs/`)
+- [ ] Create handler(s) in `Implementations/MRI/Handlers/` if orchestration needed
+- [ ] Create atomic handler(s) in `Implementations/MRI/AtomicHandlers/` for downstream calls
+- [ ] Register all handlers/atomic handlers in `Program.cs`
+- [ ] Create Azure Function in `Functions/` folder
+- [ ] Add `[MRIAuthentication]` attribute if MRI session required
+- [ ] Add SOAP envelope XML files in `SoapEnvelopes/` if needed
+- [ ] Register SOAP envelopes as embedded resources in `FacilitiesMgmtSystem.csproj`
+- [ ] Extend `AppConfigs` class if new configuration needed
+- [ ] Add configuration values to all `appsettings.*.json` files
+- [ ] Add appropriate error constants to `Constants/ErrorConstants.cs`
+- [ ] Add appropriate info constants to `Constants/InfoConstants.cs` if needed
+- [ ] Implement proper logging at all layers
+- [ ] Handle errors appropriately with domain-specific exceptions
+
+####  DON'T:
+- Leave partial implementations (e.g., Function without handler registration)
+- Skip configuration setup
+- Forget to register dependencies in DI container
+- Omit error handling and logging
+
+---
+

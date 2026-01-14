@@ -1,0 +1,55 @@
+---
+description: "Handlers vs Atomic Handlers responsibilities and DI registration"
+globs:
+  - Implementations/MRI/Handlers/**/*.cs
+  - Implementations/MRI/AtomicHandlers/**/*.cs
+  - Program.cs
+alwaysApply: false
+---
+
+## 5. Handlers & Atomic Handlers
+
+### Handler Responsibilities
+
+####  DO:
+- **MRI Handlers** (`*MRIHandler`): Orchestrate multiple atomic handlers, apply business logic, transform data between layers
+- Keep handlers focused on orchestration, not direct SOAP/HTTP calls
+- Make handlers unit-testable (inject dependencies, avoid static calls)
+- Return `BaseResponseDTO` or appropriate response DTOs
+
+####  DON'T:
+- Put orchestration logic directly in Functions
+- Make handlers call other handlers (use atomic handlers for reusable operations)
+- Include SOAP/HTTP call logic directly in handlers (use atomic handlers)
+
+### Atomic Handler Responsibilities
+
+####  DO:
+- **Atomic Handlers** (`*AtomicHandler`): Handle ONE specific downstream operation
+- Encapsulate SOAP/HTTP call + basic response mapping
+- Keep atomic handlers focused on a single responsibility
+- Return typed responses or `HttpResponseSnapshot` for SOAP calls
+
+####  DON'T:
+- Combine multiple unrelated operations in one atomic handler
+- Add business logic to atomic handlers (keep them thin)
+- Chain multiple downstream calls in a single atomic handler
+
+### Dependency Injection
+
+####  DO:
+- Register all handlers in `Program.cs`:
+```csharp
+builder.Services.AddScoped<CreateWorkOrderMRIHandler>();
+builder.Services.AddScoped<CreateWorkOrderAtomicHandler>();
+```
+- Inject dependencies via constructor injection
+- Use appropriate lifetime (`AddScoped` for handlers, `AddSingleton` for policies)
+
+####  DON'T:
+- Forget to register new handlers in `Program.cs`
+- Manually instantiate handlers using `new`
+- Use wrong lifetime (e.g., `AddSingleton` for handlers that need per-request state)
+
+---
+
