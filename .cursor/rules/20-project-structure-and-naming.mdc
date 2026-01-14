@@ -10,7 +10,7 @@ globs:
   - Constants/**/*.cs
   - ConfigModels/**/*.cs
   - Program.cs
-alwaysApply: false
+alwaysApply: true
 ---
 
 ## 2. Project Structure & Naming
