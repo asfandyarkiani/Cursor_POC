@@ -2,7 +2,7 @@
 description: "Caching and performance rules"
 globs:
   - **/*.cs
-alwaysApply: false
+alwaysApply: true
 ---
 
 ## 10. Caching & Performance
