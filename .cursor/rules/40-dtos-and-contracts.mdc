@@ -2,7 +2,7 @@
 description: "DTO rules and API/downstream contract guidance"
 globs:
   - DTO/**/*.cs
-alwaysApply: false
+alwaysApply: true
 ---
 
 ## 4. DTOs & Contracts
