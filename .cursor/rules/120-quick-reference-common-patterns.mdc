@@ -2,7 +2,7 @@
 description: "Quick reference patterns"
 globs:
   - **/*.cs
-alwaysApply: false
+alwaysApply: true
 ---
 
 ## Quick Reference: Common Patterns
