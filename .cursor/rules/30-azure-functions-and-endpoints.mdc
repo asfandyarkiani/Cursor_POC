@@ -2,7 +2,7 @@
 description: "Azure Functions endpoint patterns and request handling"
 globs:
   - Functions/**/*.cs
-alwaysApply: false
+alwaysApply: true
 ---
 
 ## 3. Azure Functions & Endpoints
