@@ -5,7 +5,7 @@ globs:
   - Attributes/**/*.cs
   - Functions/**/*.cs
   - Program.cs
-alwaysApply: false
+alwaysApply: true
 ---
 
 ## 6. Middleware & Authentication
