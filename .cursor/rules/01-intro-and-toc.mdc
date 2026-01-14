@@ -2,7 +2,7 @@
 description: "Reference: original System Agent rulebook intro + table of contents"
 globs:
   - **/*
-alwaysApply: false
+alwaysApply: true
 ---
 
 # Coding Rules & Design Guidelines
