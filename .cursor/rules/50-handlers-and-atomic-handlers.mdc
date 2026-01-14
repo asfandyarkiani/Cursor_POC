@@ -4,7 +4,7 @@ globs:
   - Implementations/MRI/Handlers/**/*.cs
   - Implementations/MRI/AtomicHandlers/**/*.cs
   - Program.cs
-alwaysApply: false
+alwaysApply: true
 ---
 
 ## 5. Handlers & Atomic Handlers
