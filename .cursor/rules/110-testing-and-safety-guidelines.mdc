@@ -4,7 +4,7 @@ globs:
   - **/*.cs
   - **/*Tests*/**
   - **/*.csproj
-alwaysApply: false
+alwaysApply: true
 ---
 
 ## 11. Testing & Safety Guidelines
