@@ -5,7 +5,7 @@ globs:
   - Helper/**/*.cs
   - Implementations/MRI/AtomicHandlers/**/*.cs
   - *.csproj
-alwaysApply: false
+alwaysApply: true
 ---
 
 ## 7. SOAP / HTTP Integration
