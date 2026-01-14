@@ -1,1 +1,30 @@
+---
+description: "Reference: original System Agent rulebook intro + table of contents"
+globs:
+  - **/*
+alwaysApply: false
+---
+
+# Coding Rules & Design Guidelines
+## sys-facilities-mgmt Project
+
+This document defines the coding standards, architectural patterns, and design principles that must be followed when generating or modifying code in this project. These rules ensure consistency, maintainability, and alignment with the existing architecture.
+
+---
+
+## Table of Contents
+1. [General Principles](#1-general-principles)
+2. [Project Structure & Naming](#2-project-structure--naming)
+3. [Azure Functions & Endpoints](#3-azure-functions--endpoints)
+4. [DTOs & Contracts](#4-dtos--contracts)
+5. [Handlers & Atomic Handlers](#5-handlers--atomic-handlers)
+6. [Middleware & Authentication](#6-middleware--authentication)
+7. [SOAP / HTTP Integration](#7-soap--http-integration)
+8. [Configuration & Secrets](#8-configuration--secrets)
+9. [Logging & Error Handling](#9-logging--error-handling)
+10. [Caching & Performance](#10-caching--performance)
+11. [Testing & Safety Guidelines](#11-testing--safety-guidelines)
+
+---
+
 
