@@ -1,0 +1,515 @@
+# Coding Rules & Design Guidelines
+## sys-facilities-mgmt Project
+
+This document defines the coding standards, architectural patterns, and design principles that must be followed when generating or modifying code in this project. These rules ensure consistency, maintainability, and alignment with the existing architecture.
+
+---
+
+## Table of Contents
+1. [General Principles](#1-general-principles)
+2. [Project Structure & Naming](#2-project-structure--naming)
+3. [Azure Functions & Endpoints](#3-azure-functions--endpoints)
+4. [DTOs & Contracts](#4-dtos--contracts)
+5. [Handlers & Atomic Handlers](#5-handlers--atomic-handlers)
+6. [Middleware & Authentication](#6-middleware--authentication)
+7. [SOAP / HTTP Integration](#7-soap--http-integration)
+8. [Configuration & Secrets](#8-configuration--secrets)
+9. [Logging & Error Handling](#9-logging--error-handling)
+10. [Caching & Performance](#10-caching--performance)
+11. [Testing & Safety Guidelines](#11-testing--safety-guidelines)
+
+---
+
+## 1. General Principles
+
+###  DO:
+- **Follow existing architecture patterns**: Extend the current layered architecture (Functions → Handlers → Atomic Handlers → SOAP/HTTP calls) rather than introducing new paradigms
+- **Maintain .NET 8.0 / Azure Functions v4 stack**: All code must target `net8.0` and use Azure Functions v4 patterns
+- **Use dependency injection consistently**: All services, handlers, and middleware must be registered and injected via DI container
+- **Preserve existing patterns**: When adding new features, follow the exact same patterns used in existing code
+
+###  DON'T:
+- Introduce alternative frameworks (e.g., ASP.NET Core Controllers, Minimal APIs, gRPC)
+- Change target framework or hosting model
+- Use `new` keyword to instantiate services that should be DI-managed
+- Create new architectural layers without explicit approval
+
+---
+
+## 2. Project Structure & Naming
+
+### Folder Responsibilities
+
+####  DO:
+- **Functions**: Place all HTTP-triggered Azure Functions in `Functions/` folder
+- **Handlers**: Place business logic orchestration in `Implementations/MRI/Handlers/`
+- **Atomic Handlers**: Place single-responsibility downstream operations in `Implementations/MRI/AtomicHandlers/`
+- **DTOs**: 
+  - API request/response DTOs in `DTO/<FeatureName>DTO/`
+  - Downstream API DTOs in `DTO/DownsteamDTOs/<FeatureName>DTO/`
+- **Cross-cutting concerns**: 
+  - Attributes in `Attributes/`
+  - Middlewares in `Middlewares/`
+  - Helpers in `Helper/`
+  - Constants in `Constants/`
+  - Config models in `ConfigModels/`
+
+####  DON'T:
+- Mix architectural layers (e.g., calling SOAP directly from Functions)
+- Place business logic in Functions (use Handlers instead)
+- Create new top-level folders without clear justification
+
+### Naming Conventions
+
+####  DO:
+- **Functions**: Class name `SomethingAPI`, method decorated with `[Function("Something")]`
+- **Handlers**: `SomethingMRIHandler` (e.g., `CreateWorkOrderMRIHandler`)
+- **Atomic Handlers**: `SomethingAtomicHandler` (e.g., `CreateWorkOrderAtomicHandler`)
+- **DTOs**: `SomethingRequestDTO`, `SomethingResponseDTO`
+- **Services**: `SomethingService` (e.g., `WorkOrderMRIService`)
+- **Interfaces**: `ISomethingService` (e.g., `IWorkOrderMRIService`)
+
+####  DON'T:
+- Use inconsistent naming patterns
+- Mix naming conventions within the same feature
+- Use abbreviations unless they're part of the domain (e.g., "MRI" is acceptable)
+
+---
+
+## 3. Azure Functions & Endpoints
+
+### Function Signature Pattern
+
+####  DO:
+```csharp
+[MRIAuthentication]  // If MRI session required
+[Function("FunctionName")]
+public async Task<BaseResponseDTO> Run(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req, 
+    FunctionContext context)
+{
+    // Implementation
+}
+```
+
+####  DON'T:
+- Change return type from `BaseResponseDTO` without explicit requirement
+- Modify HTTP trigger authorization level without security review
+- Remove `FunctionContext` parameter if session handling is needed
+
+### Request Handling
+
+####  DO:
+- Read request body using: `await req.ReadBodyAsync<T>()`
+- Validate null/invalid payloads immediately
+- Throw `RequestValidationFailureException` with appropriate `ErrorConstants` for validation failures
+- Call `request.ValidateAPIRequestParameters()` if the pattern exists
+- Extract `SessionId` from `context.Items[InfoConstants.SESSION_ID]` when needed
+- Log key events: request received, validation failures, processing start/end
+
+####  DON'T:
+- Parse JSON manually (use `ReadBodyAsync`)
+- Skip validation steps
+- Throw generic exceptions for validation errors
+- Continue processing with invalid or null request data
+
+### Session Management in Functions
+
+####  DO:
+```csharp
+if (context.Items.TryGetValue(InfoConstants.SESSION_ID, out var sessionIdObj) && 
+    sessionIdObj is string sessionId)
+{
+    request.SessionId = sessionId;
+}
+else
+{
+    throw new BaseException(ErrorConstants.SESSION_ID_NOT_FOUND_IN_CONTEXT);
+}
+```
+
+####  DON'T:
+- Silently continue when session ID is missing
+- Manually authenticate/logout from MRI (middleware handles this)
+
+---
+
+## 4. DTOs & Contracts
+
+### DTO Structure & Placement
+
+####  DO:
+- **API DTOs**: Place in `DTO/<FeatureName>DTO/` folder
+  - Example: `DTO/CreateWorkOrderDTO/CreateWorkOrderRequestDTO.cs`
+- **Downstream DTOs**: Place in `DTO/DownsteamDTOs/<FeatureName>DTO/` folder
+  - Example: `DTO/DownsteamDTOs/CreateWorkOrderApiDTO/CreateWorkOrderApiResponseDTO.cs`
+- Keep DTOs as pure data containers (properties only)
+- Use nullable reference types appropriately (`string?` for optional fields)
+- Maintain backward compatibility when extending DTOs
+
+####  DON'T:
+- Mix API DTOs with downstream DTOs
+- Add business logic inside DTOs
+- Remove or rename existing DTO properties without coordination
+- Create DTOs outside the designated folders
+
+### DTO Naming
+
+####  DO:
+- Request DTOs: `SomethingRequestDTO`
+- Response DTOs: `SomethingResponseDTO`
+- Downstream DTOs: `SomethingApiRequestDTO` / `SomethingApiResponseDTO`
+
+####  DON'T:
+- Use inconsistent naming (e.g., mixing "Request" with "Req" or "DTO" with "Dto")
+
+---
+
+## 5. Handlers & Atomic Handlers
+
+### Handler Responsibilities
+
+####  DO:
+- **MRI Handlers** (`*MRIHandler`): Orchestrate multiple atomic handlers, apply business logic, transform data between layers
+- Keep handlers focused on orchestration, not direct SOAP/HTTP calls
+- Make handlers unit-testable (inject dependencies, avoid static calls)
+- Return `BaseResponseDTO` or appropriate response DTOs
+
+####  DON'T:
+- Put orchestration logic directly in Functions
+- Make handlers call other handlers (use atomic handlers for reusable operations)
+- Include SOAP/HTTP call logic directly in handlers (use atomic handlers)
+
+### Atomic Handler Responsibilities
+
+####  DO:
+- **Atomic Handlers** (`*AtomicHandler`): Handle ONE specific downstream operation
+- Encapsulate SOAP/HTTP call + basic response mapping
+- Keep atomic handlers focused on a single responsibility
+- Return typed responses or `HttpResponseSnapshot` for SOAP calls
+
+####  DON'T:
+- Combine multiple unrelated operations in one atomic handler
+- Add business logic to atomic handlers (keep them thin)
+- Chain multiple downstream calls in a single atomic handler
+
+### Dependency Injection
+
+####  DO:
+- Register all handlers in `Program.cs`:
+```csharp
+builder.Services.AddScoped<CreateWorkOrderMRIHandler>();
+builder.Services.AddScoped<CreateWorkOrderAtomicHandler>();
+```
+- Inject dependencies via constructor injection
+- Use appropriate lifetime (`AddScoped` for handlers, `AddSingleton` for policies)
+
+####  DON'T:
+- Forget to register new handlers in `Program.cs`
+- Manually instantiate handlers using `new`
+- Use wrong lifetime (e.g., `AddSingleton` for handlers that need per-request state)
+
+---
+
+## 6. Middleware & Authentication
+
+### MRI Authentication Middleware
+
+####  DO:
+- Mark Functions requiring MRI session with `[MRIAuthentication]` attribute
+- Trust that middleware will authenticate and provide session ID
+- Retrieve session ID from `context.Items[InfoConstants.SESSION_ID]` after middleware execution
+- Let middleware handle logout automatically in `finally` block
+
+####  DON'T:
+- Manually authenticate/logout from MRI in Functions or Handlers
+- Bypass middleware by implementing custom authentication logic
+- Assume session exists when `[MRIAuthentication]` attribute is not present
+
+### Middleware Registration
+
+####  DO:
+- Register middleware in `Program.cs` in correct order:
+```csharp
+builder.UseMiddleware<ExecutionTimingMiddleware>();
+builder.UseMiddleware<ExceptionHandlerMiddleware>();
+builder.UseMiddleware<MRIAuthenticationMiddleware>();
+```
+
+####  DON'T:
+- Change middleware order without understanding implications
+- Skip middleware registration
+- Create new middleware without following existing patterns
+
+---
+
+## 7. SOAP / HTTP Integration
+
+### SOAP Envelopes
+
+####  DO:
+- Store SOAP request templates as XML files in `SoapEnvelopes/` folder
+- Register new SOAP envelopes as embedded resources in `FacilitiesMgmtSystem.csproj`:
+```xml
+<EmbeddedResource Include="SoapEnvelopes\NewOperation.xml" />
+```
+- Use `CustomSoapClient` for SOAP calls
+- Use `SOAPHelper.DeserializeSoapResponse<T>()` for response deserialization
+- Use `XMLHelper` for XML manipulation when needed
+
+####  DON'T:
+- Embed raw XML strings directly in C# code
+- Create SOAP requests without using envelope templates
+- Bypass existing helper utilities (`SOAPHelper`, `XMLHelper`, `CustomSoapClient`)
+
+### HTTP Client Usage
+
+####  DO:
+- Use `CustomHTTPClient` for HTTP calls
+- Leverage configured Polly retry/timeout policies via `IAsyncPolicy<HttpResponseMessage>`
+- Handle HTTP errors appropriately (check status codes, deserialize error responses)
+
+####  DON'T:
+- Create new `HttpClient` instances directly (use `CustomHTTPClient`)
+- Implement custom retry logic (use existing Polly policies)
+- Ignore HTTP error status codes
+
+### Error Handling for Downstream Calls
+
+####  DO:
+- Wrap downstream failures in appropriate exceptions:
+  - `DownStreamApiFailureException` for API failures
+  - `ApiException` for general API errors
+- Log status codes and response details before throwing
+- Include context in exception messages (file name, method name, operation)
+
+####  DON'T:
+- Throw generic `Exception` for downstream failures
+- Swallow exceptions from downstream calls
+- Return error responses without logging
+
+---
+
+## 8. Configuration & Secrets
+
+### Configuration Model
+
+####  DO:
+- Extend `AppConfigs` class in `ConfigModels/AppConfigs.cs` for new configuration items
+- Access configuration via `IOptions<AppConfigs>` injection
+- Store all MRI URLs, SOAP action URLs, credentials, and IDs in `appsettings.*.json` files
+- Use `AppVariables` section for application-specific settings
+
+####  DON'T:
+- Hard-code URLs, credentials, contract IDs, or environment-specific values
+- Access configuration via `IConfiguration` directly when `AppConfigs` model exists
+- Store secrets in code or configuration files committed to repository
+
+### Environment-Specific Configuration
+
+####  DO:
+- Add environment-specific values in `appsettings.<environment>.json` files:
+  - `appsettings.dev.json`
+  - `appsettings.qa.json`
+  - `appsettings.stg.json`
+  - `appsettings.prod.json`
+  - `appsettings.dr.json`
+- Respect the environment detection logic in `Program.cs`:
+```csharp
+var environment = Environment.GetEnvironmentVariable("ENVIRONMENT")
+               ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+               ?? "dev";
+```
+
+####  DON'T:
+- Create new environment detection mechanisms
+- Mix environment-specific logic in code (use configuration files)
+- Commit production secrets to repository
+
+---
+
+## 9. Logging & Error Handling
+
+### Logging Patterns
+
+####  DO:
+- Use extension-style logging methods:
+  - `_logger.Info("message")`
+  - `_logger.Error(exception, "message")`
+  - `_logger.Warn("message")`
+- Log key lifecycle events:
+  - Request received
+  - Validation failures
+  - Downstream API calls (start/end)
+  - Success/failure states
+  - Session management events
+- Include relevant context in log messages (SRN, SessionId, etc.)
+
+####  DON'T:
+- Use `Console.WriteLine` or direct console output
+- Log sensitive information (passwords, full SOAP envelopes with credentials)
+- Over-log (avoid logging every single step in tight loops)
+- Use string interpolation in log messages (use structured logging parameters)
+
+### Exception Handling
+
+####  DO:
+- Use domain-specific exceptions from `Core.Exceptions` and `Core.System.Exceptions`:
+  - `RequestValidationFailureException` for validation errors
+  - `DownStreamApiFailureException` for downstream API failures
+  - `BaseException` for general application errors
+- Let `ExceptionHandlerMiddleware` handle exception normalization
+- Include error properties when throwing exceptions:
+```csharp
+throw new RequestValidationFailureException() 
+{ 
+    ErrorProperties = [ErrorConstants.INVALID_REQ_PAYLOAD] 
+};
+```
+
+####  DON'T:
+- Catch and swallow exceptions without logging
+- Return raw exception details to API clients
+- Throw generic `Exception` or `SystemException`
+- Catch exceptions you cannot handle meaningfully
+
+---
+
+## 10. Caching & Performance
+
+### Caching Strategy
+
+####  DO:
+- Use Redis caching via `AGI.ApiEcoSys.Cache` library
+- Cache idempotent operations and read-only data
+- Follow existing caching patterns if they exist
+- Use `AddRedisCacheLibrary(builder.Configuration)` extension method
+
+####  DON'T:
+- Implement custom in-memory caching that conflicts with Redis
+- Cache operations that require real-time data
+- Cache without considering cache invalidation strategy
+
+### Performance Considerations
+
+####  DO:
+- Use `async`/`await` throughout (no blocking calls)
+- Let `ExecutionTimingMiddleware` track performance automatically
+- Use appropriate HTTP client timeouts and retry policies
+- Consider caching for frequently accessed, rarely changing data
+
+####  DON'T:
+- Use `.Result` or `.Wait()` on async calls (causes deadlocks)
+- Block threads with synchronous I/O operations
+- Ignore timeout configurations
+- Over-fetch data (request only what's needed)
+
+---
+
+## 11. Testing & Safety Guidelines
+
+### Safe Code Changes
+
+####  DO:
+- Prefer additive changes (new functions, handlers, DTO properties) over breaking changes
+- Maintain backward compatibility when extending existing APIs
+- Keep public contracts stable unless explicitly required to change
+- Test changes in isolation before integration
+
+####  DON'T:
+- Delete or rename existing endpoints without explicit approval
+- Remove public DTO properties without coordination
+- Break existing API contracts without versioning strategy
+- Make changes that affect multiple features without understanding dependencies
+
+### Consistency Checklist
+
+When adding a new feature, ensure ALL of the following are completed:
+
+####  DO:
+- [ ] Create/update DTOs in appropriate folders (`DTO/` or `DTO/DownsteamDTOs/`)
+- [ ] Create handler(s) in `Implementations/MRI/Handlers/` if orchestration needed
+- [ ] Create atomic handler(s) in `Implementations/MRI/AtomicHandlers/` for downstream calls
+- [ ] Register all handlers/atomic handlers in `Program.cs`
+- [ ] Create Azure Function in `Functions/` folder
+- [ ] Add `[MRIAuthentication]` attribute if MRI session required
+- [ ] Add SOAP envelope XML files in `SoapEnvelopes/` if needed
+- [ ] Register SOAP envelopes as embedded resources in `FacilitiesMgmtSystem.csproj`
+- [ ] Extend `AppConfigs` class if new configuration needed
+- [ ] Add configuration values to all `appsettings.*.json` files
+- [ ] Add appropriate error constants to `Constants/ErrorConstants.cs`
+- [ ] Add appropriate info constants to `Constants/InfoConstants.cs` if needed
+- [ ] Implement proper logging at all layers
+- [ ] Handle errors appropriately with domain-specific exceptions
+
+####  DON'T:
+- Leave partial implementations (e.g., Function without handler registration)
+- Skip configuration setup
+- Forget to register dependencies in DI container
+- Omit error handling and logging
+
+---
+
+## Quick Reference: Common Patterns
+
+### Adding a New API Endpoint
+
+1. **Create Function** (`Functions/NewFeatureAPI.cs`):
+```csharp
+[MRIAuthentication]
+[Function("NewFeature")]
+public async Task<BaseResponseDTO> Run(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req, 
+    FunctionContext context)
+{
+    _logger.Info("HTTP received for NewFeatureAPI.");
+    
+    var request = await req.ReadBodyAsync<NewFeatureRequestDTO>();
+    if (request == null)
+    {
+        throw new RequestValidationFailureException() 
+        { 
+            ErrorProperties = [ErrorConstants.INVALID_REQ_PAYLOAD] 
+        };
+    }
+    
+    request.ValidateAPIRequestParameters();
+    
+    if (context.Items.TryGetValue(InfoConstants.SESSION_ID, out var sessionIdObj) && 
+        sessionIdObj is string sessionId)
+    {
+        request.SessionId = sessionId;
+    }
+    else
+    {
+        throw new BaseException(ErrorConstants.SESSION_ID_NOT_FOUND_IN_CONTEXT);
+    }
+    
+    var result = await _handler.ProcessRequest(request);
+    return result;
+}
+```
+
+2. **Create Handler** (`Implementations/MRI/Handlers/NewFeatureMRIHandler.cs`)
+3. **Create Atomic Handler** (`Implementations/MRI/AtomicHandlers/NewFeatureAtomicHandler/`)
+4. **Create DTOs** (`DTO/NewFeatureDTO/`)
+5. **Register in Program.cs**
+6. **Add SOAP envelope** (if needed)
+7. **Add configuration** (if needed)
+
+---
+
+## Enforcement
+
+These rules should be followed by:
+- **Coding agents** generating code for this project
+- **Developers** modifying existing code
+- **Code reviewers** evaluating pull requests
+
+Violations of these rules should be flagged during code review and corrected before merging.
+
+---
+
+**Last Updated**: Generated based on current project structure  
+**Project**: sys-facilities-mgmt  
+**Framework**: .NET 8.0, Azure Functions v4
