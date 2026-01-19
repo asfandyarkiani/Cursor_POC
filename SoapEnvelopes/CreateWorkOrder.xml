@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+  <soap:Header>
+    <tem:SessionHeader>
+      <tem:SessionId>{{SessionId}}</tem:SessionId>
+    </tem:SessionHeader>
+  </soap:Header>
+  <soap:Body>
+    <tem:CreateWorkOrder>
+      <tem:WorkOrderRequest>
+        <tem:ContractId>{{ContractId}}</tem:ContractId>
+        <tem:Description>{{Description}}</tem:Description>
+        <tem:Priority>{{Priority}}</tem:Priority>
+        <tem:LocationId>{{LocationId}}</tem:LocationId>
+        <tem:AssetId>{{AssetId}}</tem:AssetId>
+        <tem:RequestedBy>{{RequestedBy}}</tem:RequestedBy>
+        <tem:RequestedDate>{{RequestedDate}}</tem:RequestedDate>
+        <tem:DueDate>{{DueDate}}</tem:DueDate>
+        <tem:WorkOrderType>{{WorkOrderType}}</tem:WorkOrderType>
+        <tem:CategoryId>{{CategoryId}}</tem:CategoryId>
+        <tem:SubCategoryId>{{SubCategoryId}}</tem:SubCategoryId>
+        <tem:AssignedTo>{{AssignedTo}}</tem:AssignedTo>
+        <tem:Notes>{{Notes}}</tem:Notes>
+        <tem:ExternalReference>{{ExternalReference}}</tem:ExternalReference>
+      </tem:WorkOrderRequest>
+    </tem:CreateWorkOrder>
+  </soap:Body>
+</soap:Envelope>
