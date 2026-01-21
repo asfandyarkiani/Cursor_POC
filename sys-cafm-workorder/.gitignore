@@ -1,0 +1,18 @@
+# Build results
+bin/
+obj/
+
+# Local settings
+local.settings.json
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# JetBrains Rider
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
