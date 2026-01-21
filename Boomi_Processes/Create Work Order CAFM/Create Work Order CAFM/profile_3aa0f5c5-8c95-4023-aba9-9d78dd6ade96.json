@@ -1,0 +1,3546 @@
+{
+  "bns:Component": {
+    "$": {
+      "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "xmlns:bns": "http://api.platform.boomi.com/",
+      "xmlns": "",
+      "folderFullPath": "Al Ghurair Investment LLC/Facilities/EQ+ Work Order/Create CAFM Work Order",
+      "componentId": "3aa0f5c5-8c95-4023-aba9-9d78dd6ade96",
+      "version": "6",
+      "name": "Web Services SOAP Client GetLocationsByDto EXECUTE Response",
+      "type": "profile.xml",
+      "createdDate": "2025-02-20T13:37:13Z",
+      "createdBy": "Rajesh.Muppala@al-ghurair.com",
+      "modifiedDate": "2025-02-21T12:52:57Z",
+      "modifiedBy": "gowri.sankar@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Create CAFM Work Order",
+      "folderId": "Rjo3NDI4MzIx",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "bns:encryptedValues": [
+      ""
+    ],
+    "bns:description": [
+      ""
+    ],
+    "bns:object": [
+      {
+        "XMLProfile": [
+          {
+            "$": {
+              "modelVersion": "2",
+              "strict": "true"
+            },
+            "ProfileProperties": [
+              {
+                "XMLGeneralInfo": [
+                  ""
+                ],
+                "XMLOptions": [
+                  {
+                    "$": {
+                      "encoding": "utf8",
+                      "implicitElementOrdering": "true",
+                      "parseRespectMaxOccurs": "true",
+                      "respectMinOccurs": "false",
+                      "respectMinOccursAlways": "false"
+                    }
+                  }
+                ]
+              }
+            ],
+            "DataElements": [
+              {
+                "XMLElement": [
+                  {
+                    "$": {
+                      "dataType": "character",
+                      "isMappable": "true",
+                      "isNode": "true",
+                      "key": "1",
+                      "maxOccurs": "1",
+                      "minOccurs": "1",
+                      "name": "Envelope",
+                      "typeExpanded": "true",
+                      "typeKey": "3",
+                      "typeName": "Envelope",
+                      "typeNamespace": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "useNamespace": "2"
+                    },
+                    "DataFormat": [
+                      {
+                        "ProfileCharacterFormat": [
+                          ""
+                        ]
+                      }
+                    ],
+                    "XMLNSDeclList": [
+                      {
+                        "XMLNSDeclaration": [
+                          {
+                            "$": {
+                              "defaultNamespace": "false",
+                              "isMappable": "false",
+                              "isNode": "true",
+                              "key": "2"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "XMLElement": [
+                      {
+                        "$": {
+                          "dataType": "character",
+                          "isMappable": "true",
+                          "isNode": "true",
+                          "key": "90",
+                          "loopingOption": "unique",
+                          "maxOccurs": "1",
+                          "minOccurs": "0",
+                          "name": "Header",
+                          "typeExpanded": "true",
+                          "typeKey": "6",
+                          "typeName": "Header",
+                          "typeNamespace": "http://schemas.xmlsoap.org/soap/envelope/",
+                          "useNamespace": "2",
+                          "validateData": "false"
+                        },
+                        "DataFormat": [
+                          {
+                            "ProfileCharacterFormat": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "$": {
+                          "dataType": "character",
+                          "isMappable": "true",
+                          "isNode": "true",
+                          "key": "92",
+                          "loopingOption": "unique",
+                          "maxOccurs": "1",
+                          "minOccurs": "1",
+                          "name": "Body",
+                          "typeExpanded": "true",
+                          "typeKey": "9",
+                          "typeName": "Body",
+                          "typeNamespace": "http://schemas.xmlsoap.org/soap/envelope/",
+                          "useNamespace": "2",
+                          "validateData": "false"
+                        },
+                        "DataFormat": [
+                          {
+                            "ProfileCharacterFormat": [
+                              ""
+                            ]
+                          }
+                        ],
+                        "XMLElement": [
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "94",
+                              "loopingOption": "unique",
+                              "maxOccurs": "1",
+                              "minOccurs": "1",
+                              "name": "GetLocationsByDtoResponse",
+                              "typeExpanded": "true",
+                              "typeKey": "13",
+                              "typeNamespace": "http://www.fsi.co.uk/services/evolution/04/09",
+                              "useNamespace": "12",
+                              "validateData": "false"
+                            },
+                            "DataFormat": [
+                              {
+                                "ProfileCharacterFormat": [
+                                  ""
+                                ]
+                              }
+                            ],
+                            "XMLNSDeclList": [
+                              {
+                                "XMLNSDeclaration": [
+                                  {
+                                    "$": {
+                                      "defaultNamespace": "false",
+                                      "isMappable": "false",
+                                      "isNode": "true",
+                                      "key": "12"
+                                    }
+                                  }
+                                ]
+                              }
+                            ],
+                            "QualifierList": [
+                              ""
+                            ],
+                            "XMLElement": [
+                              {
+                                "$": {
+                                  "dataType": "character",
+                                  "isMappable": "true",
+                                  "isNode": "true",
+                                  "key": "96",
+                                  "loopingOption": "unique",
+                                  "maxOccurs": "1",
+                                  "minOccurs": "0",
+                                  "name": "GetLocationsByDtoResult",
+                                  "typeExpanded": "true",
+                                  "typeKey": "17",
+                                  "typeName": "ArrayOfLocationDto",
+                                  "typeNamespace": "http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel",
+                                  "useNamespace": "12",
+                                  "validateData": "false"
+                                },
+                                "DataFormat": [
+                                  {
+                                    "ProfileCharacterFormat": [
+                                      ""
+                                    ]
+                                  }
+                                ],
+                                "XMLElement": [
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "98",
+                                      "loopingOption": "unique",
+                                      "maxOccurs": "-1",
+                                      "minOccurs": "0",
+                                      "name": "LocationDto",
+                                      "typeExpanded": "true",
+                                      "typeKey": "20",
+                                      "typeName": "LocationDto",
+                                      "typeNamespace": "http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel",
+                                      "useNamespace": "16",
+                                      "validateData": "false"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ],
+                                    "XMLNSDeclList": [
+                                      {
+                                        "XMLNSDeclaration": [
+                                          {
+                                            "$": {
+                                              "defaultNamespace": "false",
+                                              "isMappable": "false",
+                                              "isNode": "true",
+                                              "key": "23"
+                                            }
+                                          },
+                                          {
+                                            "$": {
+                                              "defaultNamespace": "false",
+                                              "isMappable": "false",
+                                              "isNode": "true",
+                                              "key": "16"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ],
+                                    "XMLElement": [
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "100",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "FilterQueryId",
+                                          "typeKey": "-1",
+                                          "useNamespace": "23",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "102",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "PrimaryKeyId",
+                                          "typeKey": "-1",
+                                          "useNamespace": "23",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "104",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "PrimaryTableCatalogId",
+                                          "typeKey": "-1",
+                                          "useNamespace": "23",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "106",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "ValidateOnly",
+                                          "typeKey": "-1",
+                                          "useNamespace": "23",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "108",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "AllDayBooking",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "110",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "AltExtIdentifier",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "112",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "AreaId",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "114",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "AreaName",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "116",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "BarCode",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "118",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "BookingClosureTime",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "122",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "BookingExamSeats",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "124",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "BookingMaximumSeats",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "126",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "BookingSetupTime",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "128",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "BookingStandardSeats",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "132",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "Building",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "134",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "BuildingFloorId",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "136",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "BuildingId",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "138",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "CalendarId",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "140",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "ChargeCategoryId",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "142",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "ChargeRate",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "144",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "ConUnAvailLocId",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "146",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "CostCentreId",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "148",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "DepartmentId",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "150",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "Description",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "152",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "Elevation",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "154",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "ExtIdentifier",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "156",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "ExtObject",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "158",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "ExtSystem",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "160",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "ExternalController",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "162",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "Floor",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "164",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "FloorId",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "166",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "GisReference",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "168",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "GrossArea",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "170",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "IsExamCapable",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "172",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "IsStockLocation",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "174",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "LO_CONDITION",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "176",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "Latitude",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "178",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "LocationId",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "180",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "LocationNumber",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "182",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "LocationSortOrder",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "184",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "LocationStatus",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "186",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "LocationStatusId",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "188",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "LocationType",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "190",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "LocationTypeId",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "192",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "LocationUrl",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "194",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "Longitude",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "196",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "MobileLocation",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "198",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "NetUsableSpace",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "200",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "NetworkPoints",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "202",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "Notes",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "204",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "PowerPoints",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "206",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "SchedulingWeight",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "number",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "208",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "ServiceCharge",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileNumberFormat": [
+                                              {
+                                                "$": {
+                                                  "numberFormat": ""
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "210",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "Site",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "212",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "StockIssueRequiresApproval",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "214",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "TelephoneNumber",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "216",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "Url",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "218",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "UserDefined1",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "220",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "UserDefined2",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "222",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "UserDefined3",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "224",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "UserDefined4",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "226",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "UserDefined5",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "228",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "UserDefined6",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "230",
+                                          "loopingOption": "unique",
+                                          "maxOccurs": "1",
+                                          "minOccurs": "0",
+                                          "name": "UserDefined7",
+                                          "typeKey": "-1",
+                                          "useNamespace": "16",
+                                          "validateData": "false"
+                                        },
+                                        "DataFormat": [
+                                          {
+                                            "ProfileCharacterFormat": [
+                                              ""
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "Namespaces": [
+              {
+                "XMLNamespace": [
+                  {
+                    "$": {
+                      "key": "-1",
+                      "name": "Empty Namespace",
+                      "prefix": "ns5"
+                    },
+                    "Types": [
+                      ""
+                    ]
+                  },
+                  {
+                    "$": {
+                      "key": "16",
+                      "name": "http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel",
+                      "prefix": "ns3"
+                    },
+                    "Types": [
+                      {
+                        "Type": [
+                          {
+                            "$": {
+                              "anonymous": "false",
+                              "declarationClass": "cType",
+                              "typeKey": "17"
+                            },
+                            "XMLElement": [
+                              {
+                                "$": {
+                                  "dataType": "character",
+                                  "isMappable": "true",
+                                  "isNode": "true",
+                                  "key": "18",
+                                  "loopingOption": "unique",
+                                  "maxOccurs": "1",
+                                  "minOccurs": "0",
+                                  "name": "ArrayOfLocationDto",
+                                  "typeExpanded": "false",
+                                  "typeKey": "17",
+                                  "typeName": "ArrayOfLocationDto",
+                                  "typeNamespace": "http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel",
+                                  "useNamespace": "12",
+                                  "validateData": "false"
+                                },
+                                "DataFormat": [
+                                  {
+                                    "ProfileCharacterFormat": [
+                                      ""
+                                    ]
+                                  }
+                                ],
+                                "XMLElement": [
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "19",
+                                      "maxOccurs": "-1",
+                                      "minOccurs": "0",
+                                      "name": "LocationDto",
+                                      "typeExpanded": "false",
+                                      "typeKey": "20",
+                                      "typeName": "LocationDto",
+                                      "typeNamespace": "http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "$": {
+                              "anonymous": "false",
+                              "declarationClass": "cType",
+                              "typeKey": "20"
+                            },
+                            "XMLElement": [
+                              {
+                                "$": {
+                                  "dataType": "character",
+                                  "isMappable": "true",
+                                  "isNode": "true",
+                                  "key": "21",
+                                  "loopingOption": "unique",
+                                  "maxOccurs": "-1",
+                                  "minOccurs": "0",
+                                  "name": "LocationDto",
+                                  "typeExpanded": "false",
+                                  "typeKey": "20",
+                                  "typeName": "LocationDto",
+                                  "typeNamespace": "http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel",
+                                  "useNamespace": "16",
+                                  "validateData": "false"
+                                },
+                                "DataFormat": [
+                                  {
+                                    "ProfileCharacterFormat": [
+                                      ""
+                                    ]
+                                  }
+                                ],
+                                "QualifierList": [
+                                  ""
+                                ],
+                                "XMLElement": [
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "22",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "FilterQueryId",
+                                      "useNamespace": "23"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "24",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "PrimaryKeyId",
+                                      "useNamespace": "23"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "25",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "PrimaryTableCatalogId",
+                                      "useNamespace": "23"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "26",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "ValidateOnly",
+                                      "useNamespace": "23"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "27",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "AllDayBooking",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "28",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "AltExtIdentifier",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "29",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "AreaId",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "30",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "AreaName",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "31",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "BarCode",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "32",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "BookingClosureTime",
+                                      "typeExpanded": "false",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "34",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "BookingExamSeats",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "35",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "BookingMaximumSeats",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "36",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "BookingSetupTime",
+                                      "typeExpanded": "false",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "37",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "BookingStandardSeats",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "39",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "Building",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "40",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "BuildingFloorId",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "41",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "BuildingId",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "42",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "CalendarId",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "43",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "ChargeCategoryId",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "44",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "ChargeRate",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "45",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "ConUnAvailLocId",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "46",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "CostCentreId",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "47",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "DepartmentId",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "48",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "Description",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "49",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "Elevation",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "50",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "ExtIdentifier",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "51",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "ExtObject",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "52",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "ExtSystem",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "53",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "ExternalController",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "54",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "Floor",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "55",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "FloorId",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "56",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "GisReference",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "57",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "GrossArea",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "58",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "IsExamCapable",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "59",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "IsStockLocation",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "60",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "LO_CONDITION",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "61",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "Latitude",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "62",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "LocationId",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "63",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "LocationNumber",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "64",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "LocationSortOrder",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "65",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "LocationStatus",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "66",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "LocationStatusId",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "67",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "LocationType",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "68",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "LocationTypeId",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "69",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "LocationUrl",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "70",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "Longitude",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "71",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "MobileLocation",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "72",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "NetUsableSpace",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "73",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "NetworkPoints",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "74",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "Notes",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "75",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "PowerPoints",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "76",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "SchedulingWeight",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "number",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "77",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "ServiceCharge",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileNumberFormat": [
+                                          {
+                                            "$": {
+                                              "numberFormat": ""
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "78",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "Site",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "79",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "StockIssueRequiresApproval",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "80",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "TelephoneNumber",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "81",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "Url",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "82",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "UserDefined1",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "83",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "UserDefined2",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "84",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "UserDefined3",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "85",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "UserDefined4",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "86",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "UserDefined5",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "87",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "UserDefined6",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "88",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "UserDefined7",
+                                      "useNamespace": "16"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "$": {
+                      "key": "23",
+                      "name": "http://schemas.datacontract.org/2004/07/Fsi.Platform.Contracts.ServiceModel",
+                      "prefix": "ns4"
+                    },
+                    "Types": [
+                      ""
+                    ]
+                  },
+                  {
+                    "$": {
+                      "key": "2",
+                      "name": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "prefix": "ns1"
+                    },
+                    "Types": [
+                      {
+                        "Type": [
+                          {
+                            "$": {
+                              "anonymous": "false",
+                              "declarationClass": "cType",
+                              "typeKey": "9"
+                            },
+                            "XMLElement": [
+                              {
+                                "$": {
+                                  "dataType": "character",
+                                  "isMappable": "true",
+                                  "isNode": "true",
+                                  "key": "10",
+                                  "loopingOption": "unique",
+                                  "maxOccurs": "1",
+                                  "minOccurs": "1",
+                                  "name": "Body",
+                                  "typeExpanded": "false",
+                                  "typeKey": "9",
+                                  "typeName": "Body",
+                                  "typeNamespace": "http://schemas.xmlsoap.org/soap/envelope/",
+                                  "useNamespace": "2",
+                                  "validateData": "false"
+                                },
+                                "DataFormat": [
+                                  {
+                                    "ProfileCharacterFormat": [
+                                      ""
+                                    ]
+                                  }
+                                ],
+                                "QualifierList": [
+                                  ""
+                                ],
+                                "XMLElement": [
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "11",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "1",
+                                      "name": "GetLocationsByDtoResponse",
+                                      "typeExpanded": "false",
+                                      "typeKey": "13",
+                                      "typeNamespace": "http://www.fsi.co.uk/services/evolution/04/09",
+                                      "useNamespace": "12"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "$": {
+                              "anonymous": "false",
+                              "declarationClass": "cType",
+                              "typeKey": "3"
+                            },
+                            "XMLElement": [
+                              {
+                                "$": {
+                                  "dataType": "character",
+                                  "isMappable": "true",
+                                  "isNode": "true",
+                                  "key": "4",
+                                  "loopingOption": "unique",
+                                  "maxOccurs": "1",
+                                  "minOccurs": "0",
+                                  "name": "Envelope",
+                                  "typeExpanded": "false",
+                                  "typeKey": "3",
+                                  "typeName": "Envelope",
+                                  "typeNamespace": "http://schemas.xmlsoap.org/soap/envelope/",
+                                  "useNamespace": "2",
+                                  "validateData": "false"
+                                },
+                                "DataFormat": [
+                                  {
+                                    "ProfileCharacterFormat": [
+                                      ""
+                                    ]
+                                  }
+                                ],
+                                "QualifierList": [
+                                  ""
+                                ],
+                                "XMLElement": [
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "5",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "Header",
+                                      "typeExpanded": "false",
+                                      "typeKey": "6",
+                                      "typeName": "Header",
+                                      "typeNamespace": "http://schemas.xmlsoap.org/soap/envelope/",
+                                      "useNamespace": "2"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "8",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "1",
+                                      "name": "Body",
+                                      "typeExpanded": "false",
+                                      "typeKey": "9",
+                                      "typeName": "Body",
+                                      "typeNamespace": "http://schemas.xmlsoap.org/soap/envelope/",
+                                      "useNamespace": "2"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "$": {
+                              "anonymous": "false",
+                              "declarationClass": "cType",
+                              "typeKey": "6"
+                            },
+                            "XMLElement": [
+                              {
+                                "$": {
+                                  "dataType": "character",
+                                  "isMappable": "true",
+                                  "isNode": "true",
+                                  "key": "7",
+                                  "loopingOption": "unique",
+                                  "maxOccurs": "1",
+                                  "minOccurs": "0",
+                                  "name": "Header",
+                                  "typeExpanded": "false",
+                                  "typeKey": "6",
+                                  "typeName": "Header",
+                                  "typeNamespace": "http://schemas.xmlsoap.org/soap/envelope/",
+                                  "useNamespace": "2",
+                                  "validateData": "false"
+                                },
+                                "DataFormat": [
+                                  {
+                                    "ProfileCharacterFormat": [
+                                      ""
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "$": {
+                      "key": "12",
+                      "name": "http://www.fsi.co.uk/services/evolution/04/09",
+                      "prefix": "ns2"
+                    },
+                    "Types": [
+                      {
+                        "Type": [
+                          {
+                            "$": {
+                              "anonymous": "true",
+                              "declarationClass": "eRef",
+                              "typeKey": "13"
+                            },
+                            "XMLElement": [
+                              {
+                                "$": {
+                                  "dataType": "character",
+                                  "isMappable": "true",
+                                  "isNode": "true",
+                                  "key": "14",
+                                  "loopingOption": "unique",
+                                  "maxOccurs": "1",
+                                  "minOccurs": "1",
+                                  "name": "GetLocationsByDtoResponse",
+                                  "typeExpanded": "false",
+                                  "typeKey": "13",
+                                  "typeNamespace": "http://www.fsi.co.uk/services/evolution/04/09",
+                                  "useNamespace": "12",
+                                  "validateData": "false"
+                                },
+                                "DataFormat": [
+                                  {
+                                    "ProfileCharacterFormat": [
+                                      ""
+                                    ]
+                                  }
+                                ],
+                                "XMLElement": [
+                                  {
+                                    "$": {
+                                      "dataType": "character",
+                                      "isMappable": "true",
+                                      "isNode": "true",
+                                      "key": "15",
+                                      "maxOccurs": "1",
+                                      "minOccurs": "0",
+                                      "name": "GetLocationsByDtoResult",
+                                      "typeExpanded": "false",
+                                      "typeKey": "17",
+                                      "typeName": "ArrayOfLocationDto",
+                                      "typeNamespace": "http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel",
+                                      "useNamespace": "12"
+                                    },
+                                    "DataFormat": [
+                                      {
+                                        "ProfileCharacterFormat": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "tagLists": [
+              ""
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
