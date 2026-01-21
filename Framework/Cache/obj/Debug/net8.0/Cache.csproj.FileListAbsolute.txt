@@ -1,0 +1,13 @@
+D:\Code Repos\Framework\Cache\bin\Debug\net8.0\Cache.deps.json
+D:\Code Repos\Framework\Cache\bin\Debug\net8.0\Cache.dll
+D:\Code Repos\Framework\Cache\bin\Debug\net8.0\Cache.pdb
+D:\Code Repos\Framework\Cache\obj\Debug\net8.0\Cache.csproj.AssemblyReference.cache
+D:\Code Repos\Framework\Cache\obj\Debug\net8.0\Cache.GeneratedMSBuildEditorConfig.editorconfig
+D:\Code Repos\Framework\Cache\obj\Debug\net8.0\Cache.AssemblyInfoInputs.cache
+D:\Code Repos\Framework\Cache\obj\Debug\net8.0\Cache.AssemblyInfo.cs
+D:\Code Repos\Framework\Cache\obj\Debug\net8.0\Cache.csproj.CoreCompileInputs.cache
+D:\Code Repos\Framework\Cache\obj\Debug\net8.0\Cache.sourcelink.json
+D:\Code Repos\Framework\Cache\obj\Debug\net8.0\Cache.dll
+D:\Code Repos\Framework\Cache\obj\Debug\net8.0\refint\Cache.dll
+D:\Code Repos\Framework\Cache\obj\Debug\net8.0\Cache.pdb
+D:\Code Repos\Framework\Cache\obj\Debug\net8.0\ref\Cache.dll
