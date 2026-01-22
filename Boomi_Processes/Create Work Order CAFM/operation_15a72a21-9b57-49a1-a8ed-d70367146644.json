@@ -1,0 +1,73 @@
+{
+  "bns:Component": {
+    "$": {
+      "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "xmlns:bns": "http://api.platform.boomi.com/",
+      "xmlns": "",
+      "folderFullPath": "Al Ghurair Investment LLC/#Commom/Common Process/Email",
+      "componentId": "15a72a21-9b57-49a1-a8ed-d70367146644",
+      "version": "2",
+      "name": "Email W/O Attachment",
+      "type": "connector-action",
+      "subType": "mail",
+      "createdDate": "2022-09-08T06:44:14Z",
+      "createdBy": "Rajesh.Muppala@al-ghurair.com",
+      "modifiedDate": "2022-09-12T11:55:18Z",
+      "modifiedBy": "Rajesh.Muppala@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Email",
+      "folderId": "Rjo1MTgzNTU1",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "bns:encryptedValues": [
+      ""
+    ],
+    "bns:description": [
+      ""
+    ],
+    "bns:object": [
+      {
+        "Operation": [
+          {
+            "Archiving": [
+              {
+                "$": {
+                  "directory": "",
+                  "enabled": "false"
+                }
+              }
+            ],
+            "Configuration": [
+              {
+                "MailSendAction": [
+                  {
+                    "$": {
+                      "bodyContentType": "text/plain",
+                      "dataContentType": "text/html",
+                      "disposition": "inline",
+                      "from": "",
+                      "subject": "",
+                      "to": ""
+                    }
+                  }
+                ]
+              }
+            ],
+            "Tracking": [
+              {
+                "TrackedFields": [
+                  ""
+                ]
+              }
+            ],
+            "Caching": [
+              ""
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

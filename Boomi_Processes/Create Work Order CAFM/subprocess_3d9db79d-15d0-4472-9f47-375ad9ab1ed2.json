@@ -1,0 +1,991 @@
+{
+  "bns:Component": {
+    "$": {
+      "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "xmlns:bns": "http://api.platform.boomi.com/",
+      "xmlns": "",
+      "folderFullPath": "Al Ghurair Investment LLC/Facilities/Common",
+      "componentId": "3d9db79d-15d0-4472-9f47-375ad9ab1ed2",
+      "version": "6",
+      "name": "FsiLogin",
+      "type": "process",
+      "createdDate": "2023-08-24T04:54:22Z",
+      "createdBy": "Sudheer.Penchala@al-ghurair.com",
+      "modifiedDate": "2025-03-12T06:42:35Z",
+      "modifiedBy": "hari.krishna@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Common",
+      "folderId": "Rjo2MTA2MDU1",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "bns:encryptedValues": [
+      ""
+    ],
+    "bns:description": [
+      ""
+    ],
+    "bns:object": [
+      {
+        "process": [
+          {
+            "$": {
+              "allowSimultaneous": "true",
+              "enableUserLog": "false",
+              "processLogOnErrorOnly": "false",
+              "purgeDataImmediately": "false",
+              "updateRunDates": "false",
+              "workload": "general"
+            },
+            "shapes": [
+              {
+                "shape": [
+                  {
+                    "$": {
+                      "image": "start",
+                      "name": "shape1",
+                      "shapetype": "start",
+                      "userlabel": "",
+                      "x": "64.0",
+                      "y": "94.0"
+                    },
+                    "configuration": [
+                      {
+                        "passthroughaction": [
+                          ""
+                        ]
+                      }
+                    ],
+                    "dragpoints": [
+                      {
+                        "dragpoint": [
+                          {
+                            "$": {
+                              "name": "shape1.dragpoint1",
+                              "toShape": "shape3",
+                              "x": "256.0",
+                              "y": "104.0"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "$": {
+                      "image": "decision_icon",
+                      "name": "shape4",
+                      "shapetype": "decision",
+                      "userlabel": "",
+                      "x": "656.0",
+                      "y": "96.0"
+                    },
+                    "configuration": [
+                      {
+                        "decision": [
+                          {
+                            "$": {
+                              "comparison": "regex",
+                              "name": ""
+                            },
+                            "decisionvalue": [
+                              {
+                                "$": {
+                                  "valueType": "track"
+                                },
+                                "trackparameter": [
+                                  {
+                                    "$": {
+                                      "defaultValue": "",
+                                      "propertyId": "meta.base.applicationstatuscode",
+                                      "propertyName": "Base - Application Status Code"
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "$": {
+                                  "valueType": "static"
+                                },
+                                "staticparameter": [
+                                  {
+                                    "$": {
+                                      "staticproperty": "20*"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "dragpoints": [
+                      {
+                        "dragpoint": [
+                          {
+                            "$": {
+                              "identifier": "true",
+                              "name": "shape4.dragpoint1",
+                              "text": "True",
+                              "toShape": "shape8",
+                              "x": "832.0",
+                              "y": "184.0"
+                            }
+                          },
+                          {
+                            "$": {
+                              "identifier": "false",
+                              "name": "shape4.dragpoint2",
+                              "text": "False",
+                              "toShape": "shape11",
+                              "x": "816.0",
+                              "y": "40.0"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "$": {
+                      "image": "message_icon",
+                      "name": "shape5",
+                      "shapetype": "message",
+                      "userlabel": "",
+                      "x": "400.0",
+                      "y": "96.0"
+                    },
+                    "configuration": [
+                      {
+                        "message": [
+                          {
+                            "$": {
+                              "combined": "false"
+                            },
+                            "msgTxt": [
+                              "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://www.fsi.co.uk/services/evolution/04/09\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:Authenticate>\n<ns:loginName>{1}</ns:loginName>\n<ns:password>{2}</ns:password>\n      </ns:Authenticate>\n   </soapenv:Body>\n</soapenv:Envelope>"
+                            ],
+                            "msgParameters": [
+                              {
+                                "parametervalue": [
+                                  {
+                                    "$": {
+                                      "key": "0",
+                                      "valueType": "definedparameter"
+                                    },
+                                    "definedprocessparameter": [
+                                      {
+                                        "$": {
+                                          "componentId": "297ea45e-6a90-4ba8-8a1d-8292af5a7b42",
+                                          "componentName": "PP_Facilities_Vendor",
+                                          "propertyKey": "dd55081c-754a-4a5d-bb93-f54e6a9ced01",
+                                          "propertyLabel": "FSI_Username"
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$": {
+                                      "key": "1",
+                                      "valueType": "definedparameter"
+                                    },
+                                    "definedprocessparameter": [
+                                      {
+                                        "$": {
+                                          "componentId": "297ea45e-6a90-4ba8-8a1d-8292af5a7b42",
+                                          "componentName": "PP_Facilities_Vendor",
+                                          "propertyKey": "db5c06d8-ce75-4f42-9b8e-11d7aea0c537",
+                                          "propertyLabel": "FSI_Password"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "dragpoints": [
+                      {
+                        "dragpoint": [
+                          {
+                            "$": {
+                              "name": "shape5.dragpoint1",
+                              "toShape": "shape2",
+                              "x": "480.0",
+                              "y": "104.0"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "$": {
+                      "image": "connectoraction_icon",
+                      "name": "shape2",
+                      "shapetype": "connectoraction",
+                      "userlabel": "",
+                      "x": "496.0",
+                      "y": "96.0"
+                    },
+                    "configuration": [
+                      {
+                        "connectoraction": [
+                          {
+                            "$": {
+                              "actionType": "Send",
+                              "allowDynamicCredentials": "NONE",
+                              "connectionId": "6ccb44cd-d2c6-4e29-8631-7710e22b239f",
+                              "connectorType": "http",
+                              "hideSettings": "false",
+                              "operationId": "c20e5991-4d70-47f7-8e25-847df3e5eb6d",
+                              "parameter-profile": "EMBEDDED|HttpParameterChooser|c20e5991-4d70-47f7-8e25-847df3e5eb6d"
+                            },
+                            "parameters": [
+                              ""
+                            ],
+                            "dynamicProperties": [
+                              ""
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "dragpoints": [
+                      {
+                        "dragpoint": [
+                          {
+                            "$": {
+                              "name": "shape2.dragpoint1",
+                              "toShape": "shape4",
+                              "x": "640.0",
+                              "y": "104.0"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "$": {
+                      "image": "documentproperties_icon",
+                      "name": "shape3",
+                      "shapetype": "documentproperties",
+                      "userlabel": "",
+                      "x": "272.0",
+                      "y": "96.0"
+                    },
+                    "configuration": [
+                      {
+                        "documentproperties": [
+                          {
+                            "documentproperty": [
+                              {
+                                "$": {
+                                  "defaultValue": "",
+                                  "isDynamicCredential": "false",
+                                  "isTradingPartner": "false",
+                                  "name": "Dynamic Document Property - URL",
+                                  "persist": "false",
+                                  "propertyId": "dynamicdocument.URL",
+                                  "shouldEncrypt": "false"
+                                },
+                                "sourcevalues": [
+                                  {
+                                    "parametervalue": [
+                                      {
+                                        "$": {
+                                          "key": "3",
+                                          "valueType": "definedparameter"
+                                        },
+                                        "definedprocessparameter": [
+                                          {
+                                            "$": {
+                                              "componentId": "297ea45e-6a90-4ba8-8a1d-8292af5a7b42",
+                                              "componentName": "PP_Facilities_Vendor",
+                                              "propertyKey": "9c3be2a9-311c-43fe-829a-e613712c5cd0",
+                                              "propertyLabel": "Resourcepath_Login"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "$": {
+                                  "defaultValue": "",
+                                  "isDynamicCredential": "false",
+                                  "isTradingPartner": "false",
+                                  "name": "Dynamic Document Property - SOAPAction",
+                                  "persist": "false",
+                                  "propertyId": "dynamicdocument.SOAPAction",
+                                  "shouldEncrypt": "false"
+                                },
+                                "sourcevalues": [
+                                  {
+                                    "parametervalue": [
+                                      {
+                                        "$": {
+                                          "key": "4",
+                                          "valueType": "definedparameter"
+                                        },
+                                        "definedprocessparameter": [
+                                          {
+                                            "$": {
+                                              "componentId": "297ea45e-6a90-4ba8-8a1d-8292af5a7b42",
+                                              "componentName": "PP_Facilities_Vendor",
+                                              "propertyKey": "2fbf677f-94ad-4ccd-871e-01d5c6a49a04",
+                                              "propertyLabel": "soapaction_login"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "dragpoints": [
+                      {
+                        "dragpoint": [
+                          {
+                            "$": {
+                              "name": "shape3.dragpoint1",
+                              "toShape": "shape5",
+                              "x": "384.0",
+                              "y": "104.0"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "$": {
+                      "image": "map_icon",
+                      "name": "shape6",
+                      "shapetype": "map",
+                      "userlabel": "",
+                      "x": "976.0",
+                      "y": "32.0"
+                    },
+                    "configuration": [
+                      {
+                        "map": [
+                          {
+                            "$": {
+                              "mapId": "9fd02e29-41d8-4032-bb8f-46a72b1db0a1"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "dragpoints": [
+                      {
+                        "dragpoint": [
+                          {
+                            "$": {
+                              "name": "shape6.dragpoint1",
+                              "toShape": "shape7",
+                              "x": "1136.0",
+                              "y": "40.0"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "$": {
+                      "image": "returndocuments_icon",
+                      "name": "shape7",
+                      "shapetype": "returndocuments",
+                      "userlabel": "Login_Error",
+                      "x": "1152.0",
+                      "y": "32.0"
+                    },
+                    "configuration": [
+                      {
+                        "returndocuments": [
+                          {
+                            "$": {
+                              "label": "Login_Error"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "dragpoints": [
+                      ""
+                    ]
+                  },
+                  {
+                    "$": {
+                      "image": "documentproperties_icon",
+                      "name": "shape8",
+                      "shapetype": "documentproperties",
+                      "userlabel": "",
+                      "x": "848.0",
+                      "y": "176.0"
+                    },
+                    "configuration": [
+                      {
+                        "documentproperties": [
+                          {
+                            "documentproperty": [
+                              {
+                                "$": {
+                                  "defaultValue": "",
+                                  "isDynamicCredential": "false",
+                                  "isTradingPartner": "false",
+                                  "name": "Dynamic Process Property - DPP_SessionId",
+                                  "persist": "false",
+                                  "propertyId": "process.DPP_SessionId",
+                                  "shouldEncrypt": "false"
+                                },
+                                "sourcevalues": [
+                                  {
+                                    "parametervalue": [
+                                      {
+                                        "$": {
+                                          "key": "1",
+                                          "valueType": "profile"
+                                        },
+                                        "profileelement": [
+                                          {
+                                            "$": {
+                                              "elementId": "16",
+                                              "elementName": "SessionId (Envelope/Body/AuthenticateResponse/AuthenticateResult/SessionId)",
+                                              "profileId": "992136d3-da44-4f22-994b-f7181624215b",
+                                              "profileType": "profile.xml"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "dragpoints": [
+                      {
+                        "dragpoint": [
+                          {
+                            "$": {
+                              "name": "shape8.dragpoint1",
+                              "toShape": "shape9",
+                              "x": "1040.0",
+                              "y": "184.0"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "$": {
+                      "image": "stop_icon",
+                      "name": "shape9",
+                      "shapetype": "stop",
+                      "userlabel": "",
+                      "x": "1056.0",
+                      "y": "176.0"
+                    },
+                    "configuration": [
+                      {
+                        "stop": [
+                          {
+                            "$": {
+                              "continue": "true"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "dragpoints": [
+                      ""
+                    ]
+                  },
+                  {
+                    "$": {
+                      "image": "documentproperties_icon",
+                      "name": "shape11",
+                      "shapetype": "documentproperties",
+                      "userlabel": "CAFM LogIn Error",
+                      "x": "832.0",
+                      "y": "32.0"
+                    },
+                    "configuration": [
+                      {
+                        "documentproperties": [
+                          {
+                            "documentproperty": [
+                              {
+                                "$": {
+                                  "defaultValue": "",
+                                  "isDynamicCredential": "false",
+                                  "isTradingPartner": "false",
+                                  "name": "Dynamic Process Property - DPP_CafmError",
+                                  "persist": "false",
+                                  "propertyId": "process.DPP_CafmError",
+                                  "shouldEncrypt": "false"
+                                },
+                                "sourcevalues": [
+                                  {
+                                    "parametervalue": [
+                                      {
+                                        "$": {
+                                          "key": "1",
+                                          "valueType": "static"
+                                        },
+                                        "staticparameter": [
+                                          {
+                                            "$": {
+                                              "staticproperty": "CAFM Log In Failed. CAFM Log In API Responded with Blank Response"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "dragpoints": [
+                      {
+                        "dragpoint": [
+                          {
+                            "$": {
+                              "name": "shape11.dragpoint1",
+                              "toShape": "shape6",
+                              "x": "960.0",
+                              "y": "40.0"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bns:processOverrides": [
+      {
+        "Overrides": [
+          {
+            "Connections": [
+              {
+                "ConnectionOverride": [
+                  {
+                    "$": {
+                      "id": "6ccb44cd-d2c6-4e29-8631-7710e22b239f"
+                    },
+                    "field": [
+                      {
+                        "$": {
+                          "id": "url",
+                          "label": "URL",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/@url"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "connectTimeout",
+                          "label": "Connect Timeout",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/@connectTimeout"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "readTimeout",
+                          "label": "Read Timeout",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/@readTimeout"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "useBasicAuth",
+                          "label": "Use Basic Authentication",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/@useBasicAuth"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "user",
+                          "label": "User",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/AuthSettings/@user"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "password",
+                          "label": "Password",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/AuthSettings/@password"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "consumerKey",
+                          "label": "OAuth Consumer Key",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/OAuthSettings/@consumerKey"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "accessToken",
+                          "label": "OAuth Access Token",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/OAuthSettings/@accessToken"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "tokenSecret",
+                          "label": "OAuth Token Secret",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/OAuthSettings/@tokenSecret"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "requestTokenURL",
+                          "label": "OAuth Request Token URL",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/OAuthSettings/@requestTokenURL"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "authorizationURL",
+                          "label": "OAuth Authorization URL",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/OAuthSettings/@authorizationURL"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "accessTokenURL",
+                          "label": "OAuth Access URL",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/OAuthSettings/@accessTokenURL"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "consumerSecret",
+                          "label": "OAuth Consumer Secret",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/OAuthSettings/@consumerSecret"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "realm",
+                          "label": "OAuth Realm",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/OAuthSettings/@realm"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "signatureMethod",
+                          "label": "OAuth Signature Method",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/OAuthSettings/@signatureMethod"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "clientauth",
+                          "label": "Use Client Authorization",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/SSLOptions/@clientauth"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "clientsslalias",
+                          "label": "Client SSL Certificate",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/SSLOptions/@clientsslalias"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "trustServerCert",
+                          "label": "Use Trusted SSL Certificate",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/SSLOptions/@trustServerCert"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "trustedcertalias",
+                          "label": "Trust SSL Server Certificate",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/SSLOptions/@trustedcertalias"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "clientId",
+                          "label": "OAuth2 Client ID",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/OAuth2Settings/credentials/@clientId"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "clientSecret",
+                          "label": "OAuth2 Client Secret",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/OAuth2Settings/credentials/@clientSecret"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "authTokenURL2",
+                          "label": "OAuth2 Authorization Token URL",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/OAuth2Settings/authorizationTokenEndpoint/@url"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "accessTokenURL2",
+                          "label": "OAuth2 Access Token URL",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/OAuth2Settings/accessTokenEndpoint/@url"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "scope",
+                          "label": "OAuth2 Scope",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/OAuth2Settings/scope"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "accessToken2",
+                          "label": "OAuth2 Access Token",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/OAuth2Settings/credentials/@accessToken"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "refreshAuthScheme",
+                          "label": "OAuth2 Refresh Authorization Scheme",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/OAuth2Settings/@refreshAuthScheme"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "accessKeyId",
+                          "label": "Amazon AWS Access Key",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/AwsSettings/credentials/accessKeyId"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "awsSecret",
+                          "label": "Amazon AWS Secret Key",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/AwsSettings/credentials/awsSecret"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "awsRegion",
+                          "label": "Amazon AWS Region",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/AwsSettings/credentials/awsRegion"
+                        }
+                      },
+                      {
+                        "$": {
+                          "id": "customRegion",
+                          "label": "Custom Region",
+                          "overrideable": "true",
+                          "xpath": "HttpSettings/AwsSettings/credentials/customRegion"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "PartnerOverrides": [
+              ""
+            ],
+            "Properties": [
+              ""
+            ],
+            "Extensions": [
+              {
+                "ObjectDefinitions": [
+                  {
+                    "unusedProfiles": [
+                      ""
+                    ]
+                  }
+                ],
+                "DataMaps": [
+                  {
+                    "unusedMaps": [
+                      ""
+                    ]
+                  }
+                ]
+              }
+            ],
+            "CrossReferenceOverrides": [
+              ""
+            ],
+            "PGPOverrides": [
+              ""
+            ],
+            "DefinedProcessPropertyOverrides": [
+              {
+                "OverrideableDefinedProcessPropertyComponent": [
+                  {
+                    "$": {
+                      "componentId": "297ea45e-6a90-4ba8-8a1d-8292af5a7b42"
+                    },
+                    "OverrideableDefinedProcessPropertyValue": [
+                      {
+                        "$": {
+                          "key": "d6f8c52f-c1d2-448a-b013-7119b501c323",
+                          "name": "Resource_Path_Vendor",
+                          "overrideable": "true"
+                        }
+                      },
+                      {
+                        "$": {
+                          "key": "d6ecf8c0-217b-4b43-bc3e-7b506b3bc88f",
+                          "name": "File_Name",
+                          "overrideable": "true"
+                        }
+                      },
+                      {
+                        "$": {
+                          "key": "c6514be1-6009-4ea6-9b0d-3a0198db6df0",
+                          "name": "Has_Attachment",
+                          "overrideable": "true"
+                        }
+                      },
+                      {
+                        "$": {
+                          "key": "549ccadb-c514-477d-bdc8-102d31b4de16",
+                          "name": "To_Email",
+                          "overrideable": "true"
+                        }
+                      },
+                      {
+                        "$": {
+                          "key": "dd55081c-754a-4a5d-bb93-f54e6a9ced01",
+                          "name": "FSI_Username",
+                          "overrideable": "true"
+                        }
+                      },
+                      {
+                        "$": {
+                          "key": "db5c06d8-ce75-4f42-9b8e-11d7aea0c537",
+                          "name": "FSI_Password",
+                          "overrideable": "true"
+                        }
+                      },
+                      {
+                        "$": {
+                          "key": "b748c4e2-ca33-48bb-b923-3f0fa7f5d9fd",
+                          "name": "Login_SoapAction",
+                          "overrideable": "true"
+                        }
+                      },
+                      {
+                        "$": {
+                          "key": "3d7c7488-2d3a-4255-aa0a-3721818ec4c0",
+                          "name": "Resourcepath_logout",
+                          "overrideable": "true"
+                        }
+                      },
+                      {
+                        "$": {
+                          "key": "f11287d1-0264-4137-967f-cdaad9a1515a",
+                          "name": "soapaction_logout",
+                          "overrideable": "true"
+                        }
+                      },
+                      {
+                        "$": {
+                          "key": "9c3be2a9-311c-43fe-829a-e613712c5cd0",
+                          "name": "Resourcepath_Login",
+                          "overrideable": "true"
+                        }
+                      },
+                      {
+                        "$": {
+                          "key": "2fbf677f-94ad-4ccd-871e-01d5c6a49a04",
+                          "name": "soapaction_login",
+                          "overrideable": "true"
+                        }
+                      },
+                      {
+                        "$": {
+                          "key": "fc56d683-dbe1-49f8-bd39-32ad16c4b8f4",
+                          "name": "soapaction_vendor",
+                          "overrideable": "true"
+                        }
+                      },
+                      {
+                        "$": {
+                          "key": "c8e27e47-df10-468e-b793-b5fbbe19f6e6",
+                          "name": "soapAction_VendorUpdate",
+                          "overrideable": "true"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

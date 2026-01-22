@@ -1,0 +1,110 @@
+{
+  "bns:Component": {
+    "$": {
+      "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "xmlns:bns": "http://api.platform.boomi.com/",
+      "xmlns": "",
+      "folderFullPath": "Al Ghurair Investment LLC/Facilities/EQ+ Work Order/Create CAFM Work Order",
+      "componentId": "dc3b6b85-848d-471d-8c76-ed3b7dea0fbd",
+      "version": "5",
+      "name": "GetInstructionSetsByDto_CAFM",
+      "type": "connector-action",
+      "subType": "http",
+      "createdDate": "2025-02-20T11:39:59Z",
+      "createdBy": "gowri.sankar@al-ghurair.com",
+      "modifiedDate": "2025-02-21T07:27:39Z",
+      "modifiedBy": "gowri.sankar@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Create CAFM Work Order",
+      "folderId": "Rjo3NDI4MzIx",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "bns:encryptedValues": [
+      ""
+    ],
+    "bns:description": [
+      ""
+    ],
+    "bns:object": [
+      {
+        "Operation": [
+          {
+            "Archiving": [
+              {
+                "$": {
+                  "directory": "",
+                  "enabled": "false"
+                }
+              }
+            ],
+            "Configuration": [
+              {
+                "HttpSendAction": [
+                  {
+                    "$": {
+                      "dataContentType": "text/xml",
+                      "followRedirects": "false",
+                      "methodType": "POST",
+                      "mimePassthrough": "false",
+                      "requestProfile": "589e623c-b91f-4d3c-a5aa-3c767033abc5",
+                      "requestProfileType": "XML",
+                      "responseProfile": "5c2f13dd-3e51-4a7c-867b-c801aaa35562",
+                      "responseProfileType": "XML",
+                      "returnErrors": "true",
+                      "returnMimeResponse": "false",
+                      "returnResponses": "true"
+                    },
+                    "requestHeaders": [
+                      {
+                        "header": [
+                          {
+                            "$": {
+                              "headerName": "SOAPAction",
+                              "isVariable": "true",
+                              "key": "1000000"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "pathElements": [
+                      {
+                        "element": [
+                          {
+                            "$": {
+                              "isVariable": "true",
+                              "key": "2000000",
+                              "name": "URL"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "responseHeaderMapping": [
+                      ""
+                    ],
+                    "reflectHeaders": [
+                      ""
+                    ]
+                  }
+                ]
+              }
+            ],
+            "Tracking": [
+              {
+                "TrackedFields": [
+                  ""
+                ]
+              }
+            ],
+            "Caching": [
+              ""
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
