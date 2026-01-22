@@ -18,6 +18,7 @@
 - ❌ Guess folder locations
 - ❌ Skip interface implementations
 - ❌ Ignore naming conventions
+- ❌ Use 'var' keyword (NEVER use 'var' - always declare explicit types)
 
 **⚠️ COMMON MISTAKES TO AVOID:**
 - Creating Extensions in Helpers/ directory (WRONG - use Extensions/)
@@ -25,6 +26,7 @@
 - Missing IRequestSysDTO on *ReqDTO (WRONG - MANDATORY interface)
 - Missing IDownStreamRequestDTO on *HandlerReqDTO (WRONG - MANDATORY interface)
 - Services at root level (WRONG - must be in Implementations/<Vendor>/Services/)
+- Using 'var' keyword (WRONG - NEVER use 'var', always use explicit types)
 
 **📖 IMPLEMENTATION WORKFLOW:**
 ```
@@ -231,7 +233,7 @@ builder.UseMiddleware<CustomAuthenticationMiddleware>(); // 3. THIRD - handles t
 ## 2. AUTHENTICATION APPROACHES
 
 ### Approach 1: Credentials-Per-Request (No Middleware)
-**When:** API key/credentials with every request, no token lifecycle | **How:** `var headers = new Dictionary<string, string> { { "X-API-Key", _appConfigs.ApiKey } };`
+**When:** API key/credentials with every request, no token lifecycle | **How:** `Dictionary<string, string> headers = new Dictionary<string, string> { { "X-API-Key", _appConfigs.ApiKey } };`
 
 ### Approach 2: Token/Session-Based (Middleware Required)
 **When:** Separate auth endpoint, returns session/token with lifecycle | **Components:** AuthenticateAtomicHandler + LogoutAtomicHandler + CustomAuthenticationAttribute + CustomAuthenticationMiddleware + RequestContext
@@ -271,8 +273,8 @@ public class LogoutAtomicHandler : IAtomicHandler<HttpResponseSnapshot> { /* Sim
 ```csharp
 public class CustomAuthenticationMiddleware : IFunctionsWorkerMiddleware { private readonly ILogger<CustomAuthenticationMiddleware> _logger; private readonly AppConfigs _appConfigs; private readonly AuthenticateAtomicHandler _authenticateAtomicHandler; private readonly LogoutAtomicHandler _logoutAtomicHandler;
     public CustomAuthenticationMiddleware(ILogger<CustomAuthenticationMiddleware> logger, IOptions<AppConfigs> options, AuthenticateAtomicHandler authenticateAtomicHandler, LogoutAtomicHandler logoutAtomicHandler) { _logger = logger; _appConfigs = options.Value; _authenticateAtomicHandler = authenticateAtomicHandler; _logoutAtomicHandler = logoutAtomicHandler; }
-    public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next) { if (!ShouldApplyAuthentication(context)) { await next(context); return; } string sessionId = string.Empty; try { var request = new AuthenticationRequestDTO { Username = _appConfigs.Username ?? "", Password = _appConfigs.Password ?? "" }; HttpResponseSnapshot authResponse = await _authenticateAtomicHandler.Handle(request); if (!authResponse.IsSuccessStatusCode) throw new DownStreamApiFailureException(...); AuthenticationResponseDTO? authAPIRes = SOAPHelper.DeserializeSoapResponse<AuthenticationResponseDTO>(authResponse.Content!); sessionId = authAPIRes?.SessionId ?? string.Empty; if (!string.IsNullOrEmpty(sessionId)) RequestContext.SetSessionId(sessionId); await next(context); } finally { if (!string.IsNullOrEmpty(sessionId)) await _logoutAtomicHandler.Handle(new LogoutRequestDTO { SessionId = sessionId }); } }
-    private bool ShouldApplyAuthentication(FunctionContext context) { var entryPoint = context.FunctionDefinition.EntryPoint; var lastDot = entryPoint.LastIndexOf('.'); var typeName = entryPoint.Substring(0, lastDot); var methodName = entryPoint.Substring(lastDot + 1); return Type.GetType(typeName)?.GetMethod(methodName)?.GetCustomAttribute<CustomAuthenticationAttribute>() != null; } }
+    public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next) { if (!ShouldApplyAuthentication(context)) { await next(context); return; } string sessionId = string.Empty; try { AuthenticationRequestDTO request = new AuthenticationRequestDTO { Username = _appConfigs.Username ?? "", Password = _appConfigs.Password ?? "" }; HttpResponseSnapshot authResponse = await _authenticateAtomicHandler.Handle(request); if (!authResponse.IsSuccessStatusCode) throw new DownStreamApiFailureException(...); AuthenticationResponseDTO? authAPIRes = SOAPHelper.DeserializeSoapResponse<AuthenticationResponseDTO>(authResponse.Content!); sessionId = authAPIRes?.SessionId ?? string.Empty; if (!string.IsNullOrEmpty(sessionId)) RequestContext.SetSessionId(sessionId); await next(context); } finally { if (!string.IsNullOrEmpty(sessionId)) await _logoutAtomicHandler.Handle(new LogoutRequestDTO { SessionId = sessionId }); } }
+    private bool ShouldApplyAuthentication(FunctionContext context) { string entryPoint = context.FunctionDefinition.EntryPoint; int lastDot = entryPoint.LastIndexOf('.'); string typeName = entryPoint.Substring(0, lastDot); string methodName = entryPoint.Substring(lastDot + 1); return Type.GetType(typeName)?.GetMethod(methodName)?.GetCustomAttribute<CustomAuthenticationAttribute>() != null; } }
 ```
 
 ### D. Middleware - Token-Based (with Cache, no Logout)
@@ -283,7 +285,7 @@ public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next
         CacheKey key = CacheKey.CreateCacheKey(["AUTH_TOKEN"]); string? authToken = await key.GetStringAsync();
         if (!string.IsNullOrEmpty(authToken)) { RequestContext.SetToken(authToken); await next(context); return; }
         Dictionary<string, string?> secrets = await _keyVaultReader.GetAuthSecretsAsync();
-        var request = new AuthenticationRequestDTO { ClientId = secrets.GetValueOrDefault("ClientId"), ClientSecret = secrets.GetValueOrDefault("ClientSecret") };
+        AuthenticationRequestDTO request = new AuthenticationRequestDTO { ClientId = secrets.GetValueOrDefault("ClientId"), ClientSecret = secrets.GetValueOrDefault("ClientSecret") };
         HttpResponseSnapshot authResponse = await _authenticateAtomicHandler.Handle(request);
         if (!authResponse.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
         AuthenticationResponseDTO? authAPIRes = JsonSerializer.Deserialize<AuthenticationResponseDTO>(authResponse.Content!);
@@ -299,7 +301,7 @@ public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next
 ```csharp
 [Function("GetData")] [CustomAuthentication] // ← Apply attribute
 public async Task<BaseResponseDTO> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req) {
-    var request = await req.ReadBodyAsync<GetDataReqDTO>(); request.ValidateAPIRequestParameters();
+    GetDataReqDTO? request = await req.ReadBodyAsync<GetDataReqDTO>(); request.ValidateAPIRequestParameters();
     string? sessionId = RequestContext.GetSessionId(); string? token = RequestContext.GetToken(); // No FunctionContext param needed
     return await _service.GetData(request);
 }
@@ -357,7 +359,7 @@ public async Task<HttpResponseSnapshot> ExecuteCustomSoapRequestAsync(string ope
 ## 6. PROGRAM.CS REGISTRATION
 
 ```csharp
-var builder = FunctionsApplication.CreateBuilder(args);
+FunctionsApplicationBuilder builder = FunctionsApplication.CreateBuilder(args);
 // 0. Logging (FIRST!)
 builder.Services.AddApplicationInsightsTelemetryWorkerService().ConfigureFunctionsApplicationInsights(); builder.Logging.AddConsole();
 // 1. Configuration
@@ -450,9 +452,14 @@ ServiceLocator.ServiceProvider = builder.Services.BuildServiceProvider(); builde
 
 ## 1. CORE PRINCIPLES
 - **Purpose:** HTTP-triggered entry points for System Layer (thin layer, NO business logic)
-- **Flow:** `Function → Service → Handler → Atomic Handler → External API`
+- **Flow:** 
+  - `Function → Service → Handler → Atomic Handler → External API` (when SOR call exists - MANDATORY orchestration)
+  - `Function → [direct logic]` (when NO SOR call AND no orchestration needed)
 - **Rule:** ONE function = ONE business operation Process Layer needs to call independently
 - **Return:** `Task<BaseResponseDTO>` (MANDATORY)
+- **🔴 CRITICAL - When to Create Handler/Service/Abstraction:** 
+  - ✅ **MANDATORY - Create Handler/Service/Abstraction:** When SOR call exists (ALWAYS requires orchestration - Handler/Service/Abstraction/Atomic Handler)
+  - ✅ **Function-level only:** When NO SOR call AND no orchestration needed - handle directly at Function level (NO Handler/Service/Abstraction/Atomic Handler)
 
 ## 2. NAMING & STRUCTURE
 - **Class:** `<Operation>API` (e.g., `GetEntityDetailAPI`, `CreateRecordAPI`)
@@ -468,7 +475,7 @@ public async Task<BaseResponseDTO> Run(
     [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "entity/details")] HttpRequest req)
 ```
 - **AuthorizationLevel:** Use `Anonymous` (auth via middleware or credentials)
-- **HTTP Methods:** `"post"` (most common), `"get"`, `"put"`, `"delete"`
+- **HTTP Methods:** `"post"` (most common), `"get"`, `"put"`, `"delete"` | **🔴 CRITICAL:** ONE verb per action - NEVER multiple verbs like `"get", "post"` in same HttpTrigger
 - **Route:** Optional (defaults to function name), format: `"resource/operation"` or `"resource/{param}"`
 - **Route Parameters:** Extract as method params: `HttpRequest req, string type`
 
@@ -477,6 +484,7 @@ public async Task<BaseResponseDTO> Run(
 - **Required:** `FunctionContext context` (ALWAYS - for Core framework compliance)
 - **Route Params:** `string paramName` (if route has `{paramName}`)
 - **IMPORTANT:** FunctionContext is passed through Function → Service → Handler for framework compliance, but session/token management uses `RequestContext` (AsyncLocal pattern)
+- **Request Headers:** Only extract headers that are REQUIRED and sent by Process/Experience Layer | ❌ DON'T extract headers that are not required or not sent by Process/Experience Layer
 
 ## 5. REQUEST HANDLING PATTERN (MANDATORY SEQUENCE)
 ```csharp
@@ -525,14 +533,39 @@ public static class RequestContext { private static readonly AsyncLocal<string?>
 ```
 **Benefits:** No `FunctionContext` param needed, thread-safe (`AsyncLocal<T>`), cleaner code
 
-## 8. SERVICE DELEGATION (MANDATORY)
+## 8. SERVICE DELEGATION (CONDITIONAL)
+
+### 8.1 When Orchestration Needed (Handler/Service/Abstraction Required)
 ```csharp
 public class GetEntityDetailAPI { private readonly ILogger<GetEntityDetailAPI> _logger; private readonly IEntityMgmt _entityMgmt;
     public GetEntityDetailAPI(ILogger<GetEntityDetailAPI> logger, IEntityMgmt entityMgmt) { _logger = logger; _entityMgmt = entityMgmt; }
     [Function("GetEntityDetail")] public async Task<BaseResponseDTO> Run([HttpTrigger...] HttpRequest req) { /* ... validation ... */ return await _entityMgmt.GetEntityDetail(request); }
 }
 ```
-**Rule:** Functions ONLY: accept request, validate, delegate to service, return result (NO orchestration, NO transformations, NO external calls)
+**Use When:** Multiple atomic operations | Data transformations | Response mapping | Error handling logic | Same-SOR orchestration
+
+### 8.2 When SOR Call Exists (MANDATORY - Handler/Service/Abstraction Required)
+**🔴 CRITICAL:** If SOR call exists, you MUST create Handler/Service/Abstraction/Atomic Handler - there is NO direct Function → Atomic Handler path.
+**Rule:** ALL SOR calls require full orchestration: Function → Service → Handler → Atomic Handler → External API
+
+### 8.2 When NO SOR Call AND No Orchestration (Function-Level Only)
+```csharp
+public class ValidateRequestAPI { private readonly ILogger<ValidateRequestAPI> _logger;
+    public ValidateRequestAPI(ILogger<ValidateRequestAPI> logger) { _logger = logger; }
+    [Function("ValidateRequest")] public async Task<BaseResponseDTO> Run([HttpTrigger...] HttpRequest req, FunctionContext context) {
+        ValidateRequestReqDTO? request = await req.ReadBodyAsync<ValidateRequestReqDTO>();
+        if (request == null) throw new NoRequestBodyException(...);
+        request.ValidateAPIRequestParameters();
+        // Direct logic at Function level - no SOR call, no orchestration
+        bool isValid = ValidateBusinessRules(request);
+        if (!isValid) throw new BusinessCaseFailureException(...);
+        return new BaseResponseDTO(message: InfoConstants.VALIDATION_SUCCESS, data: new ValidateRequestResDTO { IsValid = true }, errorCode: null);
+    }
+    private bool ValidateBusinessRules(ValidateRequestReqDTO request) { /* validation logic */ return true; }
+}
+```
+**Use When:** NO SOR call | NO orchestration | Simple validation/logic | No external API calls
+**Rule:** Handle directly at Function level - NO Handler/Service/Abstraction/Atomic Handler needed
 
 ## 9. ERROR HANDLING
 - **❌ DON'T** wrap in try-catch (middleware handles all exceptions)
@@ -565,7 +598,7 @@ _logger.LogInformation("msg");     // ❌ DON'T use ILogger methods directly
 
 ## 12. DEPENDENCY INJECTION (Program.cs)
 ```csharp
-var builder = FunctionsApplication.CreateBuilder(args);
+FunctionsApplicationBuilder builder = FunctionsApplication.CreateBuilder(args);
 builder.UseMiddleware<ExecutionTimingMiddleware>(); builder.UseMiddleware<ExceptionHandlerMiddleware>(); builder.UseMiddleware<CustomAuthenticationMiddleware>();  // FIXED ORDER
 builder.Services.AddScoped<IEntityMgmt, EntityMgmtService>(); builder.Services.AddScoped<GetEntityDetailHandler>(); builder.Services.AddScoped<GetEntityDetailAtomicHandler>();  // Scoped
 builder.Services.AddSingleton<CustomRestClient>(); builder.Services.Configure<AppConfigs>(builder.Configuration.GetSection("AppConfigs"));  // Singleton
@@ -602,9 +635,13 @@ builder.Build().Run();
 **🚨 BEFORE CREATING:** Read ALL rules in this section before creating Services/Interfaces. Verify folder location (Implementations/<Vendor>/Services/ NOT root), interface naming, and dependency injection patterns.
 
 ## 1. OVERVIEW
-- **Flow:** `Function → Interface (IEntityMgmt) → Service (EntityMgmtService) → Handler → Atomic Handler → External API`
+- **Flow:** 
+  - `Function → Interface (IEntityMgmt) → Service (EntityMgmtService) → Handler → Atomic Handler → External API` (when SOR call exists - MANDATORY orchestration)
+  - `Function → [direct logic]` (when NO SOR call AND no orchestration needed)
 - **Abstractions:** Define contracts, root `Abstractions/` folder, injected into Functions | **Services:** Implement interfaces, `Implementations/<VendorName>/Services/`, delegate to Handlers (NO external calls)
-- **Rule:** "Services are abstraction boundaries between Functions and Handlers" | "Services implement interfaces, Handlers use concrete classes"
+- **Rule:** "Services are abstraction boundaries between Functions and Handlers" | "Services implement interfaces, Handlers use concrete classes" | **🔴 CRITICAL:** 
+  - ✅ **MANDATORY - Create Handler/Service/Abstraction:** When SOR call exists (ALWAYS requires full orchestration - Handler/Service/Abstraction/Atomic Handler)
+  - ✅ **Function-level only:** When NO SOR call AND no orchestration needed - handle directly at Function level (NO Handler/Service/Abstraction/Atomic Handler)
 
 ## 2. ABSTRACTIONS (INTERFACES)
 
@@ -652,7 +689,7 @@ public interface IEntityMgmt {
 ```csharp
 namespace <Namespace>.Implementations.<VendorName>.Services { public class EntityMgmtService : IEntityMgmt { private readonly ILogger<EntityMgmtService> _logger; private readonly GetEntityDetailHandler _getEntityDetailHandler;
     public EntityMgmtService(ILogger<EntityMgmtService> logger, GetEntityDetailHandler handler) { _logger = logger; _getEntityDetailHandler = handler; }
-    public async Task<BaseResponseDTO> GetEntityDetail(GetEntityDetailReqDTO request) { _logger.Info("EntityMgmtService.GetEntityDetail called"); try { return await _getEntityDetailHandler.HandleAsync(request); } catch (Exception ex) { _logger.Error(ex, "Failed to get entity detail"); throw; } } } }
+    public async Task<BaseResponseDTO> GetEntityDetail(GetEntityDetailReqDTO request) { _logger.Info("EntityMgmtService.GetEntityDetail called"); return await _getEntityDetailHandler.HandleAsync(request); } } }
 ```
 
 ## 4. FOLDER STRUCTURE
@@ -668,7 +705,7 @@ namespace <Namespace>.Implementations.<VendorName>.Services { public class Entit
 
 ## 5. DEPENDENCY INJECTION (Program.cs)
 ```csharp
-var builder = FunctionsApplication.CreateBuilder(args);
+FunctionsApplicationBuilder builder = FunctionsApplication.CreateBuilder(args);
 builder.Services.Configure<AppConfigs>(builder.Configuration.GetSection("AppConfigs")); builder.Services.AddSingleton<CustomRestClient>();
 builder.Services.AddScoped<IEntityMgmt, EntityMgmtService>(); builder.Services.AddScoped<IRecordMgmt, RecordMgmtService>();  // WITH interfaces
 builder.Services.AddScoped<GetEntityDetailHandler>(); builder.Services.AddScoped<GetEntityDetailAtomicHandler>();  // Concrete only
@@ -685,8 +722,8 @@ builder.Services.AddApplicationInsightsTelemetryWorkerService().ConfigureFunctio
 - **❌ NEVER Inject:** Atomic Handlers directly (use Handlers), HTTP Clients directly (use Handlers/Atomic Handlers), Repository patterns (not used)
 
 ## 7. BUSINESS COORDINATION VS LOGIC
-**✅ Allowed:** Simple delegation: `return await _handler.HandleAsync(request);` | Error handling: try-catch + log + rethrow | Method entry/exit logging
-**❌ NOT Allowed (Process Layer):** Checking existence + deciding: `if (exists) return ...` | Conditional execution: `if (shouldProcess) await ...` | Transformations based on business rules | Validation with business decisions | **Rule:** "if (X exists) skip Y → Process Layer" (Line 1066) - Services ONLY delegate, NO decisions
+**✅ Allowed:** Simple delegation: `return await _handler.HandleAsync(request);` | Method entry/exit logging
+**❌ NOT Allowed:** Try-catch blocks (NEVER use - exception handling managed at middleware level) | Checking existence + deciding: `if (exists) return ...` | Conditional execution: `if (shouldProcess) await ...` | Transformations based on business rules | Validation with business decisions | **Rule:** "if (X exists) skip Y → Process Layer" (Line 1066) - Services ONLY delegate, NO decisions
 
 ## 8. LOGGING
 `using Core.Extensions;` | ✅ `_logger.Info("msg")`, `_logger.Error(ex, "msg")`, `_logger.Warn("msg")` | ❌ `_logger.LogInformation()` (DON'T use ILogger directly)
@@ -740,7 +777,7 @@ public class GetEntityDetailHandler : IBaseHandler<GetEntityDetailReqDTO> {
     public GetEntityDetailHandler(ILogger<GetEntityDetailHandler> logger, GetEntityDetailAtomicHandler handler) { _logger = logger; _getEntityDetailAtomicHandler = handler; }
     public async Task<BaseResponseDTO> HandleAsync(GetEntityDetailReqDTO request) {
         _logger.Info("[System Layer]-Initiating Get Entity Detail");
-        var atomicRequest = new GetEntityDetailHandlerReqDTO { EntityId = request.EntityId };
+        GetEntityDetailHandlerReqDTO atomicRequest = new GetEntityDetailHandlerReqDTO { EntityId = request.EntityId };
         HttpResponseSnapshot response = await _getEntityDetailAtomicHandler.Handle(atomicRequest);
         if (!response.IsSuccessStatusCode) { _logger.Error($"Failed: {response.StatusCode}"); throw new DownStreamApiFailureException(statusCode: (HttpStatusCode)response.StatusCode, error: ErrorConstants.GET_ENTITY_FAILURE, errorDetails: [$"Response: {response.Content}"], stepName: "GetEntityDetailHandler.cs / HandleAsync"); }
         GetEntityDetailApiResDTO? apiResponse = RestApiHelper.DeserializeJsonResponse<GetEntityDetailApiResDTO>(response.Content!);
@@ -774,22 +811,22 @@ public class CreateEntityHandler : IBaseHandler<CreateEntityReqDTO> {
     
     public async Task<BaseResponseDTO> HandleAsync(CreateEntityReqDTO request) {
         // Get Type (internal lookup)
-        var typeResp = await _getType.Handle(new GetEntityTypeHandlerReqDTO { TypeCode = request.TypeCode });
+        HttpResponseSnapshot typeResp = await _getType.Handle(new GetEntityTypeHandlerReqDTO { TypeCode = request.TypeCode });
         if (!typeResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
-        var typeData = RestApiHelper.DeserializeJsonResponse<EntityTypeApiResDTO>(typeResp.Content);
+        EntityTypeApiResDTO? typeData = RestApiHelper.DeserializeJsonResponse<EntityTypeApiResDTO>(typeResp.Content);
         
         // Get Category (internal lookup)
-        var catResp = await _getCategory.Handle(new GetCategoryHandlerReqDTO { CategoryCode = request.CategoryCode });
+        HttpResponseSnapshot catResp = await _getCategory.Handle(new GetCategoryHandlerReqDTO { CategoryCode = request.CategoryCode });
         if (!catResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
-        var catData = RestApiHelper.DeserializeJsonResponse<CategoryApiResDTO>(catResp.Content);
+        CategoryApiResDTO? catData = RestApiHelper.DeserializeJsonResponse<CategoryApiResDTO>(catResp.Content);
         
         // Create Entity (aggregate + create)
-        var createResp = await _create.Handle(new CreateEntityHandlerReqDTO { 
+        HttpResponseSnapshot createResp = await _create.Handle(new CreateEntityHandlerReqDTO { 
             EntityTypeId = typeData.TypeId, 
             CategoryId = catData.CategoryId 
         });
         if (!createResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
-        var apiResp = RestApiHelper.DeserializeJsonResponse<CreateEntityApiResDTO>(createResp.Content);
+        CreateEntityApiResDTO? apiResp = RestApiHelper.DeserializeJsonResponse<CreateEntityApiResDTO>(createResp.Content);
         
         return new BaseResponseDTO(message: InfoConstants.CREATE_ENTITY_SUCCESS, data: CreateEntityResDTO.Map(apiResp));
     }
@@ -807,9 +844,9 @@ public class CreateEntityHandler : IBaseHandler<CreateEntityReqDTO> {
     
     public async Task<BaseResponseDTO> HandleAsync(CreateEntityReqDTO request) {
         // Check if entity exists
-        var checkResp = await _getEntity.Handle(new GetEntityByIdHandlerReqDTO { EntityId = request.EntityId });
+        HttpResponseSnapshot checkResp = await _getEntity.Handle(new GetEntityByIdHandlerReqDTO { EntityId = request.EntityId });
         if (!checkResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
-        var existing = RestApiHelper.DeserializeJsonResponse<EntityApiResDTO>(checkResp.Content);
+        EntityApiResDTO? existing = RestApiHelper.DeserializeJsonResponse<EntityApiResDTO>(checkResp.Content);
         
         // Simple if/else: if exists → return, if not → create
         if (!string.IsNullOrEmpty(existing?.EntityId)) {
@@ -817,21 +854,21 @@ public class CreateEntityHandler : IBaseHandler<CreateEntityReqDTO> {
         }
         
         // Entity doesn't exist → enrich + create
-        var lookupAResp = await _getLookupA.Handle(new GetLookupDataAHandlerReqDTO { Code = request.LookupCodeA });
+        HttpResponseSnapshot lookupAResp = await _getLookupA.Handle(new GetLookupDataAHandlerReqDTO { Code = request.LookupCodeA });
         if (!lookupAResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
-        var lookupA = RestApiHelper.DeserializeJsonResponse<LookupDataAApiResDTO>(lookupAResp.Content);
+        LookupDataAApiResDTO? lookupA = RestApiHelper.DeserializeJsonResponse<LookupDataAApiResDTO>(lookupAResp.Content);
         
-        var lookupBResp = await _getLookupB.Handle(new GetLookupDataBHandlerReqDTO { Code = request.LookupCodeB });
+        HttpResponseSnapshot lookupBResp = await _getLookupB.Handle(new GetLookupDataBHandlerReqDTO { Code = request.LookupCodeB });
         if (!lookupBResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
-        var lookupB = RestApiHelper.DeserializeJsonResponse<LookupDataBApiResDTO>(lookupBResp.Content);
+        LookupDataBApiResDTO? lookupB = RestApiHelper.DeserializeJsonResponse<LookupDataBApiResDTO>(lookupBResp.Content);
         
-        var createResp = await _createEntity.Handle(new CreateEntityHandlerReqDTO { 
+        HttpResponseSnapshot createResp = await _createEntity.Handle(new CreateEntityHandlerReqDTO { 
             EntityId = request.EntityId,
             LookupIdA = lookupA.LookupId,
             LookupIdB = lookupB.LookupId
         });
         if (!createResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
-        var apiResp = RestApiHelper.DeserializeJsonResponse<CreateEntityApiResDTO>(createResp.Content);
+        CreateEntityApiResDTO? apiResp = RestApiHelper.DeserializeJsonResponse<CreateEntityApiResDTO>(createResp.Content);
         
         return new BaseResponseDTO(message: InfoConstants.CREATE_ENTITY_SUCCESS, data: EntityResDTO.Map(apiResp));
     }
@@ -847,13 +884,13 @@ public class CreateItemHandler : IBaseHandler<CreateItemReqDTO> {
     
     public async Task<BaseResponseDTO> HandleAsync(CreateItemReqDTO request) {
         // Create item
-        var itemResp = await _createItem.Handle(new CreateItemHandlerReqDTO { ItemData = request.ItemData });
+        HttpResponseSnapshot itemResp = await _createItem.Handle(new CreateItemHandlerReqDTO { ItemData = request.ItemData });
         if (!itemResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
-        var item = RestApiHelper.DeserializeJsonResponse<ItemApiResDTO>(itemResp.Content);
+        ItemApiResDTO? item = RestApiHelper.DeserializeJsonResponse<ItemApiResDTO>(itemResp.Content);
         
         // Simple if: if flag → link
         if (request.ShouldLinkRelated) {
-            var linkResp = await _linkRelated.Handle(new LinkRelatedEntityHandlerReqDTO { ItemId = item.ItemId });
+            HttpResponseSnapshot linkResp = await _linkRelated.Handle(new LinkRelatedEntityHandlerReqDTO { ItemId = item.ItemId });
             if (!linkResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
         }
         
@@ -1015,7 +1052,7 @@ if (apiResponse == null || apiResponse.Items.Count < 1) throw new NotFoundExcept
 // Pattern 1: Simple (in ValidateAPIRequestParameters())
 if (string.IsNullOrWhiteSpace(EntityId)) throw new RequestValidationFailureException() { ErrorProperties = [ErrorConstants.INVALID_ENTITY_ID] };
 // Pattern 2: Detailed (collect all errors)
-var errors = new List<string>(); if (string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId required"); if (!Email.Contains("@")) errors.Add("Invalid email"); if (errors.Count > 0) throw new RequestValidationFailureException(error: ErrorConstants.SYS_VAL_0001, errorDetails: errors, stepName: "GetEntityReqDTO / ValidateAPIRequestParameters");
+List<string> errors = new List<string>(); if (string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId required"); if (!Email.Contains("@")) errors.Add("Invalid email"); if (errors.Count > 0) throw new RequestValidationFailureException(error: ErrorConstants.SYS_VAL_0001, errorDetails: errors, stepName: "GetEntityReqDTO / ValidateAPIRequestParameters");
 ```
 
 **2. NoRequestBodyException (400 - Missing Request Body)**
@@ -1107,7 +1144,7 @@ public async Task<BaseResponseDTO> HandleAsync(GetEntityReqDTO request) {
 ### Error Logging
 ```csharp
 if (!response.IsSuccessStatusCode) { _logger.Error($"Failed: {response.StatusCode}"); throw new DownStreamApiFailureException(...); }
-try { await _atomicHandler.Handle(request); } catch (Exception ex) { _logger.Error(ex, "Failed"); throw; }
+// ❌ NEVER use try-catch - exception handling managed at middleware level
 ```
 
 ### Forbidden
@@ -1137,14 +1174,14 @@ try { await _atomicHandler.Handle(request); } catch (Exception ex) { _logger.Err
 using Cache.DTO; using Cache.Handlers; using Cache.Key; using Core.DTOs; using Core.Extensions; using Core.SystemLayer.Handlers; using Core.SystemLayer.DTOs;
 public class GetEntityDetailHandler : ICacheableHandler<GetEntityDetailReqDTO> { private readonly ILogger<GetEntityDetailHandler> _logger; private readonly GetEntityDetailAtomicHandler _atomicHandler;
     public GetEntityDetailHandler(ILogger<GetEntityDetailHandler> logger, GetEntityDetailAtomicHandler handler) { _logger = logger; _atomicHandler = handler; }
-    public async Task<BaseResponseDTO> HandleAsync(GetEntityDetailReqDTO request) { _logger.Info("[System Layer]-Initiating Get Entity Detail"); var atomicRequest = new GetEntityDetailHandlerReqDTO { EntityId = request.EntityId }; HttpResponseSnapshot response = await _atomicHandler.Handle(atomicRequest); if (!response.IsSuccessStatusCode) throw new DownStreamApiFailureException(...); GetEntityDetailApiResDTO? apiResponse = RestApiHelper.DeserializeJsonResponse<GetEntityDetailApiResDTO>(response.Content!); _logger.Info("[System Layer]-Completed"); return new BaseResponseDTO(message: InfoConstants.GET_ENTITY_SUCCESS, data: GetEntityDetailResDTO.Map(apiResponse), errorCode: null); }
+    public async Task<BaseResponseDTO> HandleAsync(GetEntityDetailReqDTO request) { _logger.Info("[System Layer]-Initiating Get Entity Detail"); GetEntityDetailHandlerReqDTO atomicRequest = new GetEntityDetailHandlerReqDTO { EntityId = request.EntityId }; HttpResponseSnapshot response = await _atomicHandler.Handle(atomicRequest); if (!response.IsSuccessStatusCode) throw new DownStreamApiFailureException(...); GetEntityDetailApiResDTO? apiResponse = RestApiHelper.DeserializeJsonResponse<GetEntityDetailApiResDTO>(response.Content!); _logger.Info("[System Layer]-Completed"); return new BaseResponseDTO(message: InfoConstants.GET_ENTITY_SUCCESS, data: GetEntityDetailResDTO.Map(apiResponse), errorCode: null); }
     // ICacheableHandler<T> provides HandleCacheAsync() default implementation (5min TTL)
 }
 ```
 
 ### Usage in Function (Cached Call)
 ```csharp
-[Function("GetEntityDetail")] public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req) { GetEntityDetailReqDTO? request = await RestApiHelper.DeserializeHttpRequestAsync<GetEntityDetailReqDTO>(req); request?.ValidateAPIRequestParameters(); BaseResponseDTO response = await ((ICacheableHandler<GetEntityDetailReqDTO>)_handler).HandleCacheAsync(request!); return new OkObjectResult(response); }
+[Function("GetEntityDetail")] public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req) { GetEntityDetailReqDTO? request = await RestApiHelper.DeserializeHttpRequestAsync<GetEntityDetailReqDTO>(req); request?.ValidateAPIRequestParameters(); BaseResponseDTO response = await ((ICacheableHandler<GetEntityDetailReqDTO>)_handler).HandleCacheAsync(request!); return new OkObjectResult(response); }
 ```
 
 ### Rules
@@ -1190,7 +1227,7 @@ builder.Services.AddScoped<GetEntityDetailAtomicHandler>(); builder.Services.Add
 
 ### Complete Registration Order
 ```csharp
-var builder = FunctionsApplication.CreateBuilder(args);
+FunctionsApplicationBuilder builder = FunctionsApplication.CreateBuilder(args);
 // 0. Logging (FIRST)
 builder.Services.AddApplicationInsightsTelemetryWorkerService().ConfigureFunctionsApplicationInsights(); builder.Logging.AddConsole(); builder.Logging.AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Trace);
 // 1. Configuration
@@ -1290,7 +1327,7 @@ namespace <Namespace>.Implementations.<Vendor>.Handlers {
         public GetEntityDetailHandler(ILogger<GetEntityDetailHandler> logger, GetEntityDetailAtomicHandler handler) { _logger = logger; _getEntityDetailAtomicHandler = handler; }
         public async Task<BaseResponseDTO> HandleAsync(GetEntityDetailReqDTO request) {
             _logger.Info("[System Layer]-Initiating Get Entity Detail");
-            var atomicRequest = new GetEntityDetailHandlerReqDTO { EntityId = request.EntityId, IncludeDetails = request.IncludeDetails };
+            GetEntityDetailHandlerReqDTO atomicRequest = new GetEntityDetailHandlerReqDTO { EntityId = request.EntityId, IncludeDetails = request.IncludeDetails };
             HttpResponseSnapshot response = await _getEntityDetailAtomicHandler.Handle(atomicRequest);
             if (!response.IsSuccessStatusCode) { _logger.Error($"Failed: {response.StatusCode}"); throw new DownStreamApiFailureException(statusCode: (HttpStatusCode)response.StatusCode, error: ErrorConstants.GET_ENTITY_FAILURE, errorDetails: [$"Response: {response.Content}"], stepName: "GetEntityDetailHandler.cs / HandleAsync"); }
             GetEntityDetailApiResDTO? apiResponse = RestApiHelper.DeserializeJsonResponse<GetEntityDetailApiResDTO>(response.Content!);
@@ -1330,7 +1367,7 @@ namespace Core.SystemLayer.Handlers { public interface IAtomicHandler<T> { Task<
 **✅ CORRECT:**
 ```csharp
 public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamRequestDTO) { // ← Interface parameter (MANDATORY)
-    var requestDTO = downStreamRequestDTO as GetEntityReqDTO ?? throw new ArgumentException("Invalid DTO type"); // 1. Cast (MANDATORY)
+    GetEntityReqDTO requestDTO = downStreamRequestDTO as GetEntityReqDTO ?? throw new ArgumentException("Invalid DTO type"); // 1. Cast (MANDATORY)
     requestDTO.ValidateDownStreamRequestParameters(); // 2. Validate (MANDATORY)
     return await _restClient.ExecuteRestRequestAsync(...); // 3. ONE external call
 }
@@ -1342,7 +1379,7 @@ public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamR
 
 ```csharp
 using Core.Exceptions; using Core.SystemLayer.DTOs;
-public class GetEntityReqDTO : IDownStreamRequestDTO { public string EntityId { get; set; } = string.Empty; public void ValidateDownStreamRequestParameters() { var errors = new List<string>(); if (string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId is required"); if (errors.Count > 0) throw new RequestValidationFailureException(error: ("VAL_001", "Validation failed"), errorDetails: errors, stepName: "GetEntityReqDTO / ValidateDownStreamRequestParameters"); } }
+public class GetEntityReqDTO : IDownStreamRequestDTO { public string EntityId { get; set; } = string.Empty; public void ValidateDownStreamRequestParameters() { List<string> errors = new List<string>(); if (string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId is required"); if (errors.Count > 0) throw new RequestValidationFailureException(error: ("VAL_001", "Validation failed"), errorDetails: errors, stepName: "GetEntityReqDTO / ValidateDownStreamRequestParameters"); } }
 ```
 
 ## 4. MANDATORY USING STATEMENTS
@@ -1369,14 +1406,14 @@ using System.Net;                           // HttpStatusCode
 using Core.Exceptions; using Core.Extensions; using Core.Middlewares; using Core.SystemLayer.DTOs; using Core.SystemLayer.Handlers; using Core.SystemLayer.Middlewares; using Core.SystemLayer.Exceptions; using Microsoft.Extensions.Logging; using Microsoft.Extensions.Options; using <Namespace>.Constants;
 namespace <Namespace>.Implementations.<Vendor>.AtomicHandlers { public class GetEntityAtomicHandler : IAtomicHandler<HttpResponseSnapshot> { private readonly CustomRestClient _restClient; private readonly AppConfigs _appConfigs; private readonly ILogger<GetEntityAtomicHandler> _logger;
     public GetEntityAtomicHandler(CustomRestClient restClient, IOptions<AppConfigs> options, ILogger<GetEntityAtomicHandler> logger) { _restClient = restClient; _appConfigs = options.Value; _logger = logger; }
-    public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamRequestDTO) { var requestDTO = downStreamRequestDTO as GetEntityReqDTO ?? throw new ArgumentException("Invalid DTO type"); _logger.Info($"Starting GetEntity for EntityId: {requestDTO.EntityId}"); requestDTO.ValidateDownStreamRequestParameters(); string fullUrl = $"{_appConfigs.BaseUrl}/api/entities/{requestDTO.EntityId}"; HttpResponseSnapshot response = await _restClient.ExecuteCustomRestRequestAsync(operationName: OperationNames.GET_ENTITY, apiUrl: fullUrl, httpMethod: HttpMethod.Get); _logger.Info($"GetEntity completed - Status: {response.StatusCode}"); return response; } } }
+    public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamRequestDTO) { GetEntityReqDTO requestDTO = downStreamRequestDTO as GetEntityReqDTO ?? throw new ArgumentException("Invalid DTO type"); _logger.Info($"Starting GetEntity for EntityId: {requestDTO.EntityId}"); requestDTO.ValidateDownStreamRequestParameters(); string fullUrl = $"{_appConfigs.BaseUrl}/api/entities/{requestDTO.EntityId}"; HttpResponseSnapshot response = await _restClient.ExecuteCustomRestRequestAsync(operationName: OperationNames.GET_ENTITY, apiUrl: fullUrl, httpMethod: HttpMethod.Get); _logger.Info($"GetEntity completed - Status: {response.StatusCode}"); return response; } } }
 ```
 
 ### SOAP Template
 ```csharp
 using <Namespace>.Constants;
 public class CreateTaskAtomicHandler : IAtomicHandler<HttpResponseSnapshot> { private readonly CustomSoapClient _soapClient; private readonly AppConfigs _appConfigs; private readonly ILogger<CreateTaskAtomicHandler> _logger;
-    public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamRequestDTO) { var requestDTO = downStreamRequestDTO as CreateTaskReqDTO ?? throw new ArgumentException("Invalid DTO type"); requestDTO.ValidateDownStreamRequestParameters(); string resourceName = $"{_appConfigs.ProjectNamespace}.SoapEnvelopes.CreateTask.xml"; string template = SOAPHelper.LoadSoapEnvelopeTemplate(resourceName); string soapEnvelope = template.Replace("{{TaskNumber}}", requestDTO.TaskNumber).Replace("{{Description}}", requestDTO.Description); return await _soapClient.ExecuteCustomSoapRequestAsync(operationName: OperationNames.CREATE_TASK, apiUrl: _appConfigs.SoapEndpointUrl, soapEnvelope: soapEnvelope, soapActionUrl: "http://example.com/CreateTask", httpMethod: HttpMethod.Post); } }
+    public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamRequestDTO) { CreateTaskReqDTO requestDTO = downStreamRequestDTO as CreateTaskReqDTO ?? throw new ArgumentException("Invalid DTO type"); requestDTO.ValidateDownStreamRequestParameters(); string resourceName = $"{_appConfigs.ProjectNamespace}.SoapEnvelopes.CreateTask.xml"; string template = SOAPHelper.LoadSoapEnvelopeTemplate(resourceName); string soapEnvelope = template.Replace("{{TaskNumber}}", requestDTO.TaskNumber).Replace("{{Description}}", requestDTO.Description); return await _soapClient.ExecuteCustomSoapRequestAsync(operationName: OperationNames.CREATE_TASK, apiUrl: _appConfigs.SoapEndpointUrl, soapEnvelope: soapEnvelope, soapActionUrl: "http://example.com/CreateTask", httpMethod: HttpMethod.Post); } }
 ```
 
 ### Authentication Handlers (Internal Only - NEVER Azure Functions)
@@ -1476,7 +1513,7 @@ if (!response.IsSuccessStatusCode) throw new DownStreamApiFailureException(
 using Cache.Handlers; using Cache.Key; using Core.Extensions; using Core.Middlewares; using Core.SystemLayer.DTOs; using Core.SystemLayer.Handlers;
 public class GetLOVAtomicHandler : ICacheableAtomicHandler<HttpResponseSnapshot> { private readonly ILogger<GetLOVAtomicHandler> _logger; private readonly CustomRestClient _restClient; private readonly AppConfigs _appConfigs;
     public GetLOVAtomicHandler(ILogger<GetLOVAtomicHandler> logger, CustomRestClient restClient, IOptions<AppConfigs> options) { _logger = logger; _restClient = restClient; _appConfigs = options.Value; }
-    public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO request) { var dto = request as GetLOVHandlerReqDTO ?? throw new ArgumentException("Invalid DTO"); dto.ValidateDownStreamRequestParameters(); _logger.Info("GetLOVAtomicHandler processing"); HttpResponseSnapshot response = await _restClient.ExecuteCustomRestRequestAsync(operationName: OperationNames.GET_LOV, apiUrl: _appConfigs.LOVApiUrl, httpMethod: HttpMethod.Get, contentFactory: null, username: dto.Username, password: dto.Password, queryParameters: null, customHeaders: null); return response; }
+    public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO request) { GetLOVHandlerReqDTO dto = request as GetLOVHandlerReqDTO ?? throw new ArgumentException("Invalid DTO"); dto.ValidateDownStreamRequestParameters(); _logger.Info("GetLOVAtomicHandler processing"); HttpResponseSnapshot response = await _restClient.ExecuteCustomRestRequestAsync(operationName: OperationNames.GET_LOV, apiUrl: _appConfigs.LOVApiUrl, httpMethod: HttpMethod.Get, contentFactory: null, username: dto.Username, password: dto.Password, queryParameters: null, customHeaders: null); return response; }
     // ICacheableAtomicHandler<T> provides HandleCacheAsync() default implementation (30-day TTL, cache-aside pattern)
 }
 ```
@@ -1485,8 +1522,8 @@ public class GetLOVAtomicHandler : ICacheableAtomicHandler<HttpResponseSnapshot>
 ```csharp
 public class GetEntityHandler : IBaseHandler<GetEntityReqDTO> { private readonly GetLOVAtomicHandler _lovAtomicHandler;
     public async Task<BaseResponseDTO> HandleAsync(GetEntityReqDTO request) {
-        var lovRequest = new GetLOVHandlerReqDTO { LOVType = "EntityStatus", Username = RequestContext.GetUsername(), Password = RequestContext.GetPassword() };
-        var cacheSettings = new CacheKeySettings { TimeToLive = TimeSpan.FromHours(24) }; // Custom TTL
+        GetLOVHandlerReqDTO lovRequest = new GetLOVHandlerReqDTO { LOVType = "EntityStatus", Username = RequestContext.GetUsername(), Password = RequestContext.GetPassword() };
+        CacheKeySettings cacheSettings = new CacheKeySettings { TimeToLive = TimeSpan.FromHours(24) }; // Custom TTL
         HttpResponseSnapshot response = await ((ICacheableAtomicHandler<HttpResponseSnapshot>)_lovAtomicHandler).HandleCacheAsync(lovRequest, cacheSettings);
         // ... process response ...
     }
@@ -1563,10 +1600,10 @@ DTO/AtomicHandlerDTOs/<Feature>AtomicHandlerReqDTO.cs
 
 ## 12. VALIDATION PATTERNS
 ```csharp
-public void ValidateDownStreamRequestParameters() { var errors = new List<string>(); if (string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId is required"); if (!string.IsNullOrWhiteSpace(Email) && !Email.Contains("@")) errors.Add("Invalid email"); if (Age < 0 || Age > 150) errors.Add("Age must be 0-150"); if (Items == null || Items.Count == 0) errors.Add("Items cannot be empty"); if (errors.Count > 0) throw new RequestValidationFailureException(error: ("VAL_001", "Validation failed"), errorDetails: errors, stepName: $"{GetType().Name} / ValidateDownStreamRequestParameters"); }
+public void ValidateDownStreamRequestParameters() { List<string> errors = new List<string>(); if (string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId is required"); if (!string.IsNullOrWhiteSpace(Email) && !Email.Contains("@")) errors.Add("Invalid email"); if (Age < 0 || Age > 150) errors.Add("Age must be 0-150"); if (Items == null || Items.Count == 0) errors.Add("Items cannot be empty"); if (errors.Count > 0) throw new RequestValidationFailureException(error: ("VAL_001", "Validation failed"), errorDetails: errors, stepName: $"{GetType().Name} / ValidateDownStreamRequestParameters"); }
 ```
 
-**Null Checks:** Cast: `var dto = request as GetEntityReqDTO ?? throw new ArgumentException("Invalid DTO")` | Collection: `if (request.Items == null || request.Items.Count == 0)` | String: `if (string.IsNullOrWhiteSpace(request.Desc))`
+**Null Checks:** Cast: `GetEntityReqDTO dto = request as GetEntityReqDTO ?? throw new ArgumentException("Invalid DTO")` | Collection: `if (request.Items == null || request.Items.Count == 0)` | String: `if (string.IsNullOrWhiteSpace(request.Desc))`
 
 ## 13. DO'S & DON'TS
 
@@ -1588,7 +1625,7 @@ public void ValidateDownStreamRequestParameters() { var errors = new List<string
 | Error | Cause | Fix |
 |-------|-------|-----|
 | `CS0535: Doesn't implement interface` | Wrong Handle() signature | Use `IDownStreamRequestDTO` parameter |
-| `Property doesn't exist on IDownStreamRequestDTO` | Forgot cast | Cast: `var dto = request as ConcreteDTO` |
+| `Property doesn't exist on IDownStreamRequestDTO` | Forgot cast | Cast: `ConcreteDTO dto = request as ConcreteDTO` |
 | `DTO validation never executed` | Forgot validation call | Call `dto.ValidateDownStreamRequestParameters()` |
 | `Missing IDownStreamRequestDTO` | DTO doesn't implement interface | Add `: IDownStreamRequestDTO` |
 | `Handler doesn't compile` | Missing using statements | Add `using Core.SystemLayer.DTOs;` |
@@ -1706,7 +1743,7 @@ namespace Cache.DTO { public interface ICacheable { IDictionary<PropertyInfo, ob
 ```csharp
 using Cache.DTO; using Core.SystemLayer.DTOs; using System.Reflection;
 public class GetEntityReqDTO : IRequestSysDTO, ICacheable { public string EntityId { get; set; } = string.Empty; public bool IncludeInactive { get; set; }
-    public void ValidateAPIRequestParameters() { var errors = new List<string>(); if (string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId required"); if (errors.Count > 0) throw new RequestValidationFailureException() { ErrorProperties = errors }; }
+    public void ValidateAPIRequestParameters() { List<string> errors = new List<string>(); if (string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId required"); if (errors.Count > 0) throw new RequestValidationFailureException() { ErrorProperties = errors }; }
     public IDictionary<PropertyInfo, object> GetCacheKey() { return new Dictionary<PropertyInfo, object> { { GetType().GetProperty(nameof(EntityId))!, EntityId }, { GetType().GetProperty(nameof(IncludeInactive))!, IncludeInactive } }; }
 }
 ```
@@ -1715,7 +1752,7 @@ public class GetEntityReqDTO : IRequestSysDTO, ICacheable { public string Entity
 ```csharp
 using Cache.DTO; using Core.SystemLayer.DTOs; using System.Reflection;
 public class GetLOVHandlerReqDTO : IDownStreamRequestDTO, ICacheable { public string LOVType { get; set; } = string.Empty; public string Username { get; set; } = string.Empty; public string Password { get; set; } = string.Empty;
-    public void ValidateDownStreamRequestParameters() { var errors = new List<string>(); if (string.IsNullOrWhiteSpace(LOVType)) errors.Add("LOVType required"); if (errors.Count > 0) throw new RequestValidationFailureException(error: ("VAL_001", "Validation failed"), errorDetails: errors, stepName: "GetLOVHandlerReqDTO/Validate"); }
+    public void ValidateDownStreamRequestParameters() { List<string> errors = new List<string>(); if (string.IsNullOrWhiteSpace(LOVType)) errors.Add("LOVType required"); if (errors.Count > 0) throw new RequestValidationFailureException(error: ("VAL_001", "Validation failed"), errorDetails: errors, stepName: "GetLOVHandlerReqDTO/Validate"); }
     public IDictionary<PropertyInfo, object> GetCacheKey() { return new Dictionary<PropertyInfo, object> { { GetType().GetProperty(nameof(LOVType))!, LOVType } }; } // Only LOVType affects cache
 }
 ```
@@ -1734,13 +1771,13 @@ public class GetLOVHandlerReqDTO : IDownStreamRequestDTO, ICacheable { public st
 ### IRequestSysDTO (Core.SystemLayer.DTOs)
 ```csharp
 public interface IRequestSysDTO { void ValidateAPIRequestParameters(); }
-// Implementation: public class GetEntityReqDTO : IRequestSysDTO { public string EntityId {get;set;}=string.Empty; public void ValidateAPIRequestParameters() { var errors=new List<string>(); if(string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId required"); if(errors.Count>0) throw new RequestValidationFailureException(){ErrorProperties=errors}; } }
+// Implementation: public class GetEntityReqDTO : IRequestSysDTO { public string EntityId {get;set;}=string.Empty; public void ValidateAPIRequestParameters() { List<string> errors=new List<string>(); if(string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId required"); if(errors.Count>0) throw new RequestValidationFailureException(){ErrorProperties=errors}; } }
 ```
 
 ### IDownStreamRequestDTO (Core.SystemLayer.DTOs)
 ```csharp
 public interface IDownStreamRequestDTO { void ValidateDownStreamRequestParameters(); }
-// Implementation: public class GetEntityHandlerReqDTO : IDownStreamRequestDTO { public string EntityId {get;set;}=string.Empty; public void ValidateDownStreamRequestParameters() { var errors=new List<string>(); if(string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId required"); if(errors.Count>0) throw new RequestValidationFailureException(error:("VAL_001","Validation failed"),errorDetails:errors,stepName:"GetEntityHandlerReqDTO/Validate"); } }
+// Implementation: public class GetEntityHandlerReqDTO : IDownStreamRequestDTO { public string EntityId {get;set;}=string.Empty; public void ValidateDownStreamRequestParameters() { List<string> errors=new List<string>(); if(string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId required"); if(errors.Count>0) throw new RequestValidationFailureException(error:("VAL_001","Validation failed"),errorDetails:errors,stepName:"GetEntityHandlerReqDTO/Validate"); } }
 ```
 
 ## 7. VALIDATION PATTERNS
@@ -1894,7 +1931,7 @@ return new BaseResponseDTO(data: AddEmergencyContactResDTO.Map(addData, countrie
 ```csharp
 using Core.DTOs;
 namespace <NS>.ConfigModels { public class AppConfigs : IConfigValidator { public static string SectionName = "AppConfigs"; public string ASPNETCORE_ENVIRONMENT {get;set;}=string.Empty; public string BaseApiUrl {get;set;}=string.Empty; public string AuthUrl {get;set;}=string.Empty; public string LogoutUrl {get;set;}=string.Empty; public string? Username {get;set;}; public string? Password {get;set;}; public int TimeoutSeconds {get;set;}=50; public int RetryCount {get;set;}=0;
-    public void validate() { var errors=new List<string>(); if(string.IsNullOrWhiteSpace(BaseApiUrl)) errors.Add("BaseApiUrl required"); else if(!Uri.TryCreate(BaseApiUrl,UriKind.Absolute,out _)) errors.Add("BaseApiUrl must be valid URL"); if(!string.IsNullOrWhiteSpace(AuthUrl)&&!Uri.TryCreate(AuthUrl,UriKind.Absolute,out _)) errors.Add("AuthUrl must be valid URL"); if(TimeoutSeconds<=0||TimeoutSeconds>300) errors.Add("TimeoutSeconds must be 1-300"); if(RetryCount<0||RetryCount>10) errors.Add("RetryCount must be 0-10"); if(errors.Any()) throw new InvalidOperationException($"AppConfigs validation failed:\n{string.Join("\n",errors)}"); } } }
+    public void validate() { List<string> errors=new List<string>(); if(string.IsNullOrWhiteSpace(BaseApiUrl)) errors.Add("BaseApiUrl required"); else if(!Uri.TryCreate(BaseApiUrl,UriKind.Absolute,out _)) errors.Add("BaseApiUrl must be valid URL"); if(!string.IsNullOrWhiteSpace(AuthUrl)&&!Uri.TryCreate(AuthUrl,UriKind.Absolute,out _)) errors.Add("AuthUrl must be valid URL"); if(TimeoutSeconds<=0||TimeoutSeconds>300) errors.Add("TimeoutSeconds must be 1-300"); if(RetryCount<0||RetryCount>10) errors.Add("RetryCount must be 0-10"); if(errors.Any()) throw new InvalidOperationException($"AppConfigs validation failed:\n{string.Join("\n",errors)}"); } } }
 ```
 
 **⚠️ DEFAULTS:** `TimeoutSeconds=50` (seconds), `RetryCount=0` (no retries). Override these values in appsettings.json if Boomi process specifies different timeout/retry configuration.
@@ -1907,7 +1944,7 @@ namespace <NS>.ConfigModels { public class AppConfigs : IConfigValidator { publi
 ```csharp
 using Core.DTOs;
 namespace <NS>.ConfigModels { public class KeyVaultConfigs : IConfigValidator { public static string SectionName = "KeyVault"; public string Url {get;set;}=string.Empty; public Dictionary<string,string>? Secrets {get;set;};
-    public void validate() { var errors=new List<string>(); if(string.IsNullOrWhiteSpace(Url)) errors.Add("KeyVault URL required"); else if(!Uri.TryCreate(Url,UriKind.Absolute,out _)) errors.Add("KeyVault URL must be valid"); if(errors.Any()) throw new InvalidOperationException($"KeyVaultConfigs validation failed:\n{string.Join("\n",errors)}"); } } }
+    public void validate() { List<string> errors=new List<string>(); if(string.IsNullOrWhiteSpace(Url)) errors.Add("KeyVault URL required"); else if(!Uri.TryCreate(Url,UriKind.Absolute,out _)) errors.Add("KeyVault URL must be valid"); if(errors.Any()) throw new InvalidOperationException($"KeyVaultConfigs validation failed:\n{string.Join("\n",errors)}"); } } }
 ```
 
 ---
@@ -1915,7 +1952,7 @@ namespace <NS>.ConfigModels { public class KeyVaultConfigs : IConfigValidator { 
 ## 4. PROGRAM.CS REGISTRATION
 
 ```csharp
-using <NS>.ConfigModels; var builder = FunctionsApplication.CreateBuilder(args);
+using <NS>.ConfigModels; FunctionsApplicationBuilder builder = FunctionsApplication.CreateBuilder(args);
 builder.Services.Configure<AppConfigs>(builder.Configuration.GetSection(AppConfigs.SectionName)); builder.Services.Configure<KeyVaultConfigs>(builder.Configuration.GetSection(KeyVaultConfigs.SectionName));
 builder.Services.AddScoped<IEntityMgmt, EntityMgmtService>();
 ```
@@ -1943,12 +1980,38 @@ public class GetEntityDetailAtomicHandler : IAtomicHandler<HttpResponseSnapshot>
 ### appsettings.json (Base)
 ```json
 {
-  "Logging": {"LogLevel": {"Default": "Information"}},
   "AppConfigs": {"BaseApiUrl": "", "AuthUrl": "", "LogoutUrl": "", "Username": "", "Password": "", "TimeoutSeconds": 50, "RetryCount": 0},
   "KeyVault": {"Url": "https://your-keyvault.vault.azure.net/", "Secrets": {"Password": "ExternalSystemPassword", "ApiKey": "ExternalSystemApiKey"}},
   "RedisCache": {"ConnectionString": "", "InstanceName": ""}
 }
 ```
+
+**✅ Logging section in appsettings.env.json - EXACT LINES ONLY (NO EXCEPTIONS):**
+Logging configuration in appsettings.json, add ONLY these EXACT lines (nothing more, nothing less):
+```json
+"Logging": {
+  "LogLevel": {
+    "Default": "Debug"
+  }
+}
+```
+
+**❌ ABSOLUTELY FORBIDDEN IN appsettings.json FILES:**
+- ❌ Console provider configuration
+- ❌ Application Insights configuration
+- ❌ Serilog provider configuration
+- ❌ File paths for log files
+- ❌ Log level rules for specific namespaces (Microsoft.*, etc.)
+- ❌ Custom logging providers
+- ❌ EventSource configuration
+- ❌ Any extra properties beyond the 3 exact lines above
+
+**🔴 CRITICAL ENFORCEMENT:**
+- ONLY add the 3 exact lines shown above
+- NEVER add any other logging configuration to appsettings.json
+- NEVER add Console providers, Application Insights, Serilog, or custom providers in appsettings.json
+- Logging providers and detailed configuration are EXCLUSIVELY defined in Program.cs
+- Any logging configuration beyond the 3 exact lines = **VIOLATION**
 
 ### appsettings.dev.json (Development)
 ```json
@@ -2020,7 +2083,7 @@ return new BaseResponseDTO(message:InfoConstants.SUCCESS, data:result, errorCode
 
 // Session/Context key
 context.Items[InfoConstants.SESSION_ID] = sessionId;
-var sessionId = context.Items[InfoConstants.SESSION_ID]?.ToString();
+string? sessionId = context.Items[InfoConstants.SESSION_ID]?.ToString();
 ```
 
 ---
@@ -2051,7 +2114,7 @@ HttpResponseSnapshot response = await _restClient.ExecuteCustomRestRequestAsync(
 **✅ CORRECT (using constant):**
 ```csharp
 using <Namespace>.Constants;
-public class CreateTaskAtomicHandler : IAtomicHandler<HttpResponseSnapshot> { public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamRequestDTO) { var requestDTO = downStreamRequestDTO as CreateTaskReqDTO ?? throw new ArgumentException("Invalid DTO type"); requestDTO.ValidateDownStreamRequestParameters(); HttpResponseSnapshot response = await _restClient.ExecuteCustomRestRequestAsync(operationName: OperationNames.CREATE_TASK, apiUrl: fullUrl, httpMethod: HttpMethod.Post, contentFactory: () => CustomRestClient.CreateJsonContent(requestBody)); return response; } }
+public class CreateTaskAtomicHandler : IAtomicHandler<HttpResponseSnapshot> { public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamRequestDTO) { CreateTaskReqDTO requestDTO = downStreamRequestDTO as CreateTaskReqDTO ?? throw new ArgumentException("Invalid DTO type"); requestDTO.ValidateDownStreamRequestParameters(); HttpResponseSnapshot response = await _restClient.ExecuteCustomRestRequestAsync(operationName: OperationNames.CREATE_TASK, apiUrl: fullUrl, httpMethod: HttpMethod.Post, contentFactory: () => CustomRestClient.CreateJsonContent(requestBody)); return response; } }
 ```
 
 **SOAP Example:**
@@ -2331,7 +2394,7 @@ namespace <Namespace>.Extensions { public static class StringExtensions { public
 
 **DateTimeExtensions:**
 ```csharp
-namespace <Namespace>.Extensions { public static class DateTimeExtensions { public static (DateTime startDate, DateTime endDate) GetDefaultDateRange(this DateTime referenceDate) { var threeMonthsAgo = referenceDate.AddMonths(-3); var startDate = new DateTime(threeMonthsAgo.Year, threeMonthsAgo.Month, 1); var prevMonth = referenceDate.AddMonths(-1); var endDate = new DateTime(prevMonth.Year, prevMonth.Month, DateTime.DaysInMonth(prevMonth.Year, prevMonth.Month)); return (startDate, endDate); }
+namespace <Namespace>.Extensions { public static class DateTimeExtensions { public static (DateTime startDate, DateTime endDate) GetDefaultDateRange(this DateTime referenceDate) { DateTime threeMonthsAgo = referenceDate.AddMonths(-3); DateTime startDate = new DateTime(threeMonthsAgo.Year, threeMonthsAgo.Month, 1); DateTime prevMonth = referenceDate.AddMonths(-1); DateTime endDate = new DateTime(prevMonth.Year, prevMonth.Month, DateTime.DaysInMonth(prevMonth.Year, prevMonth.Month)); return (startDate, endDate); }
         public static void ValidateMinimumDate(this DateTime? date, string fieldName, DateTime minimumDate, List<string> errors) { if (date.HasValue && date < minimumDate) errors.Add($"{fieldName} cannot be earlier than {minimumDate:MMM d, yyyy}."); }
         public static void ValidateDateRange(this DateTime? startDate, DateTime? endDate, string startFieldName, string endFieldName, List<string> errors) { if (startDate.HasValue && endDate.HasValue && endDate < startDate) errors.Add($"{endFieldName} cannot be earlier than {startFieldName}."); }
         public static DateTime GetFirstDayOfMonth(this DateTime date) => new DateTime(date.Year, date.Month, 1); public static DateTime GetLastDayOfMonth(this DateTime date) => new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month)); } }
@@ -2404,7 +2467,7 @@ namespace <Namespace>.Extensions { public static class DictionaryExtensions { pu
 **Pattern 1 - LoadSoapEnvelopeTemplate():**
 ```csharp
 using Core.Extensions; using Core.DI; using Microsoft.Extensions.Logging;
-public static class SOAPHelper { public static string LoadSoapEnvelopeTemplate(string resourceName) { var logger = ServiceLocator.GetRequiredService<ILogger<SOAPHelper>>(); logger.Info($"Loading SOAP envelope: {resourceName}"); var assembly = typeof(SOAPHelper).Assembly; using var stream = assembly.GetManifestResourceStream(resourceName); if (stream == null) throw new FileNotFoundException($"SOAP template not found: {resourceName}"); using var reader = new StreamReader(stream); return reader.ReadToEnd(); } }
+public static class SOAPHelper { public static string LoadSoapEnvelopeTemplate(string resourceName) { ILogger<SOAPHelper> logger = ServiceLocator.GetRequiredService<ILogger<SOAPHelper>>(); logger.Info($"Loading SOAP envelope: {resourceName}"); System.Reflection.Assembly assembly = typeof(SOAPHelper).Assembly; using System.IO.Stream? stream = assembly.GetManifestResourceStream(resourceName); if (stream == null) throw new FileNotFoundException($"SOAP template not found: {resourceName}"); using System.IO.StreamReader reader = new StreamReader(stream); return reader.ReadToEnd(); } }
 ```
 
 **Pattern 2 - GetSoapElement():**
@@ -2419,7 +2482,7 @@ public static string GetSoapElement(string elementName, string? value)
 ```csharp
 public static List<T> MapSOAPRespone<T>(string csvData) where T : new()
 {
-    var logger = ServiceLocator.GetRequiredService<ILogger<SOAPHelper>>();
+    ILogger<SOAPHelper> logger = ServiceLocator.GetRequiredService<ILogger<SOAPHelper>>();
     logger.Info("Mapping SOAP CSV response");
     // Parse CSV → List<T>
     return csvDataList;
@@ -2435,7 +2498,7 @@ public static TResponse? DeserializeSoapResponse<TResponse>(string xmlContent, J
 }
 ```
 
-**Usage:** `string template = SOAPHelper.LoadSoapEnvelopeTemplate($"{_appConfigs.ProjectNamespace}.SoapEnvelopes.CreateTask.xml"); string envelope = template.Replace("{{TaskNumber}}", dto.TaskNumber); string element = SOAPHelper.GetSoapElement("Priority", dto.Priority); var response = SOAPHelper.DeserializeSoapResponse<CreateTaskApiResDTO>(xmlContent);`
+**Usage:** `string template = SOAPHelper.LoadSoapEnvelopeTemplate($"{_appConfigs.ProjectNamespace}.SoapEnvelopes.CreateTask.xml"); string envelope = template.Replace("{{TaskNumber}}", dto.TaskNumber); string element = SOAPHelper.GetSoapElement("Priority", dto.Priority); CreateTaskApiResDTO? response = SOAPHelper.DeserializeSoapResponse<CreateTaskApiResDTO>(xmlContent);`
 
 ### 4.3 RestApiHelper (OPTIONAL)
 
@@ -2443,10 +2506,10 @@ public static TResponse? DeserializeSoapResponse<TResponse>(string xmlContent, J
 
 **Pattern 1 - DeserializeJsonResponse():**
 ```csharp
-public static class RestApiHelper { public static T DeserializeJsonResponse<T>(string jsonContent) { var logger = ServiceLocator.GetRequiredService<ILogger<RestApiHelper>>(); logger.Info($"Deserializing JSON to {typeof(T).Name}"); return JsonSerializer.Deserialize<T>(jsonContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }); } }
+public static class RestApiHelper { public static T DeserializeJsonResponse<T>(string jsonContent) { ILogger<RestApiHelper> logger = ServiceLocator.GetRequiredService<ILogger<RestApiHelper>>(); logger.Info($"Deserializing JSON to {typeof(T).Name}"); return JsonSerializer.Deserialize<T>(jsonContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }); } }
 ```
 
-**Pattern 2 - BuildUrl():** `public static string BuildUrl(string baseUrl, Dictionary<string, string> queryParams) { var query = string.Join("&", queryParams.Select(kv => $"{kv.Key}={Uri.EscapeDataString(kv.Value)}")); return $"{baseUrl}?{query}"; }`
+**Pattern 2 - BuildUrl():** `public static string BuildUrl(string baseUrl, Dictionary<string, string> queryParams) { string query = string.Join("&", queryParams.Select(kv => $"{kv.Key}={Uri.EscapeDataString(kv.Value)}")); return $"{baseUrl}?{query}"; }`
 
 **Pattern 3 - HandleFileResponse():** For file downloads
 
@@ -2456,10 +2519,10 @@ public static class RestApiHelper { public static T DeserializeJsonResponse<T>(s
 
 ```csharp
 using Newtonsoft.Json; using System.Xml;
-public static class XMLHelper { public static string ConvertXmlToJson(string xmlContent) { var logger = ServiceLocator.GetRequiredService<ILogger<XMLHelper>>(); logger.Info("Converting XML to JSON"); XmlDocument doc = new XmlDocument(); doc.LoadXml(xmlContent); return JsonConvert.SerializeXmlNode(doc); } }
+public static class XMLHelper { public static string ConvertXmlToJson(string xmlContent) { ILogger<XMLHelper> logger = ServiceLocator.GetRequiredService<ILogger<XMLHelper>>(); logger.Info("Converting XML to JSON"); XmlDocument doc = new XmlDocument(); doc.LoadXml(xmlContent); return JsonConvert.SerializeXmlNode(doc); } }
 ```
 
-**Usage:** `string json = XMLHelper.ConvertXmlToJson(soapResponse); var dto = JsonSerializer.Deserialize<ApiResDTO>(json);`
+**Usage:** `string json = XMLHelper.ConvertXmlToJson(soapResponse); ApiResDTO? dto = JsonSerializer.Deserialize<ApiResDTO>(json);`
 
 ### 4.5 KeyVaultReader (MANDATORY if KeyVault)
 
@@ -2469,17 +2532,17 @@ public static class XMLHelper { public static string ConvertXmlToJson(string xml
 ```csharp
 using Azure.Identity; using Azure.Security.KeyVault.Secrets;
 public class KeyVaultReader { private readonly SecretClient _secretClient; private readonly ILogger<KeyVaultReader> _logger;
-    public KeyVaultReader(IOptions<KeyVaultConfigs> options, ILogger<KeyVaultReader> logger) { _logger = logger; var keyVaultUrl = new Uri(options.Value.KeyVaultUrl); _secretClient = new SecretClient(keyVaultUrl, new DefaultAzureCredential()); }
+    public KeyVaultReader(IOptions<KeyVaultConfigs> options, ILogger<KeyVaultReader> logger) { _logger = logger; Uri keyVaultUrl = new Uri(options.Value.KeyVaultUrl); _secretClient = new SecretClient(keyVaultUrl, new DefaultAzureCredential()); }
     public async Task<string> GetSecretAsync(string secretName) { _logger.Info($"Fetching secret: {secretName}"); KeyVaultSecret secret = await _secretClient.GetSecretAsync(secretName); return secret.Value; } }
 ```
 
 **Pattern 2 - GetSecretsAsync() (with caching):**
 ```csharp
 private static readonly Dictionary<string, string> _secretCache = new(); private static readonly SemaphoreSlim _cacheLock = new SemaphoreSlim(1, 1);
-public async Task<Dictionary<string, string>> GetSecretsAsync(List<string> secretNames) { await _cacheLock.WaitAsync(); try { var result = new Dictionary<string, string>(); foreach (var secretName in secretNames) { if (!_secretCache.ContainsKey(secretName)) { _logger.Info($"Caching secret: {secretName}"); _secretCache[secretName] = await GetSecretAsync(secretName); } result[secretName] = _secretCache[secretName]; } return result; } finally { _cacheLock.Release(); } }
+public async Task<Dictionary<string, string>> GetSecretsAsync(List<string> secretNames) { await _cacheLock.WaitAsync(); try { Dictionary<string, string> result = new Dictionary<string, string>(); foreach (string secretName in secretNames) { if (!_secretCache.ContainsKey(secretName)) { _logger.Info($"Caching secret: {secretName}"); _secretCache[secretName] = await GetSecretAsync(secretName); } result[secretName] = _secretCache[secretName]; } return result; } finally { _cacheLock.Release(); } }
 ```
 
-**Usage:** `string secret = await _keyVaultReader.GetSecretAsync("MySecret"); var secrets = await _keyVaultReader.GetSecretsAsync(new List<string> { "Secret1", "Secret2" });`
+**Usage:** `string secret = await _keyVaultReader.GetSecretAsync("MySecret"); Dictionary<string, string> secrets = await _keyVaultReader.GetSecretsAsync(new List<string> { "Secret1", "Secret2" });`
 
 **Program.cs Registration:** `builder.Services.AddSingleton<KeyVaultReader>();`
 
@@ -2676,8 +2739,8 @@ using Microsoft.Extensions.Hosting; using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights; using Microsoft.Extensions.Options;
 using Polly; using System.Text.Json; using System.Text.Json.Serialization;
 
-var builder = FunctionsApplication.CreateBuilder(args);
-var environment = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "dev";
+FunctionsApplicationBuilder builder = FunctionsApplication.CreateBuilder(args);
+string environment = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "dev";
 builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true).AddEnvironmentVariables();
 builder.Services.AddApplicationInsightsTelemetryWorkerService().ConfigureFunctionsApplicationInsights();
 builder.Logging.AddConsole(); builder.Logging.AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Information);
@@ -2690,7 +2753,7 @@ builder.Services.AddSingleton<KeyVaultReader>(); builder.Services.AddTransient<Y
 builder.Services.AddScoped<YourOperationHandler>(); builder.Services.AddScoped<AnotherOperationHandler>();
 builder.Services.AddScoped<YourOperationAtomicHandler>(); builder.Services.AddScoped<AnotherOperationAtomicHandler>(); builder.Services.AddScoped<AuthenticateAtomicHandler>(); builder.Services.AddScoped<LogoutAtomicHandler>();
 builder.Services.AddRedisCacheLibrary(builder.Configuration);
-builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(sp => { var config = sp.GetRequiredService<IConfiguration>(); var retryPolicy = Policy.Handle<HttpRequestException>().OrResult<HttpResponseMessage>(r => (int)r.StatusCode >= 500).WaitAndRetryAsync(retryCount: config.GetValue<int>("HttpClientPolicy:RetryCount"), sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(retryAttempt * 5)); var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(config.GetValue<int>("HttpClientPolicy:TimeoutSeconds")); return Policy.WrapAsync(retryPolicy, timeoutPolicy); });
+builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(sp => { IConfiguration config = sp.GetRequiredService<IConfiguration>(); IAsyncPolicy<HttpResponseMessage> retryPolicy = Policy.Handle<HttpRequestException>().OrResult<HttpResponseMessage>(r => (int)r.StatusCode >= 500).WaitAndRetryAsync(retryCount: config.GetValue<int>("HttpClientPolicy:RetryCount"), sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(retryAttempt * 5)); IAsyncPolicy<HttpResponseMessage> timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(config.GetValue<int>("HttpClientPolicy:TimeoutSeconds")); return Policy.WrapAsync(retryPolicy, timeoutPolicy); });
 builder.UseMiddleware<ExecutionTimingMiddleware>(); builder.UseMiddleware<ExceptionHandlerMiddleware>(); builder.UseMiddleware<CustomAuthenticationMiddleware>();
 ServiceLocator.ServiceProvider = builder.Services.BuildServiceProvider();
 builder.Build().Run();
@@ -2729,7 +2792,7 @@ builder.Build().Run();
 
 ### Environment Detection
 ```csharp
-var environment = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "dev";
+string environment = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "dev";
 ```
 **Fallback:** ENVIRONMENT → ASPNETCORE_ENVIRONMENT → "dev" | **Values:** "dev", "qa", "stg", "prod", "dr"
 
@@ -2765,10 +2828,10 @@ builder.UseMiddleware<CustomAuthenticationMiddleware>(); // 3. Auth lifecycle (o
 ### Polly Policy (MANDATORY)
 ```csharp
 builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(sp => {
-    var config = sp.GetRequiredService<IConfiguration>();
-    var retryPolicy = Policy.Handle<HttpRequestException>().OrResult<HttpResponseMessage>(r => (int)r.StatusCode >= 500)
+    IConfiguration config = sp.GetRequiredService<IConfiguration>();
+    IAsyncPolicy<HttpResponseMessage> retryPolicy = Policy.Handle<HttpRequestException>().OrResult<HttpResponseMessage>(r => (int)r.StatusCode >= 500)
         .WaitAndRetryAsync(config.GetValue<int>("HttpClientPolicy:RetryCount"), retryAttempt => TimeSpan.FromSeconds(retryAttempt * 5));
-    var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(config.GetValue<int>("HttpClientPolicy:TimeoutSeconds"));
+    IAsyncPolicy<HttpResponseMessage> timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(config.GetValue<int>("HttpClientPolicy:TimeoutSeconds"));
     return Policy.WrapAsync(retryPolicy, timeoutPolicy);
 });
 ```
@@ -2914,8 +2977,8 @@ public class CreateEntityAPI { private readonly ILogger<CreateEntityAPI> _logger
 // File: Middlewares/CustomAuthenticationMiddleware.cs
 using <ProjectName>.Attributes; using Microsoft.Azure.Functions.Worker; using Microsoft.Azure.Functions.Worker.Middleware; using System.Reflection;
 
-namespace <ProjectName>.Middlewares { public class CustomAuthenticationMiddleware : IFunctionsWorkerMiddleware { public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next) { var method = GetTargetFunctionMethod(context); var hasAuthAttribute = method?.GetCustomAttribute<CustomAuthenticationAttribute>() != null; if (hasAuthAttribute) await HandleAuthentication(context); await next(context); if (hasAuthAttribute) await HandleLogout(context); }
-        private MethodInfo? GetTargetFunctionMethod(FunctionContext context) { var entryPoint = context.FunctionDefinition.EntryPoint; var typeName = entryPoint.Substring(0, entryPoint.LastIndexOf('.')); var methodName = entryPoint.Substring(entryPoint.LastIndexOf('.') + 1); return Type.GetType(typeName)?.GetMethod(methodName); }
+namespace <ProjectName>.Middlewares { public class CustomAuthenticationMiddleware : IFunctionsWorkerMiddleware { public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next) { System.Reflection.MethodInfo? method = GetTargetFunctionMethod(context); bool hasAuthAttribute = method?.GetCustomAttribute<CustomAuthenticationAttribute>() != null; if (hasAuthAttribute) await HandleAuthentication(context); await next(context); if (hasAuthAttribute) await HandleLogout(context); }
+        private MethodInfo? GetTargetFunctionMethod(FunctionContext context) { string entryPoint = context.FunctionDefinition.EntryPoint; string typeName = entryPoint.Substring(0, entryPoint.LastIndexOf('.')); string methodName = entryPoint.Substring(entryPoint.LastIndexOf('.') + 1); return Type.GetType(typeName)?.GetMethod(methodName); }
         private async Task HandleAuthentication(FunctionContext context) { /* Login */ } private async Task HandleLogout(FunctionContext context) { /* Logout */ } } }
 ```
 
@@ -2923,7 +2986,7 @@ namespace <ProjectName>.Middlewares { public class CustomAuthenticationMiddlewar
 
 **A. Cleaner Code:**
 ```csharp
-// ❌ WITHOUT: await _loginHandler.Handle(loginRequest); var result = await _service.CreateEntity(request); await _logoutHandler.Handle(logoutRequest);
+// ❌ WITHOUT: await _loginHandler.Handle(loginRequest); BaseResponseDTO result = await _service.CreateEntity(request); await _logoutHandler.Handle(logoutRequest);
 // ✅ WITH: [CustomAuthenticationAttribute] [Function("CreateEntity")] public async Task<BaseResponseDTO> Run(...) { return await _service.CreateEntity(request); }
 ```
 
@@ -2973,8 +3036,8 @@ public async Task<BaseResponseDTO> Run([HttpTrigger(AuthorizationLevel.Anonymous
 
 **3. Detect:** `Middlewares/CustomAuthenticationMiddleware.cs`
 ```csharp
-var method = GetTargetFunctionMethod(context);
-var hasAuth = method?.GetCustomAttribute<CustomAuthenticationAttribute>() != null;
+System.Reflection.MethodInfo? method = GetTargetFunctionMethod(context);
+bool hasAuth = method?.GetCustomAttribute<CustomAuthenticationAttribute>() != null;
 if (hasAuth) { /* authenticate */ }
 ```
 
@@ -3004,17 +3067,31 @@ builder.UseMiddleware<CustomAuthenticationMiddleware>(); // THIRD
 **fileLoggingMode:** `"always"` = Log to file system (debugging)  
 **enableLiveMetricsFilters:** `true` = Real-time metrics in Azure Portal
 
-## 4. KEY RULES
+## 4. KEY RULES (🔴 CRITICAL ENFORCEMENT - NO EXCEPTIONS)
 
-**🔴 CRITICAL:**
+**MANDATORY RULES:**
 - ✅ Same host.json for dev/qa/prod (NOT environment-specific)
 - ✅ Enable live metrics filters (real-time monitoring)
 - ✅ File must be Content + Copy to Output Directory
-- ❌ DON'T add app configs (BaseUrl, credentials) - use appsettings.json
-- ❌ DON'T create host.dev.json or host.prod.json
-- ❌ DON'T add retry policies - use Polly in Program.cs
+- ✅ Use EXACT template - NO modifications, NO extra properties
 
-## 5. FILE LOCATION & BUILD
+**🔴 ABSOLUTELY FORBIDDEN (NEVER ADD):**
+- ❌ **NO app configs** (BaseUrl, API keys, credentials) - use appsettings.json ONLY
+- ❌ **NO environment-specific values** - same file for all environments
+- ❌ **NO retry policies** - use Polly in Program.cs instead
+- ❌ **NO timeout settings** - configure in appsettings.json + Polly
+- ❌ **NO custom extensions** - use defaults only
+- ❌ **NO database configs** - use appsettings.json
+- ❌ **NO authentication settings** - use Program.cs
+- ❌ **NO logging configurations** - use default logging setup
+- ❌ **NO environment-specific files** (host.dev.json, host.prod.json, host.qa.json) - SINGLE file only
+- ❌ **NO extra properties or comments** - strict structure only
+- ❌ **NO modifications to version** - ALWAYS "2.0"
+- ❌ **NO disabling live metrics** - ALWAYS enabled
+
+**RULE:** host.json is for **Azure Functions runtime ONLY** | Any application-specific settings belong in appsettings.json | Violation = architecture break
+
+## 5. FILE LOCATION
 
 **Location:**
 ```
