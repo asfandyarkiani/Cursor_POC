@@ -15,6 +15,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Polly;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 FunctionsApplicationBuilder builder = FunctionsApplication.CreateBuilder(args);
 
@@ -45,6 +47,16 @@ builder.ConfigureFunctionsWebApplication();
 
 // HTTP Client
 builder.Services.AddHttpClient<CustomHTTPClient>();
+
+// JSON Serializer Options
+builder.Services.Configure<JsonSerializerOptions>(options =>
+{
+    options.Converters.Add(new JsonStringEnumConverter());
+    options.PropertyNameCaseInsensitive = true;
+});
+
+// Singletons/Helpers
+builder.Services.AddSingleton<KeyVaultReader>();
 
 // Services (WITH interfaces)
 builder.Services.AddScoped<ICAFMMgmt, CAFMMgmtService>();
