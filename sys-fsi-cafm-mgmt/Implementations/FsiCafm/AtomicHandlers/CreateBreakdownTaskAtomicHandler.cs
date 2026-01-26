@@ -39,29 +39,30 @@ namespace FsiCafmSystem.Implementations.FsiCafm.AtomicHandlers
             string resourceName = $"{_appConfigs.ProjectNamespace}.SoapEnvelopes.CreateBreakdownTask.xml";
             string envelopeTemplate = SOAPHelper.LoadSoapEnvelopeTemplate(resourceName);
             
+            // Build ScheduledDateUtc from ScheduledDate + ScheduledTimeStart
+            string scheduledDateUtc = string.Empty;
+            if (!string.IsNullOrWhiteSpace(requestDTO.ScheduledDate) && !string.IsNullOrWhiteSpace(requestDTO.ScheduledTimeStart))
+            {
+                scheduledDateUtc = $"{requestDTO.ScheduledDate}T{requestDTO.ScheduledTimeStart}Z";
+            }
+            
             string soapEnvelope = envelopeTemplate
                 .Replace("{{SessionId}}", SOAPHelper.GetValueOrEmpty(requestDTO.SessionId))
-                .Replace("{{BuildingId}}", SOAPHelper.GetValueOrEmpty(requestDTO.BuildingId))
-                .Replace("{{LocationId}}", SOAPHelper.GetValueOrEmpty(requestDTO.LocationId))
-                .Replace("{{CategoryId}}", SOAPHelper.GetValueOrEmpty(requestDTO.CategoryId))
-                .Replace("{{DisciplineId}}", SOAPHelper.GetValueOrEmpty(requestDTO.DisciplineId))
-                .Replace("{{PriorityId}}", SOAPHelper.GetValueOrEmpty(requestDTO.PriorityId))
-                .Replace("{{InstructionId}}", SOAPHelper.GetValueOrEmpty(requestDTO.InstructionId))
-                .Replace("{{Description}}", SOAPHelper.GetValueOrEmpty(requestDTO.Description))
-                .Replace("{{ReporterName}}", SOAPHelper.GetValueOrEmpty(requestDTO.ReporterName))
-                .Replace("{{ReporterEmail}}", SOAPHelper.GetValueOrEmpty(requestDTO.ReporterEmail))
-                .Replace("{{ReporterPhoneNumber}}", SOAPHelper.GetValueOrEmpty(requestDTO.ReporterPhoneNumber))
-                .Replace("{{ServiceRequestNumber}}", SOAPHelper.GetValueOrEmpty(requestDTO.ServiceRequestNumber))
-                .Replace("{{PropertyName}}", SOAPHelper.GetValueOrEmpty(requestDTO.PropertyName))
-                .Replace("{{Technician}}", SOAPHelper.GetValueOrEmpty(requestDTO.Technician))
                 .Replace("{{SourceOrgId}}", SOAPHelper.GetValueOrEmpty(requestDTO.SourceOrgId))
-                .Replace("{{Status}}", SOAPHelper.GetValueOrEmpty(requestDTO.Status))
-                .Replace("{{SubStatus}}", SOAPHelper.GetValueOrEmpty(requestDTO.SubStatus))
-                .Replace("{{Priority}}", SOAPHelper.GetValueOrEmpty(requestDTO.Priority))
-                .Replace("{{ScheduledDate}}", SOAPHelper.GetValueOrEmpty(requestDTO.ScheduledDate))
-                .Replace("{{ScheduledTimeStart}}", SOAPHelper.GetValueOrEmpty(requestDTO.ScheduledTimeStart))
-                .Replace("{{ScheduledTimeEnd}}", SOAPHelper.GetValueOrEmpty(requestDTO.ScheduledTimeEnd))
-                .Replace("{{RaisedDateUtc}}", SOAPHelper.GetValueOrEmpty(requestDTO.RaisedDateUtc));
+                .Replace("{{ReporterEmail}}", SOAPHelper.GetValueOrEmpty(requestDTO.ReporterEmail))
+                .Replace("{{BuildingId}}", SOAPHelper.GetValueOrEmpty(requestDTO.BuildingId))
+                .Replace("{{ServiceRequestNumber}}", SOAPHelper.GetValueOrEmpty(requestDTO.ServiceRequestNumber))
+                .Replace("{{CategoryId}}", SOAPHelper.GetValueOrEmpty(requestDTO.CategoryId))
+                .Replace("{{ContractId}}", SOAPHelper.GetValueOrEmpty(requestDTO.ContractId))
+                .Replace("{{DisciplineId}}", SOAPHelper.GetValueOrEmpty(requestDTO.DisciplineId))
+                .Replace("{{InstructionId}}", SOAPHelper.GetValueOrEmpty(requestDTO.InstructionId))
+                .Replace("{{LocationId}}", SOAPHelper.GetValueOrEmpty(requestDTO.LocationId))
+                .Replace("{{Description}}", SOAPHelper.GetValueOrEmpty(requestDTO.Description))
+                .Replace("{{ReporterPhoneNumber}}", SOAPHelper.GetValueOrEmpty(requestDTO.ReporterPhoneNumber))
+                .Replace("{{PriorityId}}", SOAPHelper.GetValueOrEmpty(requestDTO.PriorityId))
+                .Replace("{{RaisedDateUtc}}", SOAPHelper.GetValueOrEmpty(requestDTO.RaisedDateUtc))
+                .Replace("{{ReporterName}}", SOAPHelper.GetValueOrEmpty(requestDTO.ReporterName))
+                .Replace("{{ScheduledDateUtc}}", SOAPHelper.GetValueOrEmpty(scheduledDateUtc));
             
             string apiUrl = $"{_appConfigs.BaseUrl}{_appConfigs.CreateBreakdownTaskResourcePath}";
             

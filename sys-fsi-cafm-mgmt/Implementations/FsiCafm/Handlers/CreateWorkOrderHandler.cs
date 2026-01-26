@@ -3,6 +3,7 @@ using Core.Exceptions;
 using Core.Extensions;
 using Core.SystemLayer.Exceptions;
 using Core.SystemLayer.Handlers;
+using FsiCafmSystem.ConfigModels;
 using FsiCafmSystem.Constants;
 using FsiCafmSystem.DTO.AtomicHandlerDTOs;
 using FsiCafmSystem.DTO.DownstreamDTOs;
@@ -11,6 +12,7 @@ using FsiCafmSystem.Helper;
 using FsiCafmSystem.Implementations.FsiCafm.AtomicHandlers;
 using FsiCafmSystem.Middleware;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Net;
 
 namespace FsiCafmSystem.Implementations.FsiCafm.Handlers
@@ -23,6 +25,7 @@ namespace FsiCafmSystem.Implementations.FsiCafm.Handlers
         private readonly GetBreakdownTasksByDtoAtomicHandler _getBreakdownTasksByDtoAtomicHandler;
         private readonly CreateBreakdownTaskAtomicHandler _createBreakdownTaskAtomicHandler;
         private readonly CreateEventAtomicHandler _createEventAtomicHandler;
+        private readonly AppConfigs _appConfigs;
         
         public CreateWorkOrderHandler(
             ILogger<CreateWorkOrderHandler> logger,
@@ -30,7 +33,8 @@ namespace FsiCafmSystem.Implementations.FsiCafm.Handlers
             GetInstructionSetsByDtoAtomicHandler getInstructionSetsByDtoAtomicHandler,
             GetBreakdownTasksByDtoAtomicHandler getBreakdownTasksByDtoAtomicHandler,
             CreateBreakdownTaskAtomicHandler createBreakdownTaskAtomicHandler,
-            CreateEventAtomicHandler createEventAtomicHandler)
+            CreateEventAtomicHandler createEventAtomicHandler,
+            IOptions<AppConfigs> options)
         {
             _logger = logger;
             _getLocationsByDtoAtomicHandler = getLocationsByDtoAtomicHandler;
@@ -38,6 +42,7 @@ namespace FsiCafmSystem.Implementations.FsiCafm.Handlers
             _getBreakdownTasksByDtoAtomicHandler = getBreakdownTasksByDtoAtomicHandler;
             _createBreakdownTaskAtomicHandler = createBreakdownTaskAtomicHandler;
             _createEventAtomicHandler = createEventAtomicHandler;
+            _appConfigs = options.Value;
         }
         
         public async Task<BaseResponseDTO> HandleAsync(CreateWorkOrderReqDTO request)
@@ -157,6 +162,14 @@ namespace FsiCafmSystem.Implementations.FsiCafm.Handlers
                     // Step 4: Create breakdown task
                     _logger.Info($"Creating breakdown task for: {workOrder.ServiceRequestNumber}");
                     
+                    // Build ScheduledDateUtc from ScheduledDate + ScheduledTimeStart (matching Boomi scripting function)
+                    string scheduledDateUtc = string.Empty;
+                    if (!string.IsNullOrWhiteSpace(workOrder.TicketDetails?.ScheduledDate) && 
+                        !string.IsNullOrWhiteSpace(workOrder.TicketDetails?.ScheduledTimeStart))
+                    {
+                        scheduledDateUtc = $"{workOrder.TicketDetails.ScheduledDate}T{workOrder.TicketDetails.ScheduledTimeStart}Z";
+                    }
+                    
                     CreateBreakdownTaskHandlerReqDTO createRequest = new CreateBreakdownTaskHandlerReqDTO
                     {
                         SessionId = sessionId,
@@ -180,7 +193,9 @@ namespace FsiCafmSystem.Implementations.FsiCafm.Handlers
                         ScheduledDate = workOrder.TicketDetails?.ScheduledDate ?? string.Empty,
                         ScheduledTimeStart = workOrder.TicketDetails?.ScheduledTimeStart ?? string.Empty,
                         ScheduledTimeEnd = workOrder.TicketDetails?.ScheduledTimeEnd ?? string.Empty,
-                        RaisedDateUtc = workOrder.TicketDetails?.RaisedDateUtc ?? string.Empty
+                        ScheduledDateUtc = scheduledDateUtc,
+                        RaisedDateUtc = workOrder.TicketDetails?.RaisedDateUtc ?? string.Empty,
+                        ContractId = _appConfigs.ContractId ?? string.Empty
                     };
                     
                     Core.SystemLayer.Middlewares.HttpResponseSnapshot createResponse = await _createBreakdownTaskAtomicHandler.Handle(createRequest);

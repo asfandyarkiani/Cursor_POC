@@ -1,31 +1,25 @@
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.fsi.co.uk/services/evolution/04/09" xmlns:fsi="http://schemas.datacontract.org/2004/07/Fsi.Platform.Contracts.ServiceModel" xmlns:fsi1="http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel">
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.fsi.co.uk/services/evolution/04/09" xmlns:fsi1="http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel">
    <soapenv:Header/>
    <soapenv:Body>
       <ns:CreateBreakdownTask>
          <ns:sessionId>{{SessionId}}</ns:sessionId>
-         <ns:dto>
+         <ns:breakdownTaskDto>
+            <fsi1:BDET_CALLER_SOURCE_ID>{{SourceOrgId}}</fsi1:BDET_CALLER_SOURCE_ID>
+            <fsi1:BDET_EMAIL>{{ReporterEmail}}</fsi1:BDET_EMAIL>
             <fsi1:BuildingId>{{BuildingId}}</fsi1:BuildingId>
-            <fsi1:LocationId>{{LocationId}}</fsi1:LocationId>
+            <fsi1:CallId>{{ServiceRequestNumber}}</fsi1:CallId>
             <fsi1:CategoryId>{{CategoryId}}</fsi1:CategoryId>
+            <fsi1:ContractId>{{ContractId}}</fsi1:ContractId>
             <fsi1:DisciplineId>{{DisciplineId}}</fsi1:DisciplineId>
-            <fsi1:PriorityId>{{PriorityId}}</fsi1:PriorityId>
             <fsi1:InstructionId>{{InstructionId}}</fsi1:InstructionId>
-            <fsi1:Description>{{Description}}</fsi1:Description>
-            <fsi1:ReporterName>{{ReporterName}}</fsi1:ReporterName>
-            <fsi1:ReporterEmail>{{ReporterEmail}}</fsi1:ReporterEmail>
-            <fsi1:ReporterPhoneNumber>{{ReporterPhoneNumber}}</fsi1:ReporterPhoneNumber>
-            <fsi1:ServiceRequestNumber>{{ServiceRequestNumber}}</fsi1:ServiceRequestNumber>
-            <fsi1:PropertyName>{{PropertyName}}</fsi1:PropertyName>
-            <fsi1:Technician>{{Technician}}</fsi1:Technician>
-            <fsi1:SourceOrgId>{{SourceOrgId}}</fsi1:SourceOrgId>
-            <fsi1:Status>{{Status}}</fsi1:Status>
-            <fsi1:SubStatus>{{SubStatus}}</fsi1:SubStatus>
-            <fsi1:Priority>{{Priority}}</fsi1:Priority>
-            <fsi1:ScheduledDate>{{ScheduledDate}}</fsi1:ScheduledDate>
-            <fsi1:ScheduledTimeStart>{{ScheduledTimeStart}}</fsi1:ScheduledTimeStart>
-            <fsi1:ScheduledTimeEnd>{{ScheduledTimeEnd}}</fsi1:ScheduledTimeEnd>
+            <fsi1:LocationId>{{LocationId}}</fsi1:LocationId>
+            <fsi1:LongDescription>{{Description}}</fsi1:LongDescription>
+            <fsi1:Phone>{{ReporterPhoneNumber}}</fsi1:Phone>
+            <fsi1:PriorityId>{{PriorityId}}</fsi1:PriorityId>
             <fsi1:RaisedDateUtc>{{RaisedDateUtc}}</fsi1:RaisedDateUtc>
-         </ns:dto>
+            <fsi1:ReporterName>{{ReporterName}}</fsi1:ReporterName>
+            <fsi1:ScheduledDateUtc>{{ScheduledDateUtc}}</fsi1:ScheduledDateUtc>
+         </ns:breakdownTaskDto>
       </ns:CreateBreakdownTask>
    </soapenv:Body>
 </soapenv:Envelope>

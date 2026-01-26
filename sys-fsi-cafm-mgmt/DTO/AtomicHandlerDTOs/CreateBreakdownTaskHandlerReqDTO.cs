@@ -26,7 +26,9 @@ namespace FsiCafmSystem.DTO.AtomicHandlerDTOs
         public string ScheduledDate { get; set; } = string.Empty;
         public string ScheduledTimeStart { get; set; } = string.Empty;
         public string ScheduledTimeEnd { get; set; } = string.Empty;
+        public string ScheduledDateUtc { get; set; } = string.Empty;
         public string RaisedDateUtc { get; set; } = string.Empty;
+        public string ContractId { get; set; } = string.Empty;
         
         public void ValidateDownStreamRequestParameters()
         {

@@ -34,6 +34,9 @@ namespace FsiCafmSystem.ConfigModels
         public string? FsiUsername { get; set; }
         public string? FsiPassword { get; set; }
         
+        // Business Configuration
+        public string? ContractId { get; set; }
+        
         // SMTP Configuration
         public string SmtpHost { get; set; } = string.Empty;
         public int SmtpPort { get; set; } = 587;
