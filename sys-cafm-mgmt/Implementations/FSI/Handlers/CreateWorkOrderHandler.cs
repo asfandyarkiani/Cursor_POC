@@ -159,28 +159,31 @@ namespace CAFMSystem.Implementations.FSI.Handlers
 
                     // Step 4: Create breakdown task (aggregate all lookups)
                     _logger.Info($"Creating breakdown task for SR: {workOrder.ServiceRequestNumber}");
+                    
+                    // Format dates (Boomi uses scripting to format dates with specific format)
+                    string raisedDateUtc = FormatDateUtc(workOrder.TicketDetails?.RaisedDateUtc);
+                    string scheduledDateUtc = FormatScheduledDateUtc(
+                        workOrder.TicketDetails?.ScheduledDate,
+                        workOrder.TicketDetails?.ScheduledTimeStart);
+                    
                     CreateBreakdownTaskHandlerReqDTO taskRequest = new CreateBreakdownTaskHandlerReqDTO
                     {
                         SessionId = sessionId,
-                        CallerSourceId = workOrder.ServiceRequestNumber,
-                        Comments = workOrder.Description,
-                        ContactEmail = workOrder.ReporterEmail,
-                        ContactName = workOrder.ReporterName,
-                        ContactPhone = workOrder.ReporterPhoneNumber,
+                        BdetCallerSourceId = "TODO_BDET_CALLER_SOURCE_ID", // TODO: Get from configuration
+                        ReporterEmail = workOrder.ReporterEmail,
                         BuildingId = locationData.BuildingId!,
+                        CallId = workOrder.ServiceRequestNumber,
                         CategoryId = instructionData.IN_FKEY_CAT_SEQ ?? string.Empty,
-                        DisciplineId = instructionData.IN_FKEY_LAB_SEQ ?? string.Empty,
-                        LocationId = locationData.LocationId!,
-                        PriorityId = instructionData.IN_FKEY_PRI_SEQ ?? string.Empty,
-                        LoggedBy = "EQARCOM+",
-                        RaisedDate = workOrder.TicketDetails?.RaisedDateUtc ?? string.Empty,
-                        ScheduledDate = workOrder.TicketDetails?.ScheduledDate ?? string.Empty,
-                        ScheduledEndTime = workOrder.TicketDetails?.ScheduledTimeEnd ?? string.Empty,
-                        ScheduledStartTime = workOrder.TicketDetails?.ScheduledTimeStart ?? string.Empty,
-                        Status = workOrder.TicketDetails?.Status ?? string.Empty,
-                        SubStatus = workOrder.TicketDetails?.SubStatus ?? string.Empty,
                         ContractId = "TODO_CONTRACT_ID", // TODO: Get from configuration
-                        InstructionId = instructionData.IN_SEQ!
+                        DisciplineId = instructionData.IN_FKEY_LAB_SEQ ?? string.Empty,
+                        InstructionId = instructionData.IN_SEQ!,
+                        LocationId = locationData.LocationId!,
+                        LongDescription = workOrder.Description,
+                        ReporterPhone = workOrder.ReporterPhoneNumber,
+                        PriorityId = instructionData.IN_FKEY_PRI_SEQ ?? string.Empty,
+                        RaisedDateUtc = raisedDateUtc,
+                        ReporterName = workOrder.ReporterName,
+                        ScheduledDateUtc = scheduledDateUtc
                     };
 
                     HttpResponseSnapshot taskResponse = await _createBreakdownTaskAtomicHandler.Handle(taskRequest);
@@ -254,6 +257,50 @@ namespace CAFMSystem.Implementations.FSI.Handlers
                 message: InfoConstants.CREATE_WORK_ORDER_SUCCESS,
                 data: CreateWorkOrderResDTO.Map(results),
                 errorCode: null);
+        }
+
+        /// <summary>
+        /// Formats date to UTC with specific format matching Boomi scripting.
+        /// Boomi format: yyyy-MM-ddTHH:mm:ss.0208713Z
+        /// </summary>
+        private string FormatDateUtc(string? dateString)
+        {
+            if (string.IsNullOrWhiteSpace(dateString))
+                return string.Empty;
+
+            try
+            {
+                DateTime date = DateTime.Parse(dateString);
+                // Format to match Boomi: yyyy-MM-ddTHH:mm:ss.0208713Z
+                return date.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss") + ".0208713Z";
+            }
+            catch
+            {
+                return dateString; // Return as-is if parsing fails
+            }
+        }
+
+        /// <summary>
+        /// Formats scheduled date and time to UTC with specific format matching Boomi scripting.
+        /// Combines scheduledDate and scheduledTimeStart, then formats.
+        /// </summary>
+        private string FormatScheduledDateUtc(string? scheduledDate, string? scheduledTimeStart)
+        {
+            if (string.IsNullOrWhiteSpace(scheduledDate))
+                return string.Empty;
+
+            try
+            {
+                string timeStart = string.IsNullOrWhiteSpace(scheduledTimeStart) ? "00:00:00" : scheduledTimeStart;
+                string fullDateTime = $"{scheduledDate}T{timeStart}Z";
+                DateTime date = DateTime.Parse(fullDateTime);
+                // Format to match Boomi: yyyy-MM-ddTHH:mm:ss.0208713Z
+                return date.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss") + ".0208713Z";
+            }
+            catch
+            {
+                return scheduledDate; // Return as-is if parsing fails
+            }
         }
     }
 }
