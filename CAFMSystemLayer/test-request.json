@@ -1,0 +1,46 @@
+{
+  "workOrders": [
+    {
+      "reporterName": "John Doe",
+      "reporterEmail": "john.doe@example.com",
+      "reporterPhoneNumber": "+971501234567",
+      "description": "AC not working in unit A-101. Temperature is too high and residents are complaining.",
+      "serviceRequestNumber": "EQ-2024-001234",
+      "propertyName": "Tower A",
+      "unitCode": "A-101",
+      "categoryName": "HVAC",
+      "subCategory": "Air Conditioning",
+      "technician": "Tech-001",
+      "sourceOrgId": "ORG-001",
+      "ticketDetails": {
+        "status": "Open",
+        "subStatus": "Pending Assignment",
+        "priority": "High",
+        "scheduledDate": "2024-01-26",
+        "scheduledTimeStart": "09:00",
+        "scheduledTimeEnd": "12:00"
+      }
+    },
+    {
+      "reporterName": "Jane Smith",
+      "reporterEmail": "jane.smith@example.com",
+      "reporterPhoneNumber": "+971509876543",
+      "description": "Water leakage in bathroom",
+      "serviceRequestNumber": "EQ-2024-001235",
+      "propertyName": "Tower B",
+      "unitCode": "B-205",
+      "categoryName": "Plumbing",
+      "subCategory": "Water Leak",
+      "technician": "Tech-002",
+      "sourceOrgId": "ORG-001",
+      "ticketDetails": {
+        "status": "Open",
+        "subStatus": "New",
+        "priority": "Critical",
+        "scheduledDate": "2024-01-26",
+        "scheduledTimeStart": "08:00",
+        "scheduledTimeEnd": "10:00"
+      }
+    }
+  ]
+}

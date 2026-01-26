@@ -1,4 +1,4 @@
-using Core.Validators;
+using Core.DTOs;
 
 namespace CAFMSystemLayer.ConfigModels
 {
