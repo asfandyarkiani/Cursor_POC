@@ -1,0 +1,2848 @@
+---
+description: Always apply. Non-negotiable rules for Boomi extraction in this repo.
+alwaysApply: true
+---
+# BOOMI PROCESS EXTRACTION RULES
+
+**Purpose:** Extract true execution sequence from ANY Boomi process  
+**Scope:** Universal - Applicable to ALL Boomi process types  
+**Version:** 2.0 - Prescriptive Extraction Guide
+
+---
+
+## 🚨 CRITICAL PRINCIPLES (NEVER VIOLATE)
+
+**🛑 EXPLICIT ENFORCEMENT: These principles are NON-NEGOTIABLE. Violation will result in incorrect extraction.**
+
+1. **Data dependencies ALWAYS override visual layout** - If OperationA writes Property_X and OperationB reads Property_X, OperationA MUST execute before OperationB, regardless of dragpoint order.
+   - **ENFORCEMENT**: You MUST check data dependencies FIRST before following dragpoints
+   - **VALIDATION**: All property reads must happen after property writes - verify this in Phase 1 document
+
+2. **Check-before-create pattern is MANDATORY** - Existence checks (GetEntity → Decision → Create) execute BEFORE creation operations. If entity exists, process exits early.
+   - **ENFORCEMENT**: Check operations MUST execute before create operations - verify in execution order
+
+3. **Topological sort is MANDATORY for branch paths** - If branch paths have data dependencies, you MUST build dependency graph and sort paths before determining execution order.
+   - **ENFORCEMENT**: You CANNOT assume branches are parallel - you MUST analyze dependencies first
+   - **VALIDATION**: Branch analysis section in Phase 1 MUST show dependency graph and topological sort
+
+4. **Decision analysis is BLOCKING** - You CANNOT create sequence diagram until ALL decision shapes are analyzed and both TRUE/FALSE paths traced to termination.
+   - **ENFORCEMENT**: Sequence diagram section CANNOT be created until decision analysis section exists in Phase 1
+   - **VALIDATION**: All decision TRUE/FALSE paths must be traced and documented
+
+5. **Early exits change entire flow** - If decision path leads to Return Documents, that is an early exit and must be documented in sequence.
+   - **ENFORCEMENT**: Early exits MUST be marked [EARLY EXIT] in sequence diagram
+
+6. **DO NOT ASSUME - YOU MUST ANALYZE** - Never assume branch classification, execution order, or dependencies. Always extract from JSON and show proof.
+   - **ENFORCEMENT**: All analysis must be documented in Phase 1 with proof (JSON references, dependency graphs)
+   - **VALIDATION**: If you cannot show proof of analysis → You assumed → WRONG
+
+7. **🚨 CRITICAL: ALL API CALLS ARE SEQUENTIAL** - There is NO concept of parallel API calls in Azure Functions migration. All API calls (REST, SOAP, HTTP operations) MUST execute sequentially, one after another.
+   - **ENFORCEMENT**: If a branch contains API calls, it is ALWAYS SEQUENTIAL, regardless of data dependencies
+   - **ENFORCEMENT**: Branch paths with API calls MUST be ordered sequentially (Path 1 → Path 2 → Path 3)
+   - **VALIDATION**: All branch classifications involving API calls must be marked as SEQUENTIAL
+   - **RULE**: Even if branch paths have no data dependencies, if they contain API calls, they execute sequentially
+
+8. **🚨 CRITICAL: Map field names are AUTHORITATIVE for SOAP envelopes** - Profiles define SOAP schema (technical names), maps show actual usage (simplified names). When profile and map field names differ, ALWAYS use map field names.
+   - **ENFORCEMENT**: You MUST complete Step 1d (Map Analysis) before creating SOAP envelopes
+   - **VALIDATION**: All SOAP envelopes must use field names from maps, not profiles
+   - **EXAMPLE:** Profile says "BDET_FKEY_CAT_SEQ", map uses "CategoryId" → Use "CategoryId"
+   - **RULE**: Profile field names are schema reference only, map field names are actual SOAP field names
+
+---
+
+## 📋 MANDATORY EXTRACTION WORKFLOW
+
+### STEP 1: Load JSON Files and Build Lookup Tables
+
+```
+FOR EACH file in process directory:
+  IF file matches pattern: process_*.json → Main process
+  IF file matches pattern: subprocess_*.json → Subprocess
+  IF file matches pattern: operation_*.json → Operation
+  IF file matches pattern: profile_*.json → Profile
+  IF file matches pattern: map_*.json → Map
+
+BUILD:
+  shapes_by_id = {}  # { "shape1": shape_object, "shape2": shape_object }
+  operations_by_id = {}  # { "operation_guid": operation_object }
+  profiles_by_id = {}  # { "profile_guid": profile_object }
+```
+
+### STEP 1a: Input Structure Analysis (MANDATORY - CONTRACT VERIFICATION)
+
+**🛑 EXPLICIT ENFORCEMENT - CRITICAL STEP:**
+
+**YOU CANNOT PROCEED TO PHASE 2** until this step is complete and documented.
+
+**🚨 CRITICAL:** This step ensures DTOs exactly match Boomi process contracts. **NEVER SKIP.**
+
+**REQUIRED OUTPUT**: You MUST create a section in Phase 1 document titled:
+```
+## Input Structure Analysis (Step 1a)
+```
+
+This section MUST be created BEFORE proceeding to Phase 2.
+
+**VALIDATION CHECKPOINT**: 
+- If Phase 1 document does NOT contain section "Input Structure Analysis (Step 1a)" → Step 1a NOT complete → **CANNOT PROCEED TO PHASE 2**
+
+```
+# Step 1: Identify Entry Point Operation
+entry_operation = find_entry_operation(process_json)  # Usually "start" shape with connectoraction
+entry_operation_id = entry_operation.connectoraction.operationId
+entry_operation_json = operations_by_id[entry_operation_id]
+
+# Step 2: Extract Request Profile
+IF entry_operation_json.type == "connector-action" AND entry_operation_json.subType == "wss":
+  request_profile_id = entry_operation_json.configuration.WebServicesServerListenAction.requestProfile
+ELSE IF entry_operation_json.type == "connector-action" AND entry_operation_json.subType == "http":
+  request_profile_id = entry_operation_json.configuration.HttpRequestAction.requestProfile
+ELSE:
+  # Check other operation types (ftp, database, etc.)
+  request_profile_id = extract_request_profile_id(entry_operation_json)
+
+request_profile = profiles_by_id[request_profile_id]
+
+# Step 3: Analyze Profile Structure
+IF request_profile.type == "profile.json":
+  input_structure = analyze_json_profile_structure(request_profile)
+ELSE IF request_profile.type == "profile.xml":
+  input_structure = analyze_xml_profile_structure(request_profile)
+ELSE:
+  ERROR: Unknown profile type
+
+FUNCTION analyze_json_profile_structure(profile):
+  structure = {
+    "rootElement": None,
+    "isArray": False,
+    "arrayCardinality": {"minOccurs": 0, "maxOccurs": 1},
+    "fields": [],
+    "nestedStructures": [],
+    "fieldPaths": {}  # Full paths like "Root/Object/entityArray/Array/ArrayElement1/Object/fieldName"
+  }
+  
+  # Extract root element
+  root = profile.JSONProfile.DataElements[0].JSONRootValue
+  structure.rootElement = root.name  # Usually "Root"
+  
+  # Traverse JSON structure
+  traverse_json_structure(root, structure, current_path="Root")
+  
+  RETURN structure
+
+FUNCTION traverse_json_structure(element, structure, current_path=""):
+  # Check for JSONObject
+  IF element.JSONObject exists:
+    FOR EACH entry in element.JSONObject.JSONObjectEntry[]:
+      field_name = entry.name
+      field_path = f"{current_path}/Object/{field_name}"
+      
+      # Check if this field is an array
+      IF entry.JSONArray exists:
+        array_info = {
+          "name": field_name,
+          "path": field_path,
+          "isArray": True,
+          "elementType": entry.JSONArray.elementType,  # "repeating" or "single"
+          "minOccurs": entry.JSONArray.JSONArrayElement[0].minOccurs,
+          "maxOccurs": entry.JSONArray.JSONArrayElement[0].maxOccurs,
+          "arrayElementName": entry.JSONArray.JSONArrayElement[0].name
+        }
+        structure.isArray = True
+        structure.arrayCardinality = {
+          "minOccurs": array_info["minOccurs"],
+          "maxOccurs": array_info["maxOccurs"]
+        }
+        structure.nestedStructures.append(array_info)
+        
+        # Traverse array element structure
+        array_element = entry.JSONArray.JSONArrayElement[0]
+        array_element_path = f"{field_path}/Array/{array_info['arrayElementName']}"
+        traverse_json_structure(array_element, structure, array_element_path)
+      ELSE:
+        # Regular field
+        field_info = {
+          "name": field_name,
+          "path": field_path,
+          "dataType": entry.dataType,
+          "isRequired": entry.allowEmpty == "false",
+          "isMappable": entry.isMappable == "true"
+        }
+        structure.fields.append(field_info)
+        structure.fieldPaths[field_path] = field_info
+        
+        # Check for nested JSONObject
+        IF entry.JSONObject exists:
+          traverse_json_structure(entry, structure, field_path)
+
+FUNCTION analyze_xml_profile_structure(profile):
+  # Similar traversal for XML profiles
+  structure = {
+    "rootElement": None,
+    "isArray": False,
+    "arrayCardinality": {"minOccurs": 0, "maxOccurs": 1},
+    "fields": [],
+    "nestedStructures": [],
+    "fieldPaths": {}
+  }
+  
+  # Extract root element from XMLProfile
+  root = profile.XMLProfile.DataElements[0].XMLRootValue
+  structure.rootElement = root.name
+  
+  # Traverse XML structure (similar to JSON but with XML-specific elements)
+  traverse_xml_structure(root, structure, current_path=root.name)
+  
+  RETURN structure
+
+# Step 4: Document Input Structure
+input_structure_documentation = {
+  "profileId": request_profile_id,
+  "profileName": request_profile.name,
+  "profileType": request_profile.type,
+  "structure": input_structure,
+  "inputType": entry_operation_json.configuration.WebServicesServerListenAction.inputType,  # "singlejson", "document", etc.
+  "documentProcessingBehavior": determine_document_processing_behavior(input_structure, entry_operation_json)
+}
+
+FUNCTION determine_document_processing_behavior(structure, operation):
+  # If inputType is "singlejson" and structure has array:
+  IF operation.inputType == "singlejson" AND structure.isArray:
+    RETURN {
+      "behavior": "document_splitting",
+      "description": "Boomi automatically splits array into separate documents. Each array element triggers separate process execution.",
+      "executionPattern": "one_per_element",
+      "sessionManagement": "one_session_per_execution"
+    }
+  ELSE IF operation.inputType == "document":
+    RETURN {
+      "behavior": "batch_processing",
+      "description": "Boomi processes entire document as single execution.",
+      "executionPattern": "single_execution",
+      "sessionManagement": "one_session_per_execution"
+    }
+  ELSE:
+    RETURN {
+      "behavior": "single_document",
+      "description": "Boomi processes single document.",
+      "executionPattern": "single_execution",
+      "sessionManagement": "one_session_per_execution"
+    }
+
+# Step 5: Extract ALL Fields (Including Nested)
+all_fields = []
+extract_all_fields_recursive(input_structure, all_fields, parent_path="")
+
+FUNCTION extract_all_fields_recursive(structure, fields_list, parent_path):
+  FOR EACH field in structure.fields:
+    full_path = f"{parent_path}/{field.name}" if parent_path else field.name
+    fields_list.append({
+      "name": field.name,
+      "fullPath": full_path,
+      "dataType": field.dataType,
+      "isRequired": field.isRequired,
+      "isMappable": field.isMappable,
+      "parentPath": parent_path
+    })
+  
+  FOR EACH nested in structure.nestedStructures:
+    nested_path = f"{parent_path}/{nested.name}" if parent_path else nested.name
+    extract_all_fields_recursive(nested, fields_list, nested_path)
+
+# Step 6: Generate Field Mapping Table
+field_mapping_table = []
+FOR EACH field in all_fields:
+  field_mapping_table.append({
+    "boomiFieldPath": field.fullPath,
+    "boomiFieldName": field.name,
+    "dataType": field.dataType,
+    "isRequired": field.isRequired,
+    "azureDTOProperty": generate_azure_property_name(field.name),  # PascalCase conversion
+    "notes": determine_field_usage(field, process_json)
+  })
+
+FUNCTION generate_azure_property_name(boomi_name):
+  # Convert Boomi field name to C# property name
+  # Examples:
+  # "fieldName" → "FieldName"
+  # "entityCode" → "EntityCode"
+  # "nestedObject" → "NestedObject"
+  parts = boomi_name.split(/(?=[A-Z])/)  # Split on camelCase boundaries
+  return "".join([part.capitalize() for part in parts])
+
+FUNCTION determine_field_usage(field, process_json):
+  # Search process for usage of this field
+  usage = []
+  FOR EACH shape in process_json.shapes[]:
+    IF field appears in shape configuration:
+      usage.append(f"Used in {shape.shapetype} {shape.shapeId}")
+  RETURN "; ".join(usage) if usage else "Not found in process flow"
+
+OUTPUT: Complete input structure analysis with field mapping table
+```
+
+**CRITICAL RULES:**
+1. **Input structure analysis is MANDATORY** - Must be completed before Phase 2
+2. **Array detection is CRITICAL** - If array found, Process Layer DTO MUST accept List<T>
+3. **Field mapping is EXACT** - Every Boomi field MUST have corresponding Azure DTO property
+4. **Nested structures MUST be analyzed** - All nested objects/arrays must be extracted
+5. **Cardinality matters** - minOccurs/maxOccurs determine if field is optional/required
+6. **Document processing behavior MUST be documented** - How Boomi processes input affects Azure implementation
+
+**Validation Checklist:**
+- [ ] Request profile identified from entry operation
+- [ ] Profile structure analyzed (JSON or XML)
+- [ ] Array vs single object detected
+- [ ] Array cardinality documented (minOccurs, maxOccurs)
+- [ ] ALL fields extracted (including nested)
+- [ ] Field paths documented (full Boomi paths)
+- [ ] Field mapping table generated (Boomi → Azure DTO)
+- [ ] Document processing behavior determined
+- [ ] Input structure documented in Phase 1 document
+
+### STEP 1b: Response Structure Analysis (MANDATORY - CONTRACT VERIFICATION)
+
+**🛑 EXPLICIT ENFORCEMENT - CRITICAL STEP:**
+
+**YOU CANNOT PROCEED TO PHASE 2** until this step is complete and documented.
+
+**🚨 CRITICAL:** Analyze response profile to ensure response DTOs match exactly.
+
+**REQUIRED OUTPUT**: You MUST create a section in Phase 1 document titled:
+```
+## Response Structure Analysis (Step 1b)
+```
+
+This section MUST be created BEFORE proceeding to Phase 2.
+
+**VALIDATION CHECKPOINT**: 
+- If Phase 1 document does NOT contain section "Response Structure Analysis (Step 1b)" → Step 1b NOT complete → **CANNOT PROCEED TO PHASE 2**
+
+```
+# Step 1: Identify Response Profile
+IF entry_operation_json.type == "connector-action" AND entry_operation_json.subType == "wss":
+  response_profile_id = entry_operation_json.configuration.WebServicesServerListenAction.responseProfile
+ELSE:
+  response_profile_id = extract_response_profile_id(entry_operation_json)
+
+response_profile = profiles_by_id[response_profile_id]
+
+# Step 2: Analyze Response Structure (same as input structure analysis)
+response_structure = analyze_profile_structure(response_profile)
+
+# Step 3: Generate Response Field Mapping Table
+response_field_mapping = generate_field_mapping_table(response_structure)
+
+OUTPUT: Complete response structure analysis with field mapping table
+```
+
+### STEP 1c: Analyze Operation Response Structures (NEW - MANDATORY)
+
+**🛑 EXPLICIT ENFORCEMENT - CRITICAL STEP:**
+
+**YOU CANNOT PROCEED TO STEP 7 (Decision Analysis)** until this step is complete and documented.
+
+**🚨 CRITICAL:** This step identifies what data operations produce, which is essential for:
+- Understanding if decisions check RESPONSE data vs INPUT data
+- Verifying actual execution order (operations that produce data must execute before operations that consume it)
+- Identifying business logic flow
+
+**REQUIRED OUTPUT**: You MUST create a section in Phase 1 document titled:
+```
+## Operation Response Analysis (Step 1c)
+```
+
+This section MUST be created BEFORE proceeding to Step 7 or Step 9.
+
+**VALIDATION CHECKPOINT**: 
+- If Phase 1 document does NOT contain section "Operation Response Analysis (Step 1c)" → Step 1c NOT complete → **CANNOT PROCEED TO STEP 7**
+
+```
+operation_response_analysis = []
+
+FOR EACH operation in operations_by_id.values():
+  IF operation has responseProfile:
+    response_profile_id = operation.responseProfile
+    response_profile_json = profiles_by_id[response_profile_id]
+    
+    # Analyze response structure
+    response_structure = analyze_profile_structure(response_profile_json)
+    
+    # Identify fields that might be extracted (via documentproperties shapes)
+    extracted_fields = []
+    FOR EACH shape in shapes_by_id.values():
+      IF shape.shapetype == "documentproperties":
+        FOR EACH assignment in shape.documentproperties.propertyassignments[]:
+          FOR EACH sourcevalue in assignment.sourcevalues[]:
+            IF sourcevalue.valueType == "profile":
+              IF sourcevalue.profileelement.profileId == response_profile_id:
+                # This field is extracted from operation response
+                field_name = sourcevalue.profileelement.elementName
+                extracted_fields.append({
+                  "field": field_name,
+                  "extractedBy": shape.shapeId,
+                  "writtenToProperty": assignment.propertyId
+                })
+    
+    # Identify operations/decisions that use response data
+    consumers = []
+    FOR EACH extracted_field in extracted_fields:
+      property_name = extracted_field["writtenToProperty"]
+      # Find shapes that read this property
+      IF property_name in property_reads:
+        consumers.extend(property_reads[property_name])
+    
+    operation_response_analysis.append({
+      "operationId": operation.operationId,
+      "operationName": operation.name,
+      "responseProfileId": response_profile_id,
+      "responseStructure": response_structure,
+      "extractedFields": extracted_fields,
+      "consumers": consumers  # Operations/decisions that use response data
+    })
+
+OUTPUT: Complete analysis of all operation responses, extracted fields, and consumers
+```
+
+**REQUIRED DOCUMENTATION IN PHASE 1:**
+
+You MUST document in Phase 1 section "Operation Response Analysis (Step 1c)":
+
+1. **Operation Response Inventory:**
+   - For each operation with response profile: Operation ID, name, response profile ID
+   - Response structure (fields, types, cardinality)
+
+2. **Extracted Fields:**
+   - For each operation: List of fields extracted from response (via documentproperties shapes)
+   - Which shape extracts each field
+   - Which process property each field is written to
+
+3. **Data Consumers:**
+   - For each extracted field: List of operations/decisions that use the data
+   - **PROOF**: Show property dependency chain (Operation → Extract → Write Property → Read Property → Consumer)
+
+4. **Business Logic Implications:**
+   - For each operation: What operations MUST execute after it (because they consume its response data)
+   - For each decision: Does it check response data? If yes, which operation produces that data?
+
+**EXAMPLE:**
+```
+OperationA:
+  - Response Profile: [profile-guid]
+  - Extracted Field: EntityId (extracted by shapeX, written to process.Property_EntityId)
+  - Consumers: shapeY (OperationB) reads process.Property_EntityId
+  - Business Logic: OperationA MUST execute BEFORE OperationB
+```
+
+**IF OPERATION RESPONSE ANALYSIS IS MISSING → Step 1c NOT complete → CANNOT PROCEED TO STEP 7**
+
+### STEP 1d: Map Analysis (MANDATORY - SOAP FIELD NAME VERIFICATION)
+
+**🛑 EXPLICIT ENFORCEMENT - CRITICAL STEP:**
+
+**YOU CANNOT PROCEED TO PHASE 2 (SOAP ENVELOPE CREATION)** until this step is complete and documented.
+
+**🚨 CRITICAL:** This step identifies ACTUAL field names used in SOAP requests, which may differ from profile field names. Profiles define SOAP schema (technical names), maps show actual usage (simplified names).
+
+**REQUIRED OUTPUT**: You MUST create a section in Phase 1 document titled:
+```
+## Map Analysis (Step 1d)
+```
+
+This section MUST be created BEFORE proceeding to Phase 2.
+
+**VALIDATION CHECKPOINT**: 
+- If Phase 1 document does NOT contain section "Map Analysis (Step 1d)" → Step 1d NOT complete → **CANNOT PROCEED TO PHASE 2**
+
+```
+# Step 1: Load all map files
+maps_by_id = {}
+FOR EACH file in process directory:
+  IF file matches pattern: map_*.json:
+    map_json = load_json(file)
+    map_id = map_json.componentId
+    maps_by_id[map_id] = map_json
+
+# Step 2: Identify SOAP request maps
+soap_request_maps = []
+FOR EACH map in maps_by_id.values():
+  to_profile_id = map.Map.toProfile
+  from_profile_id = map.Map.fromProfile
+  
+  # Check if target profile is used as request profile for SOAP operation
+  FOR EACH operation in operations_by_id.values():
+    IF operation.requestProfile == to_profile_id:
+      IF operation.subType in ["http", "soap", "wss"]:
+        soap_request_maps.append({
+          "mapId": map.componentId,
+          "mapName": map.name,
+          "operationId": operation.componentId,
+          "operationName": operation.name,
+          "fromProfile": from_profile_id,
+          "toProfile": to_profile_id,
+          "mapJson": map
+        })
+        BREAK
+
+# Step 3: Extract field mappings from each SOAP request map
+FOR EACH soap_map in soap_request_maps:
+  map_json = soap_map.mapJson
+  field_mappings = []
+  
+  FOR EACH mapping in map_json.Map.Mappings.Mapping[]:
+    # Extract target field name (SOAP request field - AUTHORITATIVE)
+    target_path = mapping.toNamePath
+    # Example: "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/CategoryId"
+    target_parts = target_path.split("/")
+    target_field_name = target_parts[-1]  # "CategoryId" - THIS IS THE ACTUAL SOAP FIELD NAME
+    target_element = target_parts[-2] if len(target_parts) > 1 else None  # "breakdownTaskDto"
+    
+    # Extract source information
+    source_info = extract_source_info(mapping, map_json)
+    
+    field_mappings.append({
+      "sourceField": source_info.field_name,
+      "sourceType": source_info.type,
+      "targetField": target_field_name,
+      "targetElement": target_element,
+      "targetPath": target_path,
+      "mapLineReference": f"Map {soap_map.mapId}, mapping entry"
+    })
+  
+  soap_map.field_mappings = field_mappings
+
+# Step 4: Compare profile field names vs map field names (CRITICAL)
+FOR EACH soap_map in soap_request_maps:
+  profile_id = soap_map.toProfile
+  profile_json = profiles_by_id[profile_id]
+  
+  discrepancies = []
+  
+  FOR EACH field_mapping in soap_map.field_mappings:
+    target_field = field_mapping.targetField
+    
+    # Search profile for this field name
+    profile_field_name = find_field_in_profile_by_path(profile_json, field_mapping.targetPath)
+    
+    IF profile_field_name != target_field:
+      # Profile uses different name than map
+      discrepancies.append({
+        "mapFieldName": target_field,
+        "profileFieldName": profile_field_name,
+        "authority": "MAP (use map field name)",
+        "issue": "Profile uses technical name, map uses actual SOAP field name"
+      })
+  
+  soap_map.discrepancies = discrepancies
+
+# Step 5: Analyze scripting functions (date formatting, concatenation, etc.)
+FOR EACH soap_map in soap_request_maps:
+  map_json = soap_map.mapJson
+  
+  IF map_json.Map.Functions exists:
+    scripting_functions = []
+    
+    FOR EACH function_step in map_json.Map.Functions.FunctionStep[]:
+      IF function_step.type == "Scripting":
+        scripting_functions.append({
+          "functionKey": function_step.key,
+          "functionName": function_step.name,
+          "inputs": extract_function_inputs(function_step),
+          "outputs": extract_function_outputs(function_step),
+          "script": function_step.Configuration.Scripting.ScriptToExecute._,
+          "language": function_step.Configuration.Scripting.language
+        })
+      ELIF function_step.type == "PropertyGet":
+        # Process property mapping
+        property_name = function_step.Inputs.Input[0].default
+        scripting_functions.append({
+          "functionKey": function_step.key,
+          "functionName": function_step.name,
+          "type": "ProcessProperty",
+          "propertyName": property_name
+        })
+      ELIF function_step.type == "DefinedProcessPropertyGet":
+        # Defined process property
+        property_name = function_step.Configuration.DefinedProcessProperty.propertyName
+        scripting_functions.append({
+          "functionKey": function_step.key,
+          "functionName": function_step.name,
+          "type": "DefinedProperty",
+          "propertyName": property_name
+        })
+    
+    soap_map.functions = scripting_functions
+
+# Step 6: Extract element names (dto, breakdownTaskDto, locationDto, etc.)
+FOR EACH soap_map in soap_request_maps:
+  # Extract from first field mapping target path
+  IF soap_map.field_mappings:
+    first_path = soap_map.field_mappings[0].targetPath
+    path_parts = first_path.split("/")
+    # Structure: Envelope/Body/{OperationName}/{ElementName}/{FieldName}
+    IF len(path_parts) >= 4:
+      soap_map.operationElement = path_parts[2]  # "CreateBreakdownTask"
+      soap_map.dtoElement = path_parts[3]  # "breakdownTaskDto" or "dto" or "locationDto"
+
+# Step 7: Extract namespace prefixes from Boomi message shapes
+FOR EACH soap_map in soap_request_maps:
+  operation_id = soap_map.operationId
+  
+  # Find message shape that builds SOAP request for this operation
+  FOR EACH shape in shapes_by_id.values():
+    IF shape.shapetype == "message":
+      # Check if this message shape is followed by connectoraction with this operation
+      next_shape_id = get_next_shape(shape.shapeId, control_flow)
+      IF next_shape_id:
+        next_shape = shapes_by_id[next_shape_id]
+        IF next_shape.shapetype == "connectoraction":
+          IF next_shape.connectoraction.operationId == operation_id:
+            # This message shape builds SOAP for this operation
+            soap_envelope = shape.message.msgTxt._
+            
+            # Extract namespace declarations
+            namespaces = extract_namespace_declarations(soap_envelope)
+            soap_map.namespaces = namespaces
+            soap_map.soapEnvelopeExample = soap_envelope
+            BREAK
+
+FUNCTION extract_source_info(mapping, map_json):
+  """
+  Extract source field information from mapping
+  """
+  IF mapping.fromType == "profile":
+    # Direct field mapping from input profile
+    source_path = mapping.fromNamePath
+    source_parts = source_path.split("/")
+    field_name = source_parts[-1]
+    RETURN {
+      "field_name": field_name,
+      "type": "profile",
+      "path": source_path
+    }
+  
+  ELIF mapping.fromType == "function":
+    # Mapping from function result (process property, scripting, etc.)
+    function_key = mapping.fromFunction
+    function_step = find_function_step(map_json, function_key)
+    
+    IF function_step.type == "PropertyGet":
+      # Process property
+      property_name = function_step.Inputs.Input[0].default
+      RETURN {
+        "field_name": property_name,
+        "type": "process_property",
+        "property": property_name
+      }
+    
+    ELIF function_step.type == "DefinedProcessPropertyGet":
+      # Defined process property
+      property_name = function_step.Configuration.DefinedProcessProperty.propertyName
+      RETURN {
+        "field_name": property_name,
+        "type": "defined_property",
+        "property": property_name
+      }
+    
+    ELIF function_step.type == "Scripting":
+      # Scripting function
+      output_name = function_step.Outputs.Output.name
+      RETURN {
+        "field_name": output_name,
+        "type": "scripting",
+        "script": function_step.Configuration.Scripting.ScriptToExecute._
+      }
+    
+    ELSE:
+      RETURN {
+        "field_name": "FUNCTION_RESULT",
+        "type": function_step.type
+      }
+  
+  ELIF mapping.fromType == "static":
+    # Static value
+    RETURN {
+      "field_name": "STATIC_VALUE",
+      "type": "static",
+      "value": mapping.staticValue if exists else "UNKNOWN"
+    }
+  
+  ELSE:
+    RETURN {
+      "field_name": "UNKNOWN",
+      "type": mapping.fromType
+    }
+
+FUNCTION find_function_step(map_json, function_key):
+  """
+  Find function step by key in map Functions section
+  """
+  IF map_json.Map.Functions exists:
+    FOR EACH function_step in map_json.Map.Functions.FunctionStep[]:
+      IF function_step.key == function_key:
+        RETURN function_step
+  RETURN None
+
+FUNCTION extract_namespace_declarations(soap_envelope):
+  """
+  Extract xmlns declarations from SOAP envelope string
+  """
+  namespaces = {}
+  # Pattern: xmlns:prefix="namespace-uri"
+  # Example: xmlns:fsi1="http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel"
+  import re
+  pattern = r'xmlns:(\w+)="([^"]+)"'
+  matches = re.findall(pattern, soap_envelope)
+  FOR EACH (prefix, uri) in matches:
+    namespaces[prefix] = uri
+  RETURN namespaces
+
+OUTPUT: Complete map analysis with field mappings, discrepancies, scripting functions, element names, and namespaces
+```
+
+**REQUIRED DOCUMENTATION IN PHASE 1:**
+
+You MUST document in Phase 1 section "Map Analysis (Step 1d)":
+
+1. **Map Inventory:**
+   - For each map: Map ID, name, source profile, target profile
+   - Identify which maps are SOAP request maps (target operation request profiles)
+
+2. **SOAP Request Field Mappings (CRITICAL):**
+   - For each SOAP request map: Complete list of field mappings
+   - Source field (input) → Target field (SOAP request)
+   - **CRITICAL:** Target field name is the ACTUAL field name used in SOAP request
+   - **PROOF:** Show map JSON line references for each mapping
+
+3. **Profile vs Map Comparison (MANDATORY):**
+   - For each operation: Compare profile field names vs map field names
+   - **PROOF:** Show where profile says "BDET_FKEY_CAT_SEQ" but map uses "CategoryId"
+   - Document ALL discrepancies in a table
+
+4. **Field Name Authority (CRITICAL RULE):**
+   - **RULE:** Map field names are AUTHORITATIVE for SOAP envelopes
+   - **RULE:** Profile field names are for schema reference only
+   - **CRITICAL:** ALWAYS use map field names when creating SOAP envelopes
+   - **NEVER use profile field names without verifying against map**
+
+5. **Scripting Functions:**
+   - For each scripting function: Inputs, outputs, script logic
+   - Document data transformations (date formatting, concatenation, etc.)
+   - Replicate transformation logic in Azure implementation
+
+6. **Element Names:**
+   - For each SOAP operation: Element name used (dto, breakdownTaskDto, locationDto, etc.)
+   - **CRITICAL:** Element names MUST match exactly in SOAP envelopes
+
+7. **Namespace Declarations:**
+   - For each SOAP operation: Namespace prefixes and URIs
+   - Extract from Boomi message shapes (not profiles)
+
+**IF MAP ANALYSIS IS MISSING → Step 1d NOT complete → CANNOT PROCEED TO PHASE 2**
+
+**EXAMPLE DOCUMENTATION:**
+
+```markdown
+## Map Analysis (Step 1d)
+
+### SOAP Request Maps Inventory
+
+| Map ID | Map Name | From Profile | To Profile | Operation | Type |
+|---|---|---|---|---|---|
+| 390614fd | CreateBreakdownTask EQ+_to_CAFM_Create | af096014 | 362c3ec8 | CreateBreakdownTask | SOAP Request |
+
+### Map: CreateBreakdownTask (390614fd-ae1d-496d-8a79-f320c8663049)
+
+**Field Mappings:**
+
+| Source Field | Source Type | Target Field (SOAP) | Map Line Ref | Notes |
+|---|---|---|---|---|
+| reporterName | profile | ReporterName | 30-41 | Direct mapping |
+| reporterEmail | profile | BDET_EMAIL | 43-53 | Direct mapping |
+| reporterPhoneNumber | profile | Phone | 55-65 | Direct mapping |
+| serviceRequestNumber | profile | CallId | 67-77 | Direct mapping |
+| description | profile | LongDescription | 145-155 | Direct mapping |
+| DPP_SessionId | process property | sessionId | 263-289 | From process property |
+| DPP_CategoryId | process property | CategoryId | 291-330 | From process property |
+| DDP_DisciplineId | process property | DisciplineId | 332-373 | From process property |
+| DPP_PriorityId | process property | PriorityId | 375-413 | From process property |
+| DPP_InstructionId | process property | InstructionId | 415-454 | From process property |
+| DPP_BuildingID | process property | BuildingId | 456-494 | From process property |
+| DPP_LocationID | process property | LocationId | 495-533 | From process property |
+| scheduledDate + scheduledTimeStart | scripting | ScheduledDateUtc | 535-607 | Date formatting script |
+| raisedDateUtc | scripting | RaisedDateUtc | 608-664 | Date formatting script |
+| ContractId | defined property | ContractId | 665-696 | From defined property |
+| BDET_CALLER_SOURCE_ID | defined property | BDET_CALLER_SOURCE_ID | 697-728 | From defined property |
+
+**Profile vs Map Discrepancies (CRITICAL):**
+
+| Profile Field Name | Map Field Name (ACTUAL) | Authority | Use in SOAP Envelope |
+|---|---|---|---|
+| BDET_FKEY_CAT_SEQ | CategoryId | ✅ MAP | CategoryId |
+| BDET_FKEY_LAB_SEQ | DisciplineId | ✅ MAP | DisciplineId |
+| BDET_FKEY_PRI_SEQ | PriorityId | ✅ MAP | PriorityId |
+| BDET_FKEY_BLD_SEQ | BuildingId | ✅ MAP | BuildingId |
+| BDET_FKEY_LOC_SEQ | LocationId | ✅ MAP | LocationId |
+| BDET_CONTACT_NAME | ReporterName | ✅ MAP | ReporterName |
+| BDET_CONTACT_EMAIL | BDET_EMAIL | ✅ MAP | BDET_EMAIL |
+| BDET_CONTACT_PHONE | Phone | ✅ MAP | Phone |
+| BDET_COMMENTS | LongDescription | ✅ MAP | LongDescription |
+| BDET_RAISED_DATE | RaisedDateUtc | ✅ MAP | RaisedDateUtc |
+| BDET_SCHEDULED_DATE | ScheduledDateUtc | ✅ MAP | ScheduledDateUtc |
+
+**CRITICAL FINDING:**
+- Profile 362c3ec8 defines field "BDET_FKEY_CAT_SEQ" (technical schema name)
+- Map 390614fd uses field "CategoryId" (actual SOAP field name)
+- **AUTHORITATIVE:** Use "CategoryId" in SOAP envelope (from map, NOT profile)
+
+**Scripting Functions:**
+
+| Function Key | Type | Inputs | Outputs | Logic |
+|---|---|---|---|---|
+| 11 | Scripting | scheduledDate, scheduledTimeStart | ScheduledDateUtc | Combine date+time, format to ISO with .0208713Z suffix |
+| 13 | Scripting | raisedDateUtc | RaisedDateUtc | Format to ISO with .0208713Z suffix |
+| 1 | PropertyGet | - | DPP_SessionId | Get process property |
+| 2 | PropertyGet | - | DPP_CategoryId | Get process property |
+
+**Element Name:**
+- **Element:** breakdownTaskDto (NOT generic "dto")
+- **Path Example:** Envelope/Body/CreateBreakdownTask/breakdownTaskDto/CategoryId
+- **CRITICAL:** Must use "breakdownTaskDto" in SOAP envelope
+
+**Namespace Declarations (from Boomi message shape):**
+- xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+- xmlns:ns="http://www.fsi.co.uk/services/evolution/04/09"
+- xmlns:fsi="http://schemas.datacontract.org/2004/07/Fsi.Platform.Contracts.ServiceModel"
+- xmlns:fsi1="http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel"
+
+**Field Namespace Prefixes:**
+- All fields in breakdownTaskDto use prefix: fsi1:
+- sessionId uses prefix: ns:
+
+**RULE:** Map field names are AUTHORITATIVE. Use map field names in SOAP envelopes, NOT profile field names.
+```
+
+**VALIDATION CHECKLIST FOR STEP 1d:**
+- [ ] All map files loaded and indexed
+- [ ] SOAP request maps identified (maps targeting operation request profiles)
+- [ ] Field mappings extracted from each SOAP request map
+- [ ] Target field names extracted (ACTUAL SOAP field names)
+- [ ] Source field information extracted (profile, process property, scripting, etc.)
+- [ ] Profile vs map field name comparison completed
+- [ ] ALL discrepancies documented in table
+- [ ] Map field names marked as AUTHORITATIVE
+- [ ] Scripting functions analyzed (if present)
+- [ ] Element names extracted (dto vs breakdownTaskDto vs locationDto)
+- [ ] Namespace declarations extracted (from Boomi message shapes)
+- [ ] Field namespace prefixes documented
+
+**IF ANY CHECKLIST ITEM NOT COMPLETE → Step 1d NOT complete → CANNOT PROCEED TO PHASE 2**
+
+### STEP 2: Extract Property WRITES (MANDATORY)
+
+**🛑 EXPLICIT ENFORCEMENT:**
+
+**YOU CANNOT PROCEED TO STEP 4** until this step is complete.
+
+**REQUIRED OUTPUT**: You MUST document property writes in Phase 1 document section "Process Properties Analysis" or create dedicated section.
+
+```
+  property_writes = {}  # { "process.Property_X": ["shape_A", "shape_B"] }
+  
+  FOR EACH shape in shapes_by_id.values():
+    IF shape.shapetype == "documentproperties":
+      FOR EACH assignment in shape.documentproperties.propertyassignments[]:
+      property_name = assignment.propertyId  # e.g., "process.Property_SessionId"
+          property_writes[property_name].append(shape.shapeId)
+        
+OUTPUT: Complete list of which shapes WRITE which properties
+```
+
+**REQUIRED DOCUMENTATION**: Document in Phase 1:
+- List of all properties WRITTEN
+- For each property: List which shapes write it
+- This data is required for Step 4 (Data Dependency Graph)
+
+**IF PROPERTY WRITES NOT DOCUMENTED → Step 2 NOT complete → Step 4 will fail**
+
+### STEP 3: Extract Property READS (MANDATORY)
+
+**🛑 EXPLICIT ENFORCEMENT:**
+
+**YOU CANNOT PROCEED TO STEP 4** until this step is complete.
+
+**REQUIRED OUTPUT**: You MUST document property reads in Phase 1 document section "Process Properties Analysis" or create dedicated section.
+
+```
+property_reads = {}  # { "process.Property_X": ["shape_C", "shape_D"] }
+
+FOR EACH shape in shapes_by_id.values():
+  IF shape.shapetype == "connectoraction":
+    operation = operations_by_id[shape.connectoraction.operationId]
+    # Search operation.request.body for property patterns:
+    # - ${process.Property_X}
+    # - %process.Property_X%
+    # - {process.Property_X}
+    # - {1} where parameter references process property
+    properties_used = extract_property_references(operation.request.body)
+    # Also check operation.request.headers, operation.request.pathParameters
+    FOR EACH prop in properties_used:
+      property_reads[prop].append(shape.shapeId)
+  
+  IF shape.shapetype == "message":
+    # Search message content for ${process.Property_X} patterns
+    properties_used = extract_property_references(shape.message.msgTxt)
+    # Check msgParameters array for process property references
+    FOR EACH param in shape.message.msgParameters[]:
+      IF param.valueType == "process":
+        property_reads[param.processparameter.processproperty].append(shape.shapeId)
+    FOR EACH prop in properties_used:
+      property_reads[prop].append(shape.shapeId)
+  
+  IF shape.shapetype == "decision":
+    # Check decisionvalue for process property references
+    FOR EACH decisionvalue in shape.decision.decisionvalue[]:
+      IF decisionvalue.valueType == "process":
+        property_reads[decisionvalue.processparameter.processproperty].append(shape.shapeId)
+      IF decisionvalue.valueType == "track":
+        # Track properties are meta properties (e.g., meta.base.applicationstatuscode)
+        # These are NOT process properties, but document properties
+  
+  IF shape.shapetype == "documentproperties":
+    # Document properties can READ from other properties
+    FOR EACH assignment in shape.documentproperties.propertyassignments[]:
+      FOR EACH sourcevalue in assignment.sourcevalues[]:
+        IF sourcevalue.valueType == "process":
+          property_reads[sourcevalue.processparameter.processproperty].append(shape.shapeId)
+  
+  IF shape.shapetype == "processcall":
+    # Subprocess calls can pass process properties as parameters
+    FOR EACH param in shape.processcall.parameters[]:
+      IF param.valueType == "process":
+        property_reads[param.processparameter.processproperty].append(shape.shapeId)
+
+FUNCTION extract_property_references(text):
+  # Search for patterns:
+  # 1. ${process.Property_Name}
+  # 2. %process.Property_Name%
+  # 3. {process.Property_Name}
+  # 4. {N} where N is parameter index (check msgParameters/parametervalue array)
+  # Returns: ["process.Property_X", "process.Property_Y"]
+  properties = []
+  # Regex patterns to match
+  patterns = [
+    r'\$\{process\.([^}]+)\}',
+    r'%process\.([^%]+)%',
+    r'\{process\.([^}]+)\}'
+  ]
+  FOR EACH pattern in patterns:
+    matches = regex.findall(pattern, text)
+    FOR EACH match in matches:
+      properties.append(f"process.{match}")
+  RETURN properties
+
+OUTPUT: Complete list of which shapes READ which properties
+```
+
+**REQUIRED DOCUMENTATION**: Document in Phase 1:
+- List of all properties READ
+- For each property: List which shapes read it
+- This data is required for Step 4 (Data Dependency Graph)
+
+**IF PROPERTY READS NOT DOCUMENTED → Step 3 NOT complete → Step 4 will fail**
+
+### STEP 4: Build Data Dependency Graph (MANDATORY)
+
+**🛑 EXPLICIT ENFORCEMENT - CRITICAL STEP:**
+
+**YOU CANNOT PROCEED TO STEP 8** until this step is complete and documented.
+
+**YOU CANNOT CREATE SEQUENCE DIAGRAM (Step 10)** until this step is documented in Phase 1 document.
+
+**REQUIRED OUTPUT**: You MUST create a section in Phase 1 document titled:
+```
+## Data Dependency Graph (Step 4)
+```
+
+This section MUST be created BEFORE proceeding to Step 8 or Step 10.
+
+**VALIDATION CHECKPOINT**: 
+- If Phase 1 document does NOT contain section "Data Dependency Graph (Step 4)" → Step 4 NOT complete → **CANNOT PROCEED**
+
+```
+  dependencies = {}  # { "shape_A": ["shape_B", "shape_C"] } means A must run before B,C
+  
+  FOR EACH property_name, reading_shapes in property_reads.items():
+    writing_shapes = property_writes.get(property_name, [])
+    
+    FOR EACH writer in writing_shapes:
+      FOR EACH reader in reading_shapes:
+        IF writer not in dependencies:
+          dependencies[writer] = []
+        dependencies[writer].append(reader)
+  
+OUTPUT: Dependency graph showing which shapes must execute before which other shapes
+```
+
+**REQUIRED DOCUMENTATION IN PHASE 1:**
+
+You MUST document in Phase 1 section "Data Dependency Graph (Step 4)":
+
+1. **Dependency Graph**:
+   - For each property: List which shapes WRITE it
+   - For each property: List which shapes READ it
+   - For each dependency: Show "Shape X must execute before Shape Y because Y reads Property_Z which X writes"
+
+2. **Dependency Chains**:
+   - Show complete dependency chains (A → B → C)
+   - Identify independent operations (no dependencies)
+
+3. **Property Summary**:
+   - List all properties that create dependencies
+   - Show which operations depend on which other operations
+
+**IF THIS SECTION IS MISSING OR INCOMPLETE → Step 4 NOT complete → CANNOT PROCEED**
+
+### STEP 5: Build Control Flow Graph (MANDATORY)
+
+**🛑 EXPLICIT ENFORCEMENT:**
+
+**YOU CANNOT PROCEED TO STEP 6** until this step is complete and validated.
+
+**REQUIRED OUTPUT**: You MUST document control flow in Phase 1 document section "Control Flow Graph (Step 5)".
+
+```
+control_flow = {}  # { "shape_A": [{"to": "shape_B", "identifier": "true"}] }
+  
+  FOR EACH shape in shapes_by_id.values():
+    IF shape has dragpoints:
+      FOR EACH dragpoint in shape.dragpoints[]:
+        to_shape_id = dragpoint.toShape
+        IF shape.shapeId not in control_flow:
+          control_flow[shape.shapeId] = []
+        control_flow[shape.shapeId].append({
+          "to": to_shape_id,
+        "identifier": dragpoint.identifier,  # "true", "false", "default", "error"
+          "text": dragpoint.text
+        })
+
+OUTPUT: Control flow graph showing dragpoint connections
+```
+
+**REQUIRED DOCUMENTATION IN PHASE 1:**
+
+You MUST document in Phase 1 section "Control Flow Graph (Step 5)":
+
+1. **Control Flow Map**:
+   - For each shape: List all dragpoint connections (toShape references)
+   - Show decision TRUE/FALSE paths
+   - Show branch paths
+   - Show subprocess return paths
+
+2. **Connection Summary**:
+   - Total number of shapes
+   - Total number of connections
+   - Shapes with multiple outgoing connections (branches, decisions)
+
+**IF THIS SECTION IS MISSING → Step 5 NOT complete → CANNOT PROCEED**
+
+**🔍 SELF-CHECK (MANDATORY before proceeding):**
+- [ ] Did I read dragpoints from JSON file? (Answer: YES/NO)
+- [ ] If NO → STOP, read actual dragpoints from process JSON file
+- [ ] If YES → List line numbers where dragpoints were read: ___________
+
+**VALIDATION:**
+- [ ] Every shape with dragpoints has been processed
+- [ ] All toShape references extracted
+- [ ] All identifiers (true/false/default/error) extracted
+- [ ] Control flow graph is complete
+
+### STEP 6: Build Reverse Flow Mapping (MANDATORY - For Convergence Detection)
+
+**🛑 EXPLICIT ENFORCEMENT:**
+
+**YOU CANNOT PROCEED TO STEP 7** until this step is complete.
+
+**REQUIRED OUTPUT**: You MUST document reverse flow mapping in Phase 1 document section "Control Flow Graph (Step 5)" or create dedicated section.
+
+```
+  incoming_connections = {}  # { "shape_X": ["shape_A", "shape_B"] } means A and B both point to X
+  
+  FOR EACH source_shape_id, destinations in control_flow.items():
+    FOR EACH destination in destinations:
+      target_shape_id = destination["to"]
+      IF target_shape_id not in incoming_connections:
+        incoming_connections[target_shape_id] = []
+    incoming_connections[target_shape_id].append(source_shape_id)
+
+OUTPUT: Reverse mapping to identify convergence points (shapes reached by multiple paths)
+```
+
+**REQUIRED DOCUMENTATION**: Document in Phase 1:
+- List of convergence points (shapes reached by multiple paths)
+- For each convergence point: List which paths converge there
+- This data is required for Step 8 (Branch Analysis) to identify where branch paths converge
+
+**IF REVERSE FLOW MAPPING NOT DOCUMENTED → Step 6 NOT complete → Step 8 will fail**
+
+### STEP 7: Decision Shape Inventory (MANDATORY - BLOCKING)
+
+**🛑 EXPLICIT ENFORCEMENT - CRITICAL BLOCKING STEP:**
+
+**YOU CANNOT PROCEED TO STEP 8** until this step is complete and documented.
+
+**YOU CANNOT CREATE SEQUENCE DIAGRAM (Step 10)** until this step is documented in Phase 1 document.
+
+**REQUIRED OUTPUT**: You MUST create a section in Phase 1 document titled:
+```
+## Decision Shape Analysis (Step 7)
+```
+
+This section MUST be created BEFORE proceeding to Step 8 or Step 10.
+
+**🚨 CRITICAL NEW REQUIREMENT: Decision Data Source Analysis**
+
+**YOU MUST identify whether each decision checks INPUT data or RESPONSE data from previous operations.**
+
+**This is CRITICAL because:**
+- Decisions that check INPUT data are PRE-FILTERS (may route before operations)
+- Decisions that check RESPONSE data are POST-OPERATION (execute after operations)
+- **Business logic may require operations to execute FIRST, even if decision appears before them in dragpoint flow**
+
+**🔍 SELF-CHECK (MANDATORY - MUST BE DOCUMENTED IN PHASE 1):**
+
+**REQUIRED**: You MUST show these self-check answers in the Phase 1 document section "Decision Shape Analysis (Step 7)".
+
+- [ ] Did I identify data source for EVERY decision? (INPUT vs RESPONSE vs PROCESS property) (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show answer in Phase 1 document: "✅ Decision data sources identified: YES/NO"
+  - If NO → **STOP ALL WORK** → Analyze each decision's data source → Show in Phase 1 → Then proceed
+  
+- [ ] Did I classify each decision type? (PRE-FILTER vs POST-OPERATION) (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show in Phase 1 document: "✅ Decision types classified: YES" + classification for each decision
+  - If NO → **STOP ALL WORK** → Classify each decision → Show in Phase 1 → Then proceed
+
+- [ ] Did I verify actual execution order for PRE-FILTER decisions? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show in Phase 1 document: "✅ Execution order verified: YES" + actual order for each decision
+  - **CRITICAL**: If decision is PRE-FILTER but business logic requires operation first → Document actual order
+  - If NO → **STOP ALL WORK** → Verify execution order → Show in Phase 1 → Then proceed
+
+- [ ] Did I trace BOTH TRUE and FALSE paths for EVERY decision? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show answer in Phase 1 document: "✅ All decision paths traced: YES/NO"
+  - If NO → **STOP ALL WORK** → Trace all paths to termination → Show in Phase 1 → Then proceed
+  
+- [ ] Did I identify the pattern for each decision? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show in Phase 1 document: "✅ Decision patterns identified: YES" + list of patterns
+
+- [ ] Did I trace paths to termination? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show in Phase 1 document: "✅ Paths traced to termination: YES" + termination points
+
+**VALIDATION CHECKPOINT**: 
+- If Phase 1 document does NOT contain section "Decision Shape Analysis (Step 7)" → Step 7 NOT complete → **CANNOT PROCEED**
+- If self-check answers are NOT shown in Phase 1 document → Step 7 NOT complete → **CANNOT PROCEED**
+- If decision data source analysis is NOT documented → Step 7 NOT complete → **CANNOT PROCEED**
+- If any self-check answer is NO → **STOP ALL WORK** → Complete that step → Show in Phase 1 → Then proceed
+
+```
+decision_inventory = []
+
+FOR EACH shape in shapes_by_id.values():
+  IF shape.shapetype == "decision":
+    # Extract comparison
+    comparison_type = shape.decision.comparison  # "equals", "regex", "notequals", etc.
+    value1 = shape.decision.decisionvalue[0]
+    value2 = shape.decision.decisionvalue[1]
+    
+    # 🚨 CRITICAL NEW STEP: Identify Decision Data Source
+    data_source = identify_decision_data_source(shape, value1, value2)
+    # Returns: "INPUT", "RESPONSE", "PROCESS_PROPERTY", "TRACK_PROPERTY"
+    
+    # Classify decision type based on data source
+    decision_type = classify_decision_type(data_source, shape)
+    # Returns: "PRE_FILTER" or "POST_OPERATION"
+    
+    # Verify actual execution order
+    actual_execution_order = verify_execution_order(shape, decision_type, data_source)
+    # Returns: Actual order (e.g., "Operation → Decision → Next Action")
+    
+    # Find TRUE and FALSE paths
+    true_dragpoint = find_dragpoint_by_identifier(shape, "true")
+    false_dragpoint = find_dragpoint_by_identifier(shape, "false")
+    
+    # Trace BOTH paths to termination
+    true_path_termination = trace_to_termination(true_dragpoint.toShape)
+    false_path_termination = trace_to_termination(false_dragpoint.toShape)
+    
+    # Identify pattern type
+    pattern = identify_decision_pattern(comparison_type, value1, value2, 
+                                       true_path_termination, false_path_termination)
+    
+    # Check for convergence
+    convergence_point = check_convergence(true_path_termination, false_path_termination)
+    
+    decision_inventory.append({
+      "shapeId": shape.shapeId,
+      "comparison": comparison_type,
+      "value1": value1,
+      "value2": value2,
+      "dataSource": data_source,  # NEW
+      "decisionType": decision_type,  # NEW: PRE_FILTER or POST_OPERATION
+      "actualExecutionOrder": actual_execution_order,  # NEW
+      "truePath": {"toShape": true_dragpoint.toShape, "termination": true_path_termination},
+      "falsePath": {"toShape": false_dragpoint.toShape, "termination": false_path_termination},
+      "pattern": pattern,
+      "convergencePoint": convergence_point,
+      "earlyExit": true_path_termination.type == "return" OR false_path_termination.type == "return"
+    })
+
+FUNCTION identify_decision_data_source(decision_shape, value1, value2):
+  """
+  Identify whether decision checks INPUT, RESPONSE, PROCESS property, or TRACK property
+  """
+  data_source = None
+  
+  FOR EACH decisionvalue in [value1, value2]:
+    IF decisionvalue.valueType == "profile":
+      # Check if profile is INPUT profile or RESPONSE profile
+      profile_id = decisionvalue.profileelement.profileId
+      profile_json = profiles_by_id[profile_id]
+      
+      # Check if this profile is used as INPUT (entry operation request) or RESPONSE (operation response)
+      IF profile_id == entry_operation.requestProfile:
+        data_source = "INPUT"
+      ELSE:
+        # Check if this profile is used as response for any operation
+        FOR EACH operation in operations_by_id.values():
+          IF operation.responseProfile == profile_id:
+            data_source = "RESPONSE"
+            BREAK
+        IF data_source is None:
+          data_source = "UNKNOWN_PROFILE"  # Need to investigate
+    
+    ELIF decisionvalue.valueType == "track":
+      # Track properties come from operation responses (e.g., meta.base.applicationstatuscode)
+      data_source = "TRACK_PROPERTY"  # Implies POST-OPERATION
+    
+    ELIF decisionvalue.valueType == "process":
+      # Process properties are written by previous operations
+      property_name = decisionvalue.processparameter.processproperty
+      # Check if this property is written by any operation
+      IF property_name in property_writes:
+        data_source = "PROCESS_PROPERTY"  # Implies POST-OPERATION
+      ELSE:
+        data_source = "PROCESS_PROPERTY_UNKNOWN"  # Need to investigate
+    
+    ELIF decisionvalue.valueType == "static":
+      # Static values don't indicate data source - check the other value
+      CONTINUE
+  
+  RETURN data_source
+
+FUNCTION classify_decision_type(data_source, decision_shape):
+  """
+  Classify decision as PRE-FILTER (checks input, routes before operations) 
+  or POST-OPERATION (checks response/properties, executes after operations)
+  """
+  IF data_source == "INPUT":
+    # INPUT decisions are typically PRE-FILTERS
+    # BUT: Verify if business logic requires operation to execute first
+    return "PRE_FILTER"
+  
+  ELIF data_source == "RESPONSE" OR data_source == "TRACK_PROPERTY" OR data_source == "PROCESS_PROPERTY":
+    # These decisions check data from operations, so they are POST-OPERATION
+    return "POST_OPERATION"
+  
+  ELSE:
+    return "UNKNOWN"  # Need to investigate
+
+FUNCTION verify_execution_order(decision_shape, decision_type, data_source):
+  """
+  Verify actual execution order - even if decision is PRE-FILTER, 
+  business logic may require operations to execute first
+  """
+  IF decision_type == "PRE_FILTER":
+    # Check if any operations in TRUE/FALSE paths need to execute first
+    # Example: Decision checks INPUT field, but OperationA must execute first
+    # Then check response to determine condition
+    
+    # Trace paths to find operations
+    true_path_operations = find_operations_in_path(decision_shape.truePath.toShape)
+    false_path_operations = find_operations_in_path(decision_shape.falsePath.toShape)
+    
+    # Check if any operation produces data needed by other operations
+    FOR EACH operation in true_path_operations + false_path_operations:
+      operation_response = get_operation_response(operation)
+      IF operation_response is not None:
+        # Check if response data is used in subsequent operations or decisions
+        IF response_data_used_later(operation_response):
+          # Business logic requires operation to execute first
+          RETURN f"Operation {operation} → Check Response → Decision → Next Action"
+    
+    # No operations need to execute first - decision is true PRE-FILTER
+    RETURN "Decision → Route to Operations"
+  
+  ELIF decision_type == "POST_OPERATION":
+    # Find which operation produces the data this decision checks
+    source_operation = find_operation_that_produces_data(data_source, decision_shape)
+    RETURN f"Operation {source_operation} → Response → Decision → Next Action"
+  
+  ELSE:
+    RETURN "UNKNOWN"  # Need to investigate
+
+FUNCTION trace_to_termination(start_shape_id):
+  current = start_shape_id
+  path = [current]
+  visited = set()
+  
+  WHILE current not in visited:
+    visited.add(current)
+    shape = shapes_by_id[current]
+    
+    IF shape.shapetype == "returndocuments":
+      RETURN {"type": "return", "path": path}
+    IF shape.shapetype == "stop" AND shape.stop.continue != "true":
+      RETURN {"type": "stop", "path": path}
+    IF shape.shapetype == "exception":
+      RETURN {"type": "exception", "path": path}
+    
+    dragpoints = get_dragpoints(shape)
+    IF len(dragpoints) == 0:
+      RETURN {"type": "end_of_path", "path": path}
+    
+    current = dragpoints[0].toShape
+    path.append(current)
+  
+  RETURN {"type": "rejoins", "path": path}
+
+FUNCTION identify_decision_pattern(comparison, val1, val2, true_term, false_term):
+  # Pattern 1: Existence Check (check-before-create)
+  IF comparison == "equals" AND val2 is empty string:
+    IF true_term.type == "continue" AND false_term.type == "return":
+      RETURN "Existence Check (Create if Not Found)"
+    IF false_term.type == "continue" AND true_term.type == "return":
+      RETURN "Existence Check (Return if Found)"
+  
+  # Pattern 2: Validation Check
+  IF comparison in ["equals", "notequals", "regex"]:
+    IF true_term.type == "continue" AND false_term.type == "exception":
+      RETURN "Validation Check (Continue if Valid)"
+  
+  # Pattern 3: Conditional Logic
+  IF comparison in ["equals", "notequals", "contains"]:
+    IF both paths eventually rejoin:
+      RETURN "Conditional Logic (Optional Processing)"
+    IF one path terminates early:
+      RETURN "Conditional Logic (Early Exit)"
+  
+  # Pattern 4: Error Check
+  IF comparison checks error status:
+    RETURN "Error Check (Success vs Failure)"
+  
+  RETURN "General Branching Logic"
+
+OUTPUT: Complete decision inventory with patterns and early exits identified, data sources identified, and execution order verified
+```
+
+**REQUIRED DOCUMENTATION IN PHASE 1:**
+
+You MUST document in Phase 1 section "Decision Shape Analysis (Step 7)":
+
+1. **Decision Data Source Analysis (NEW - MANDATORY):**
+   - For each decision: Data source (INPUT, RESPONSE, PROCESS_PROPERTY, TRACK_PROPERTY)
+   - **PROOF**: Show JSON reference where data source is identified
+   - Example: "shapeX checks INPUT profile (fieldName field from request)"
+
+2. **Decision Type Classification (NEW - MANDATORY):**
+   - For each decision: Type (PRE_FILTER or POST_OPERATION)
+   - **PROOF**: Show reasoning based on data source
+   - Example: "shapeX is PRE_FILTER (checks INPUT data)"
+
+3. **Actual Execution Order Verification (NEW - MANDATORY):**
+   - For each decision: Actual execution order
+   - **CRITICAL**: If PRE_FILTER but business logic requires operation first → Document actual order
+   - Example: "shapeX is PRE_FILTER, but OperationA executes FIRST, then check response, then decision routes"
+   - **PROOF**: Show which operations execute before/after decision
+
+4. **Decision Inventory:**
+   - For each decision: Shape ID, comparison type, values
+   - TRUE path destination and termination
+   - FALSE path destination and termination
+   - Pattern type (check-before-create, validation, conditional logic, etc.)
+   - Convergence points (if paths rejoin)
+   - Early exits (if any path leads to return)
+
+5. **Decision Patterns:**
+   - List of patterns identified (check-before-create, validation, conditional routing, etc.)
+   - For each pattern: Which decisions use it
+
+**IF DECISION DATA SOURCE ANALYSIS IS MISSING → Step 7 NOT complete → CANNOT PROCEED**
+**IF DECISION TYPE CLASSIFICATION IS MISSING → Step 7 NOT complete → CANNOT PROCEED**
+**IF ACTUAL EXECUTION ORDER IS NOT VERIFIED → Step 7 NOT complete → CANNOT PROCEED**
+
+### STEP 7a: Subprocess Analysis (MANDATORY)
+
+**🛑 FOR EACH processcall shape, analyze subprocess internal flow**
+
+```
+FOR EACH shape in shapes_by_id.values():
+  IF shape.shapetype == "processcall":
+    subprocess_id = shape.processcall.processId
+    subprocess_json = load_subprocess(subprocess_id)
+    
+    # Step 1: Analyze subprocess internal flow
+    subprocess_flow = trace_subprocess_flow(subprocess_json)
+    
+    # Step 2: Identify return paths
+    return_paths = []
+    FOR EACH shape in subprocess_json.shapes[]:
+      IF shape.shapetype == "returndocuments":
+        return_paths.append({
+          "label": shape.returndocuments.label,
+          "shapeId": shape.shapeId,
+          "path": trace_path_to_return(shape.shapeId)
+        })
+      IF shape.shapetype == "stop" AND shape.stop.continue == "true":
+        # This is implicit success return
+        return_paths.append({
+          "label": "SUCCESS",
+          "shapeId": shape.shapeId,
+          "path": trace_path_to_stop(shape.shapeId)
+        })
+    
+    # Step 3: Map return paths to main process
+    main_process_return_mapping = {}
+    FOR EACH returnpath in shape.processcall.returnpaths[]:
+      main_process_return_mapping[returnpath.returnLabel] = returnpath.childShapeName
+    
+    # Step 4: Identify properties written by subprocess
+    subprocess_writes = extract_property_writes(subprocess_json)
+    
+    # Step 5: Identify properties read by subprocess (from main process)
+    subprocess_reads = extract_property_reads(subprocess_json)
+    
+    subprocess_analysis = {
+      "subprocessId": subprocess_id,
+      "internalFlow": subprocess_flow,
+      "returnPaths": return_paths,
+      "mainProcessMapping": main_process_return_mapping,
+      "writes": subprocess_writes,
+      "reads": subprocess_reads
+    }
+
+FUNCTION trace_subprocess_flow(subprocess_json):
+  # Trace from START to all termination points
+  start_shape = find_shape_by_type("start", subprocess_json)
+  flow = []
+  traverse_subprocess(start_shape.shapeId, flow, subprocess_json)
+  RETURN flow
+
+OUTPUT: Complete subprocess analysis including internal flow and return paths
+```
+
+**CRITICAL RULES:**
+1. **Subprocesses are NOT black boxes** - You MUST trace internal flow
+2. **Return paths matter** - Each return label maps to different main process path
+3. **Properties written in subprocess** - Available to main process after subprocess returns
+4. **Error paths** - Check for explicit return paths with error labels
+
+### STEP 8: Branch Shape Analysis (MANDATORY)
+
+**🛑 EXPLICIT ENFORCEMENT - CRITICAL BLOCKING STEP:**
+
+**YOU CANNOT PROCEED TO STEP 9** until this step is complete and documented.
+
+**YOU CANNOT CREATE SEQUENCE DIAGRAM (Step 10)** until this step is documented in Phase 1 document.
+
+**🚨 DO NOT ASSUME - YOU MUST ANALYZE:**
+
+**REQUIRED OUTPUT**: You MUST create a section in Phase 1 document titled:
+```
+## Branch Shape Analysis (Step 8)
+```
+
+This section MUST be created BEFORE proceeding to Step 9 or Step 10.
+
+**🔍 SELF-CHECK (MANDATORY - MUST BE DOCUMENTED IN PHASE 1):**
+
+**REQUIRED**: You MUST show these self-check answers in the Phase 1 document section "Branch Shape Analysis (Step 8)".
+
+- [ ] Did I classify each branch as parallel or sequential? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show answer in Phase 1 document: "✅ Classification completed: YES/NO"
+  - If NO → **STOP ALL WORK** → Complete classification using dependency analysis → Show in Phase 1 → Then proceed
+  
+- [ ] Did I assume branches are parallel? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show answer in Phase 1 document: "✅ Assumption check: NO (analyzed dependencies)"
+  - If YES → **STOP ALL WORK** → REDO, check data dependencies first → Show proof in Phase 1 → Then proceed
+
+- [ ] Did I extract properties read/written by each path? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show in Phase 1 document: "✅ Properties extracted: YES" + list of properties
+
+- [ ] Did I build dependency graph between paths? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show dependency graph in Phase 1 document
+
+- [ ] Did I apply topological sort if sequential? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show topological sort order in Phase 1 document
+
+**VALIDATION CHECKPOINT**: 
+- If Phase 1 document does NOT contain section "Branch Shape Analysis (Step 8)" → Step 8 NOT complete → **CANNOT PROCEED**
+- If self-check answers are NOT shown in Phase 1 document → Step 8 NOT complete → **CANNOT PROCEED**
+- If any self-check answer is NO → **STOP ALL WORK** → Complete that step → Show in Phase 1 → Then proceed
+
+**For EACH branch shape, complete this 8-step analysis:**
+
+```
+FUNCTION any_path_contains_api_calls(branch_paths):
+  """
+  Check if ANY path in branch contains API calls (connectoraction with HTTP/SOAP/REST operations)
+  """
+  FOR EACH path in branch_paths:
+    FOR EACH shape in path:
+      IF shape.shapetype == "connectoraction":
+        operation = operations_by_id[shape.connectoraction.operationId]
+        IF operation.subType in ["http", "soap", "rest", "wss"]:
+          RETURN True
+  RETURN False
+
+FUNCTION branch_contains_api_calls(branch_shape):
+  """
+  Check if branch shape contains any API calls in its paths
+  """
+  branch_paths = extract_branch_paths(branch_shape)
+  RETURN any_path_contains_api_calls(branch_paths)
+
+FOR EACH branch_shape:
+  Step 1: Extract properties read/written by each path
+    path_properties = {}
+    FOR EACH path in branch_paths:
+      path_properties[path] = {
+        "reads": extract_properties_read(path),
+        "writes": extract_properties_written(path)
+      }
+  
+  Step 2: Build dependency graph between paths
+    path_dependencies = {}
+    FOR EACH path_A in branch_paths:
+      FOR EACH path_B in branch_paths:
+        IF path_A != path_B:
+          IF path_B reads any property that path_A writes:
+            path_dependencies[path_A].append(path_B)
+  
+  Step 3: Classify as parallel or sequential
+    # 🚨 CRITICAL RULE: ALL API CALLS ARE SEQUENTIAL
+    # If ANY path contains API calls (connectoraction with HTTP/SOAP/REST), classification is ALWAYS SEQUENTIAL
+    IF any_path_contains_api_calls(branch_paths):
+      classification = "SEQUENTIAL"  # API calls are ALWAYS sequential
+    ELIF path_dependencies is empty:
+      classification = "PARALLEL"  # Only non-API operations can be parallel
+    ELSE:
+      classification = "SEQUENTIAL"
+  
+  Step 4: Build dependency_order using topological sort (if sequential)
+    IF classification == "SEQUENTIAL":
+      dependency_order = topological_sort(path_dependencies)
+      # Topological sort algorithm:
+      # 1. Find paths with no dependencies (incoming edges = 0)
+      # 2. Add to sorted list
+      # 3. Remove from graph
+      # 4. Repeat until all paths sorted
+      # 5. If cycle detected → ERROR (invalid dependencies)
+  
+  Step 5: Trace each path to terminal point
+    path_terminals = {}
+    FOR EACH path in branch_paths:
+      terminal = trace_to_termination(path[0])  # Start from first shape in path
+      path_terminals[path] = terminal
+  
+  Step 6: Identify convergence points
+    convergence_points = []
+    FOR EACH shape_id, incoming in incoming_connections.items():
+      IF len(incoming) > 1 AND shape_id is reached by multiple branch paths:
+        convergence_points.append(shape_id)
+  
+  Step 7: Determine execution continuation
+    IF convergence_points exist:
+      execution_continues_from = convergence_points[0]  # First convergence point
+    ELSE:
+      execution_continues_from = None  # Each path continues independently
+  
+  Step 8: Document complete analysis
+    branch_analysis = {
+      "shapeId": branch_shape.shapeId,
+      "numPaths": len(branch_paths),
+      "classification": classification,
+      "dependencyOrder": dependency_order if sequential else None,
+      "pathTerminals": path_terminals,
+      "convergencePoints": convergence_points,
+      "executionContinuesFrom": execution_continues_from
+    }
+
+OUTPUT: Complete branch analysis for each branch shape
+
+**REQUIRED DOCUMENTATION IN PHASE 1:**
+
+For EACH branch shape, you MUST document in Phase 1 section "Branch Shape Analysis (Step 8)":
+
+1. **Branch Shape Identification**:
+   - Shape ID
+   - Number of paths
+   - Location in process flow
+
+2. **Properties Analysis** (Step 1):
+   - For each path: Properties READ (extracted from JSON)
+   - For each path: Properties WRITTEN (extracted from JSON)
+   - **PROOF**: Show JSON references where properties are read/written
+
+3. **Dependency Graph** (Step 2):
+   - Show which paths depend on which other paths
+   - **PROOF**: Show reasoning: "Path 2 reads process.Property_SessionId which Path 1 writes, therefore Path 2 depends on Path 1"
+
+4. **Classification** (Step 3):
+   - Classification: PARALLEL or SEQUENTIAL
+   - **🚨 CRITICAL**: If ANY path contains API calls → Classification is ALWAYS SEQUENTIAL
+   - **PROOF**: Show reasoning based on dependency graph AND API call detection
+   - If PARALLEL: "No dependencies between paths AND no API calls in any path"
+   - If SEQUENTIAL: "Path X depends on Path Y because..." OR "Path contains API calls (sequential execution required)"
+
+5. **Topological Sort Order** (Step 4, if sequential):
+   - Show execution order: Path 1 → Path 2 → Path 3
+   - **🚨 CRITICAL**: If paths contain API calls, they execute sequentially in order (no parallel execution)
+   - If paths have no API calls but have dependencies: Show topological sort order
+
+6. **Path Termination** (Step 5):
+   - For each path: Where it terminates (shape ID)
+
+7. **Convergence Points** (Step 6):
+   - Where branch paths converge (if any)
+
+8. **Self-Check Results**:
+   - ✅ All self-checks answered YES
+   - ✅ All answers shown in Phase 1 document
+
+**IF ANY OF THE ABOVE IS MISSING → Step 8 NOT complete → CANNOT PROCEED**
+```
+
+### STEP 9: Derive Execution Order (MANDATORY)
+
+**🛑 EXPLICIT ENFORCEMENT - CRITICAL BLOCKING STEP:**
+
+**YOU CANNOT PROCEED TO STEP 10** until this step is complete and documented.
+
+**YOU CANNOT CREATE SEQUENCE DIAGRAM (Step 10)** until this step is documented in Phase 1 document.
+
+**PREREQUISITE VALIDATION**: 
+- ✅ Step 1c (Operation Response Analysis) MUST be complete and documented in Phase 1 (required for business logic verification)
+- ✅ Step 4 (Data Dependency Graph) MUST be complete and documented in Phase 1 (required for dependency verification)
+- ✅ Step 7 (Decision Analysis) MUST be complete and documented in Phase 1 (required for decision execution order)
+- ✅ Step 8 (Branch Analysis) MUST be complete and documented in Phase 1 (required for branch execution order)
+- ✅ If Step 1c, Step 4, Step 7, or Step 8 section missing from Phase 1 → **STOP** → Complete missing steps first
+
+**🚨 CRITICAL RULE: Business Logic ALWAYS Overrides Dragpoints**
+**🚨 CRITICAL RULE: Data Dependencies ALWAYS Override Dragpoints**
+
+**REQUIRED OUTPUT**: You MUST create a section in Phase 1 document titled:
+```
+## Execution Order (Step 9)
+```
+
+This section MUST be created BEFORE proceeding to Step 10.
+
+**🚨 NEW REQUIREMENT: Business Logic Verification (Step 0 - MUST DO FIRST)**
+
+**YOU CANNOT derive execution order until business logic is verified.**
+
+**REQUIRED OUTPUT**: You MUST document business logic in Phase 1 section "Execution Order (Step 9)" BEFORE deriving execution order.
+
+**🔍 SELF-CHECK (MANDATORY - MUST BE DOCUMENTED IN PHASE 1):**
+
+**REQUIRED**: You MUST show these self-check answers in the Phase 1 document section "Execution Order (Step 9)".
+
+- [ ] Did I verify business logic FIRST before following dragpoints? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show answer in Phase 1 document: "✅ Business logic verified FIRST: YES/NO"
+  - **CRITICAL**: Business logic section MUST be documented before execution order
+  - If NO → **STOP ALL WORK** → Verify business logic → Document in Phase 1 → Then proceed
+
+- [ ] Did I identify what each operation does and what it produces? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show in Phase 1 document: "✅ Operation analysis complete: YES" + list of operations with their purposes and outputs
+
+- [ ] Did I identify which operations MUST execute first based on business logic? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show in Phase 1 document: "✅ Business logic execution order identified: YES" + list of operations that must execute first
+
+- [ ] Did I check data dependencies FIRST before following dragpoints? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show answer in Phase 1 document: "✅ Data dependencies checked FIRST: YES/NO"
+  - If NO → **STOP ALL WORK** → Rebuild execution order checking dependencies first → Show in Phase 1 → Then proceed
+  
+- [ ] Did I use operation response analysis from Step 1c? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show in Phase 1 document: "✅ Operation response analysis used: YES" + reference to Step 1c section
+
+- [ ] Did I use decision analysis from Step 7? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show in Phase 1 document: "✅ Decision analysis used: YES" + reference to Step 7 section
+
+- [ ] Did I use dependency graph from Step 4? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show in Phase 1 document: "✅ Dependency graph used: YES" + reference to Step 4 section
+
+- [ ] Did I use branch analysis from Step 8? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show in Phase 1 document: "✅ Branch analysis used: YES" + reference to Step 8 section
+
+- [ ] Did I verify all property reads happen after property writes? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show verification in Phase 1 document: "✅ Property dependency verification: YES" + list of verified dependencies
+
+- [ ] Did I follow topological sort order for sequential branches? (Answer: YES/NO)
+  - **REQUIRED OUTPUT**: Show in Phase 1 document: "✅ Topological sort applied: YES" + execution order
+
+**VALIDATION CHECKPOINT**: 
+- If Phase 1 document does NOT contain section "Execution Order (Step 9)" → Step 9 NOT complete → **CANNOT PROCEED**
+- If business logic verification is NOT documented → Step 9 NOT complete → **CANNOT PROCEED**
+- If self-check answers are NOT shown in Phase 1 document → Step 9 NOT complete → **CANNOT PROCEED**
+- If any self-check answer is NO → **STOP ALL WORK** → Complete that step → Show in Phase 1 → Then proceed
+
+```
+# STEP 0: Business Logic Verification (MUST DO FIRST)
+
+business_logic_flow = []
+
+FOR EACH operation in operations_by_id.values():
+  # Question 1: What does this operation do?
+  operation_purpose = identify_operation_purpose(operation)
+  
+  # Question 2: What does it produce? (response data, properties)
+  operation_outputs = []
+  IF operation has responseProfile:
+    # Check Step 1c analysis for response structure
+    response_analysis = get_operation_response_analysis(operation.operationId)
+    operation_outputs.extend(response_analysis.extractedFields)
+  
+  # Check what properties this operation writes (via documentproperties shapes)
+  FOR EACH shape in shapes_after_operation(operation):
+    IF shape.shapetype == "documentproperties":
+      FOR EACH assignment in shape.documentproperties.propertyassignments[]:
+        operation_outputs.append({
+          "type": "process_property",
+          "property": assignment.propertyId,
+          "writtenBy": shape.shapeId
+        })
+  
+  # Question 3: What operations depend on this operation's output?
+  dependent_operations = []
+  FOR EACH output in operation_outputs:
+    IF output.type == "process_property":
+      property_name = output.property
+      # Find operations that read this property
+      IF property_name in property_reads:
+        dependent_operations.extend(property_reads[property_name])
+  
+  # Question 4: What is the actual business flow?
+  business_flow = determine_business_flow(operation, operation_purpose, operation_outputs, dependent_operations)
+  
+  business_logic_flow.append({
+    "operationId": operation.operationId,
+    "operationName": operation.name,
+    "purpose": operation_purpose,
+    "outputs": operation_outputs,
+    "dependentOperations": dependent_operations,
+    "businessFlow": business_flow
+  })
+
+FUNCTION identify_operation_purpose(operation):
+  """
+  Identify what the operation does based on operation name, type, and configuration
+  """
+  # Check operation name for keywords
+  IF "Login" in operation.name OR "Authenticate" in operation.name:
+    RETURN "Authentication - Establishes session"
+  ELIF "Create" in operation.name:
+    RETURN "Create entity - Creates new record"
+  ELIF "Get" in operation.name OR "Read" in operation.name:
+    RETURN "Read entity - Retrieves existing record"
+  ELIF "Update" in operation.name:
+    RETURN "Update entity - Modifies existing record"
+  ELIF "Delete" in operation.name:
+    RETURN "Delete entity - Removes record"
+  ELSE:
+    RETURN "Process data - Performs business operation"
+
+FUNCTION determine_business_flow(operation, purpose, outputs, dependents):
+  """
+  Determine actual business flow based on operation purpose and dependencies
+  """
+  flow = []
+  
+  # If operation produces data that others need, it must execute first
+  IF len(dependents) > 0:
+    flow.append(f"{operation.name} MUST execute FIRST (produces data needed by {len(dependents)} operations)")
+  
+  # If operation consumes data from others, it must execute after
+  operation_reads = get_properties_read_by_operation(operation)
+  IF len(operation_reads) > 0:
+    writers = []
+    FOR EACH prop in operation_reads:
+      IF prop in property_writes:
+        writers.extend(property_writes[prop])
+    IF len(writers) > 0:
+      flow.append(f"{operation.name} MUST execute AFTER {writers} (consumes their output)")
+  
+  # Document business logic pattern
+  IF "Create" in purpose AND len(dependents) > 0:
+    flow.append(f"Business Pattern: {operation.name} creates entity, then {dependents} use created entity")
+  
+  RETURN flow
+
+OUTPUT: Complete business logic flow showing what operations do, what they produce, and actual execution order
+
+# STEP 1: Derive Execution Order (following business logic and data dependencies)
+
+  execution_order = []
+  visited = set()
+  
+FUNCTION traverse(current_shape_id):
+    IF current_shape_id in visited:
+      RETURN
+    
+    shape = shapes_by_id[current_shape_id]
+    
+  # MANDATORY: Check data dependencies FIRST
+    IF shape requires properties:
+      FOR EACH required_property:
+        IF property not yet written:
+          writer_shape = find_writer(required_property)
+        traverse(writer_shape)  # Execute writer first
+    
+    # Execute current shape
+    execution_order.append(current_shape_id)
+    visited.add(current_shape_id)
+    
+    # Handle shape-specific logic
+    IF shape.shapetype == "branch":
+    branch_analysis = get_branch_analysis(shape.shapeId)
+    
+    # 🚨 CRITICAL: ALL API CALLS ARE SEQUENTIAL
+    # If branch contains API calls, it is ALWAYS sequential
+    IF branch_analysis.classification == "SEQUENTIAL" OR branch_contains_api_calls(shape):
+      # Execute paths in dependency order (or sequential order if API calls present)
+      FOR EACH path in branch_analysis.dependencyOrder:
+        traverse(path[0])  # Start from first shape in path
+      
+      # Execution continues from convergence point
+      IF branch_analysis.executionContinuesFrom:
+        traverse(branch_analysis.executionContinuesFrom)
+    ELSE:
+      # Parallel execution (ONLY for non-API operations)
+      execution_order.append("PARALLEL_START")
+      FOR EACH path in branch_paths:
+        traverse(path[0])
+      execution_order.append("PARALLEL_END")
+      
+      IF branch_analysis.executionContinuesFrom:
+        traverse(branch_analysis.executionContinuesFrom)
+    
+    ELIF shape.shapetype == "decision":
+    decision_info = get_decision_info(shape.shapeId)
+    execution_order.append(f"DECISION: {decision_info.comparison}")
+    
+    # Trace TRUE path
+      execution_order.append("IF TRUE:")
+    traverse(decision_info.truePath.toShape)
+    
+    # Trace FALSE path
+      execution_order.append("IF FALSE:")
+    traverse(decision_info.falsePath.toShape)
+    
+    # Check for convergence
+    IF decision_info.convergencePoint:
+      traverse(decision_info.convergencePoint)
+    
+  ELIF shape.shapetype == "processcall":
+    subprocess_analysis = get_subprocess_analysis(shape.shapeId)
+    execution_order.append(f"SUBPROCESS: {subprocess_analysis.subprocessId}")
+    
+    # Document subprocess internal flow
+    FOR EACH step in subprocess_analysis.internalFlow:
+      execution_order.append(f"  SUBPROCESS_STEP: {step}")
+    
+    # After subprocess returns, check return path
+    # If explicit return path exists, follow that
+    # Otherwise, continue to next shape
+    next_shapes = control_flow.get(current_shape_id, [])
+    FOR EACH next in next_shapes:
+      traverse(next["to"])
+  
+  ELIF shape.shapetype == "stop":
+    IF shape.stop.continue == "true":
+      # Continue to next shape
+      next_shapes = control_flow.get(current_shape_id, [])
+      FOR EACH next in next_shapes:
+        traverse(next["to"])
+    ELSE:
+      execution_order.append("END")
+  
+  ELIF shape.shapetype == "catcherrors":
+    # Try/Catch: default path and error path
+    default_path = find_dragpoint_by_identifier(shape, "default")
+    error_path = find_dragpoint_by_identifier(shape, "error")
+    
+    execution_order.append("TRY:")
+    traverse(default_path.toShape)
+    
+    execution_order.append("CATCH:")
+    traverse(error_path.toShape)
+  
+  ELSE:
+    # Regular shape: follow control flow
+    next_shapes = control_flow.get(current_shape_id, [])
+    FOR EACH next in next_shapes:
+      traverse(next["to"])
+
+# Start traversal from START shape
+start_shape = find_shape_by_type("start")
+traverse(start_shape.shapeId)
+
+OUTPUT: Complete execution order respecting data dependencies
+
+**REQUIRED DOCUMENTATION IN PHASE 1:**
+
+You MUST document in Phase 1 section "Execution Order (Step 9)":
+
+1. **Business Logic Flow (Step 0 - MUST BE FIRST):**
+   - For each operation: What does it do? (purpose)
+   - For each operation: What does it produce? (response data, properties)
+   - For each operation: What operations depend on its output?
+   - Actual business flow: What happens first, second, third?
+   - Operations that MUST execute first (produce required data)
+   - Operations that execute after (consume data from previous operations)
+   - **PROOF**: Show reasoning for each operation's position in business flow
+   - **EXAMPLE**: "OperationA creates an entity → Response contains EntityId → If condition met, OperationB links to entity using EntityId → Therefore, OperationA MUST execute BEFORE OperationB"
+
+2. **Execution Order List**:
+   - Complete ordered list of shapes/operations
+   - Show parallel execution groups: [Path1, Path2, Path3] (parallel)
+   - Show sequential execution: Path1 → Path2 → Path3
+
+2. **Dependency Verification**:
+   - Reference to Step 4 (Data Dependency Graph)
+   - For each operation: Show which properties it reads
+   - For each property read: Show which operation writes it (must execute before)
+   - **PROOF**: "OperationX reads process.Property_SessionId → OperationY writes process.Property_SessionId → OperationY must execute before OperationX"
+
+3. **Branch Execution Order**:
+   - Reference to Step 8 (Branch Analysis)
+   - Show how branch paths are ordered based on dependencies
+   - Show topological sort order if sequential
+
+4. **Decision Path Tracing**:
+   - For each decision: Show TRUE path execution order
+   - For each decision: Show FALSE path execution order
+   - Show convergence points
+
+5. **Self-Check Results**:
+   - ✅ All self-checks answered YES
+   - ✅ All answers shown in Phase 1 document
+
+**IF ANY OF THE ABOVE IS MISSING → Step 9 NOT complete → CANNOT PROCEED**
+```
+
+### STEP 10: Create Sequence Diagram (MANDATORY FORMAT)
+
+**🛑 EXPLICIT ENFORCEMENT - PRE-CREATION VALIDATION (MANDATORY):**
+
+**🚨 YOU CANNOT CREATE THIS SEQUENCE DIAGRAM UNTIL:**
+
+1. ✅ **Step 4 (Data Dependency Graph)** is COMPLETE and DOCUMENTED in Phase 1 document
+   - Phase 1 document MUST contain section "Data Dependency Graph (Step 4)"
+   - If missing → **STOP** → Complete Step 4 → Then proceed
+
+2. ✅ **Step 5 (Control Flow Graph)** is COMPLETE and DOCUMENTED in Phase 1 document
+   - Phase 1 document MUST contain section "Control Flow Graph (Step 5)"
+   - If missing → **STOP** → Complete Step 5 → Then proceed
+
+3. ✅ **Step 7 (Decision Analysis)** is COMPLETE and DOCUMENTED in Phase 1 document
+   - Phase 1 document MUST contain section "Decision Shape Analysis (Step 7)"
+   - All self-check answers from Step 7 MUST be shown with YES answers
+   - If missing → **STOP** → Complete Step 7 → Then proceed
+
+4. ✅ **Step 8 (Branch Analysis)** is COMPLETE and DOCUMENTED in Phase 1 document
+   - Phase 1 document MUST contain section "Branch Shape Analysis (Step 8)"
+   - All self-check answers from Step 8 MUST be shown with YES answers
+   - If missing → **STOP** → Complete Step 8 → Then proceed
+
+5. ✅ **Step 9 (Execution Order)** is COMPLETE and DOCUMENTED in Phase 1 document
+   - Phase 1 document MUST contain section "Execution Order (Step 9)"
+   - All self-check answers from Step 9 MUST be shown with YES answers
+   - If missing → **STOP** → Complete Step 9 → Then proceed
+
+**VALIDATION CHECKLIST (MUST VERIFY BEFORE CREATING SEQUENCE DIAGRAM):**
+
+Before creating sequence diagram, verify Phase 1 document contains:
+- [ ] Section "Data Dependency Graph (Step 4)" - **MUST EXIST AND BE COMPLETE**
+- [ ] Section "Control Flow Graph (Step 5)" - **MUST EXIST AND BE COMPLETE**
+- [ ] Section "Decision Shape Analysis (Step 7)" - **MUST EXIST AND BE COMPLETE**
+- [ ] Section "Branch Shape Analysis (Step 8)" - **MUST EXIST AND BE COMPLETE**
+- [ ] Section "Execution Order (Step 9)" - **MUST EXIST AND BE COMPLETE**
+- [ ] All self-check answers from Steps 7-9 shown with YES
+
+**IF ANY MISSING OR INCOMPLETE → STOP → Complete missing steps → Show in Phase 1 → Then create sequence diagram**
+
+**🛑 REQUIRED FORMAT: Operation calls and decisions must be shown explicitly**
+
+**REQUIRED**: Sequence diagram MUST reference:
+- "Based on dependency graph in Step 4..."
+- "Based on decision analysis in Step 7..."
+- "Based on control flow graph in Step 5..."
+- "Based on branch analysis in Step 8..."
+- "Based on execution order in Step 9..."
+
+**IF NO REFERENCES → Sequence diagram created incorrectly → WRONG**
+
+```
+## Sequence Diagram
+
+START
+  |
+  ├─→ Operation1: [Operation Name]
+  |     └─→ READS: [list of properties read]
+  |     └─→ WRITES: [list of properties written]
+  |
+  ├─→ Operation2: [Operation Name]
+  |     └─→ READS: [list of properties read]
+  |     └─→ WRITES: [list of properties written]
+  |
+  ├─→ Decision: [Decision Condition]
+  |     ├─→ IF TRUE → Operation3: [Operation Name]
+  |     |     └─→ READS: [properties]
+  |     |     └─→ WRITES: [properties]
+  |     |
+  |     └─→ IF FALSE → Operation4: [Operation Name]
+  |           └─→ READS: [properties]
+  |           └─→ WRITES: [properties]
+  |
+  └─→ END
+
+**CRITICAL RULES:**
+1. Each operation MUST show what it READS and WRITES
+2. Decisions MUST show both TRUE and FALSE paths
+3. Check-before-create patterns MUST show: Check Operation → Decision → Create Operation (only if check found nothing)
+4. Early exits MUST be marked: [EARLY EXIT]
+5. Conditional execution MUST be marked: [Only if condition X]
+```
+
+**Example Format:**
+
+```
+START
+  |
+  ├─→ OperationA: [Operation Name]
+  |     └─→ READS: [list of properties read]
+  |     └─→ WRITES: [list of properties written]
+  |
+  ├─→ OperationB: [Operation Name]
+  |     └─→ READS: [list of properties read]
+  |     └─→ WRITES: [list of properties written]
+  |
+  ├─→ Decision: [Decision Condition]
+  |     ├─→ IF TRUE → OperationC: [Operation Name]
+  |     |     └─→ READS: [properties]
+  |     |     └─→ WRITES: [properties]
+  |     |
+  |     └─→ IF FALSE → Return Documents [EARLY EXIT]
+  |
+  └─→ END
+```
+
+---
+
+## 🚨 CRITICAL PATTERNS (MUST RECOGNIZE)
+
+### Pattern 1: Check-Before-Create (MANDATORY)
+
+**Identification:**
+- Operation that checks existence (GetEntity, QueryEntity, CheckEntityExists)
+- Followed by Decision checking if result is empty
+- If empty → Continue to Create operation
+- If not empty → Early exit (Return Documents)
+
+**Execution Rule:**
+- **Check operation MUST execute BEFORE create operation**
+- **If check finds entity → Skip ALL creation operations**
+
+**Sequence Format:**
+```
+Operation_Check: Check if entity exists
+  └─→ WRITES: (response with entity ID or empty)
+  |
+  ├─→ Decision: EntityID equals "" (empty)?
+  |     ├─→ IF TRUE (empty = NOT exists) → Operation_Create: Create entity
+  |     |
+  |     └─→ IF FALSE (has value = EXISTS) → Return Documents [EARLY EXIT]
+```
+
+### Pattern 2: Topological Sort for Branch Paths (MANDATORY)
+
+**When Required:**
+- Branch shape with multiple paths
+- Paths have data dependencies (Path_A writes Property_X, Path_B reads Property_X)
+
+**Algorithm:**
+```
+1. Build dependency graph:
+   path_dependencies = {}
+   FOR EACH path_A:
+     FOR EACH path_B:
+       IF path_B reads property that path_A writes:
+         path_dependencies[path_A].append(path_B)
+
+2. Topological sort:
+   sorted_paths = []
+   paths_with_no_deps = [paths with no incoming dependencies]
+   
+   WHILE paths_with_no_deps is not empty:
+     current = paths_with_no_deps.pop()
+     sorted_paths.append(current)
+     
+     FOR EACH dependent_path in path_dependencies[current]:
+       Remove dependency from dependent_path
+       IF dependent_path has no more dependencies:
+         paths_with_no_deps.append(dependent_path)
+   
+   IF len(sorted_paths) != total_paths:
+     ERROR: Circular dependency detected
+
+3. Execute paths in sorted_paths order
+```
+
+### Pattern 3: Early Exit Detection (MANDATORY)
+
+**Identification:**
+- Decision shape where TRUE or FALSE path leads to Return Documents
+- This path terminates execution early
+
+**Documentation Rule:**
+- **MUST mark as [EARLY EXIT] in sequence diagram**
+- **MUST document: "If condition X, skip all subsequent operations"**
+
+### Pattern 4: Subprocess Return Paths (MANDATORY)
+
+**Identification:**
+- ProcessCall shape with returnpaths array
+- Subprocess has multiple Return Documents shapes with different labels
+
+**Analysis Steps:**
+1. **Trace subprocess internal flow** - From START to all Return Documents
+2. **Map return labels** - Each return label maps to different main process path
+3. **Identify success vs error paths** - Success = Stop(continue=true), Error = Return Documents with error label
+
+**Execution Rule:**
+- **Subprocess executes completely before main process continues**
+- **Return label determines which main process path executes next**
+
+**Sequence Format:**
+```
+Main Process:
+  ├─→ ProcessCall: Call Subprocess_Auth
+  |     └─→ SUBPROCESS INTERNAL FLOW:
+  |           ├─→ START
+  |           ├─→ Build Request
+  |           ├─→ Operation_Auth
+  |           ├─→ Decision: Status Code "20*"?
+  |           |     ├─→ IF TRUE → Extract Property_SessionId → Stop (continue=true) [SUCCESS RETURN]
+  |           |     └─→ IF FALSE → Return Documents ("Error_Label") [ERROR RETURN]
+  |           └─→ END SUBPROCESS
+  |
+  ├─→ Decision: Subprocess returned "Error_Label"?
+  |     ├─→ IF TRUE → Return Documents [EARLY EXIT]
+  |     └─→ IF FALSE → Continue (Property_SessionId available)
+```
+
+### Pattern 5: Nested Branches and Decisions (EDGE CASE)
+
+**Identification:**
+- Branch shape inside another branch path
+- Decision shape inside branch path
+- Multiple levels of nesting
+
+**Analysis Rule:**
+- **Analyze inner structures FIRST, then outer**
+- **Inner branch/decision dependencies affect outer path dependencies**
+- **Document nesting levels explicitly**
+
+### Pattern 6: Loops and Iterations (EDGE CASE)
+
+**Identification:**
+- Shape with dragpoint pointing back to earlier shape
+- Cycle detected in control flow graph
+
+**Analysis Rule:**
+- **Loops are rare in Boomi (usually handled by connectors)**
+- **If cycle detected: Document loop condition and exit condition**
+- **Loop must have termination condition (decision → exit)**
+
+### Pattern 7: Property Chains (EDGE CASE)
+
+**Identification:**
+- Property_A written by Shape1
+- Property_B written by Shape2, reads Property_A
+- Property_C written by Shape3, reads Property_B
+
+**Analysis Rule:**
+- **Build transitive dependency graph**
+- **Chain: Shape1 → Shape2 → Shape3 (must execute in order)**
+
+---
+
+## 📋 VALIDATION CHECKLIST (MANDATORY)
+
+### Data Dependencies
+- [ ] All property WRITES identified
+- [ ] All property READS identified
+- [ ] Dependency graph built
+- [ ] Execution order satisfies all dependencies (no read-before-write)
+
+### Decision Analysis
+- [ ] ALL decision shapes inventoried
+- [ ] BOTH TRUE and FALSE paths traced to termination
+- [ ] Pattern type identified for each decision
+- [ ] Early exits identified and documented
+- [ ] Convergence points identified (if paths rejoin)
+
+### Branch Analysis
+- [ ] Each branch classified as parallel or sequential
+- [ ] **🚨 CRITICAL**: If branch contains API calls → Classification is ALWAYS SEQUENTIAL
+- [ ] **SELF-CHECK:** Did I check for API calls in branch paths? (Must answer: YES)
+- [ ] **SELF-CHECK:** Did I classify or assume? (Must answer: Classified)
+- [ ] If sequential: dependency_order built using topological sort OR sequential order (if API calls)
+- [ ] Each path traced to terminal point
+- [ ] Convergence points identified
+- [ ] Execution continuation point determined
+
+### Sequence Diagram
+- [ ] Format follows required structure (Operation → Decision → Operation)
+- [ ] Each operation shows READS and WRITES
+- [ ] Decisions show both TRUE and FALSE paths
+- [ ] **CRITICAL:** Check-before-create patterns shown correctly
+- [ ] **SELF-CHECK:** Did I verify check happens BEFORE create? (Must answer: YES)
+- [ ] **CROSS-VALIDATION:** Sequence diagram matches control flow graph from Step 5
+- [ ] **CROSS-VALIDATION:** Execution order matches dependency graph from Step 4
+- [ ] Early exits marked [EARLY EXIT]
+- [ ] Conditional execution marked [Only if condition X]
+- [ ] Subprocess internal flows documented
+- [ ] Subprocess return paths mapped to main process
+
+### Subprocess Analysis
+- [ ] ALL subprocesses analyzed (internal flow traced)
+- [ ] Return paths identified (success and error)
+- [ ] Return path labels mapped to main process shapes
+- [ ] Properties written by subprocess documented
+- [ ] Properties read by subprocess from main process documented
+
+### Edge Cases
+- [ ] Nested branches/decisions analyzed
+- [ ] Loops identified (if any) with exit conditions
+- [ ] Property chains traced (transitive dependencies)
+- [ ] Circular dependencies detected and resolved
+- [ ] Try/Catch error paths documented
+
+### Property Extraction Completeness
+- [ ] All property patterns searched (${}, %%, {})
+- [ ] Message parameters checked for process properties
+- [ ] Operation headers/path parameters checked
+- [ ] Decision track properties identified (meta.*)
+- [ ] Document properties that read other properties identified
+
+### Input/Output Structure Analysis (CONTRACT VERIFICATION)
+- [ ] Entry point operation identified
+- [ ] Request profile identified and loaded
+- [ ] Request profile structure analyzed (JSON/XML)
+- [ ] Array vs single object detected
+- [ ] Array cardinality documented (minOccurs, maxOccurs)
+- [ ] ALL request fields extracted (including nested structures)
+- [ ] Request field paths documented (full Boomi paths)
+- [ ] Request field mapping table generated (Boomi → Azure DTO)
+- [ ] Response profile identified and loaded
+- [ ] Response profile structure analyzed
+- [ ] ALL response fields extracted
+- [ ] Response field mapping table generated
+- [ ] Document processing behavior determined (splitting vs batch)
+- [ ] Input/Output structure documented in Phase 1 document (Section 14 & 15)
+
+### Map Analysis (NEW - MANDATORY)
+- [ ] ALL map files identified and loaded
+- [ ] SOAP request maps identified (maps targeting operation request profiles)
+- [ ] Field mappings extracted from each SOAP request map
+- [ ] Target field names extracted (ACTUAL SOAP field names from maps)
+- [ ] Profile vs map field name discrepancies documented
+- [ ] Map field names marked as AUTHORITATIVE for SOAP envelopes
+- [ ] Scripting functions analyzed (date formatting, concatenation, etc.)
+- [ ] Element names extracted and documented (dto vs breakdownTaskDto)
+- [ ] Namespace declarations extracted from Boomi message shapes
+- [ ] Map analysis documented in Phase 1 document (Section 3)
+
+---
+
+## 🛑 PRE-PHASE 2 VALIDATION GATE (MANDATORY)
+
+**🚨 YOU CANNOT PROCEED TO PHASE 2 (CODE GENERATION)** until ALL of the following are complete:
+
+### Phase 1 Completion Checklist
+
+**Input/Output Contract Analysis:**
+- [ ] Step 1a (Input Structure Analysis) - COMPLETE and DOCUMENTED
+- [ ] Step 1b (Response Structure Analysis) - COMPLETE and DOCUMENTED
+- [ ] Step 1c (Operation Response Analysis) - COMPLETE and DOCUMENTED
+- [ ] **Step 1d (Map Analysis) - COMPLETE and DOCUMENTED** ⚠️ **NEW MANDATORY - CRITICAL**
+
+**Process Flow Analysis:**
+- [ ] Step 2 (Property Writes) - COMPLETE and DOCUMENTED
+- [ ] Step 3 (Property Reads) - COMPLETE and DOCUMENTED
+- [ ] Step 4 (Data Dependency Graph) - COMPLETE and DOCUMENTED
+- [ ] Step 5 (Control Flow Graph) - COMPLETE and DOCUMENTED
+- [ ] Step 6 (Reverse Flow Mapping) - COMPLETE and DOCUMENTED
+- [ ] Step 7 (Decision Analysis) - COMPLETE and DOCUMENTED
+- [ ] Step 8 (Branch Analysis) - COMPLETE and DOCUMENTED
+- [ ] Step 9 (Execution Order) - COMPLETE and DOCUMENTED
+- [ ] Step 10 (Sequence Diagram) - COMPLETE and DOCUMENTED
+
+**Contract Verification Sections:**
+- [ ] Section 3 (Map Analysis) - COMPLETE ⚠️ **NEW MANDATORY**
+- [ ] Section 14 (Input Structure Analysis) - COMPLETE
+- [ ] Section 15 (Field Mapping Analysis) - COMPLETE
+
+**Self-Check Questions (MANDATORY):**
+
+1. ❓ Did I analyze ALL map files? (Answer: YES/NO)
+   - **REQUIRED:** YES
+   - If NO → **STOP** → Analyze all maps → Document in Phase 1 Section 3
+
+2. ❓ Did I identify SOAP request maps? (Answer: YES/NO)
+   - **REQUIRED:** YES
+   - If NO → **STOP** → Identify SOAP request maps → Document in Phase 1 Section 3
+
+3. ❓ Did I extract actual field names from maps? (Answer: YES/NO)
+   - **REQUIRED:** YES
+   - If NO → **STOP** → Extract field names from maps → Document in Phase 1 Section 3
+
+4. ❓ Did I compare profile field names vs map field names? (Answer: YES/NO)
+   - **REQUIRED:** YES
+   - If NO → **STOP** → Compare and document discrepancies → Document in Phase 1 Section 3
+
+5. ❓ Did I mark map field names as AUTHORITATIVE? (Answer: YES/NO)
+   - **REQUIRED:** YES
+   - If NO → **STOP** → Mark map field names as authoritative → Document in Phase 1 Section 3
+
+6. ❓ Did I analyze scripting functions in maps? (Answer: YES/NO)
+   - **REQUIRED:** YES (if maps contain scripting functions)
+   - If NO and scripting exists → **STOP** → Analyze scripting functions → Document in Phase 1 Section 3
+
+7. ❓ Did I extract element names from map paths? (Answer: YES/NO)
+   - **REQUIRED:** YES
+   - If NO → **STOP** → Extract element names → Document in Phase 1 Section 3
+
+8. ❓ Did I verify namespace declarations from Boomi message shapes? (Answer: YES/NO)
+   - **REQUIRED:** YES
+   - If NO → **STOP** → Extract namespace declarations → Document in Phase 1 Section 3
+
+**IF ANY ANSWER IS NO → STOP → COMPLETE THAT STEP → DOCUMENT IN PHASE 1 → THEN PROCEED TO PHASE 2**
+
+**VALIDATION:** Phase 1 document MUST contain Section 3 (Map Analysis) with complete field mapping analysis, profile vs map comparison table, and scripting function analysis before proceeding to Phase 2.
+
+**🚨 CRITICAL ENFORCEMENT:**
+- Without Step 1d (Map Analysis) → SOAP envelopes will use WRONG field names
+- Profile field names (BDET_FKEY_CAT_SEQ) ≠ Map field names (CategoryId)
+- Map field names are AUTHORITATIVE - ALWAYS use map field names in SOAP envelopes
+
+---
+
+## 🚫 NEVER ASSUME
+
+**🔍 MANDATORY SELF-CHECK before declaring extraction complete:**
+
+1. **NEVER assume Branch = Parallel** - Check data dependencies AND API calls first
+   - **🚨 CRITICAL**: If branch contains API calls → ALWAYS SEQUENTIAL (no parallel API calls)
+   - **SELF-CHECK:** Did I check dependencies AND API calls? (Answer: YES/NO)
+   
+2. **NEVER assume visual order = execution order** - Use data dependencies
+   - **SELF-CHECK:** Did I use dependency graph? (Answer: YES/NO)
+   
+3. **NEVER skip decision analysis** - It's BLOCKING
+   - **SELF-CHECK:** Did I trace BOTH paths? (Answer: YES/NO)
+   
+4. **NEVER assume existence checks happen after creation** - They happen BEFORE
+   - **SELF-CHECK:** Did I verify check-before-create? (Answer: YES/NO)
+   
+5. **NEVER skip topological sort** - If dependencies exist, sort is MANDATORY
+   - **SELF-CHECK:** Did I apply topological sort? (Answer: YES/NO)
+   
+6. **NEVER ignore early exits** - They change entire flow
+   - **SELF-CHECK:** Did I document all early exits? (Answer: YES/NO)
+   
+7. **NEVER assume convergence** - Check reverse flow mapping
+   - **SELF-CHECK:** Did I check reverse flow? (Answer: YES/NO)
+   
+8. **NEVER skip property analysis** - It reveals true dependencies
+   - **SELF-CHECK:** Did I extract all reads/writes? (Answer: YES/NO)
+   
+9. **NEVER treat subprocesses as black boxes** - Trace internal flow
+   - **SELF-CHECK:** Did I trace subprocess flow? (Answer: YES/NO)
+   
+10. **NEVER assume single return path** - Subprocesses can have multiple returns
+    - **SELF-CHECK:** Did I check all return paths? (Answer: YES/NO)
+    
+11. **NEVER skip property pattern variations** - Check ${}, %%, {}, and parameter arrays
+    - **SELF-CHECK:** Did I check all patterns? (Answer: YES/NO)
+    
+12. **NEVER ignore nested structures** - Analyze inner before outer
+    - **SELF-CHECK:** Did I analyze nested structures? (Answer: YES/NO)
+    
+13. **NEVER assume single object input** - ALWAYS check for arrays in request profile
+    - **SELF-CHECK:** Did I check for arrays? (Answer: YES/NO)
+    
+14. **NEVER skip input structure analysis** - DTOs MUST exactly match Boomi contracts
+    - **SELF-CHECK:** Did I complete input structure analysis? (Answer: YES/NO)
+    
+15. **NEVER assume field names** - Extract exact field names and paths from profiles
+    - **SELF-CHECK:** Did I extract from profiles? (Answer: YES/NO)
+    
+16. **NEVER skip array cardinality** - minOccurs/maxOccurs determine required vs optional
+    - **SELF-CHECK:** Did I document cardinality? (Answer: YES/NO)
+    
+17. **NEVER assume document processing** - Analyze inputType to determine splitting behavior
+    - **SELF-CHECK:** Did I analyze inputType? (Answer: YES/NO)
+
+18. **NEVER use profile field names for SOAP envelopes without checking maps** - Profiles define schema, maps show actual usage
+    - **SELF-CHECK:** Did I analyze maps to verify field names? (Answer: YES/NO)
+    - **CRITICAL:** Map field names are AUTHORITATIVE, profile field names are reference only
+    - **EXAMPLE:** Profile says "BDET_FKEY_CAT_SEQ", map uses "CategoryId" → Use "CategoryId"
+
+19. **NEVER skip map analysis** - Maps reveal actual field names, data transformations, and scripting logic
+    - **SELF-CHECK:** Did I check ALL maps for SOAP request operations? (Answer: YES/NO)
+    - **CRITICAL:** Step 1d (Map Analysis) is MANDATORY before Phase 2
+
+20. **NEVER assume profile field names match SOAP request field names** - They often differ significantly
+    - **SELF-CHECK:** Did I compare profile vs map field names? (Answer: YES/NO)
+    - **CRITICAL:** Always document discrepancies in Profile vs Map comparison table
+
+21. **NEVER assume element names** - Different operations use different element names (dto, breakdownTaskDto, locationDto)
+    - **SELF-CHECK:** Did I extract element names from map paths? (Answer: YES/NO)
+    - **CRITICAL:** Element names must match exactly in SOAP envelopes
+
+22. **NEVER skip scripting function analysis** - Maps contain data transformation logic (date formatting, concatenation)
+    - **SELF-CHECK:** Did I analyze scripting functions in maps? (Answer: YES/NO)
+    - **CRITICAL:** Replicate transformation logic in Azure implementation
+
+**🛑 FINAL GATE:** If ANY self-check answer is NO → STOP, complete that step correctly before proceeding
+
+**🚨 EXPLICIT ENFORCEMENT - VALIDATION CHECKPOINT:**
+
+**Before declaring extraction complete, you MUST verify Phase 1 document contains:**
+
+**CRITICAL SECTIONS (MUST EXIST AND BE COMPLETE):**
+- [ ] Section "Input Structure Analysis (Step 1a)" - **CANNOT SKIP - Required before Phase 2**
+- [ ] Section "Response Structure Analysis (Step 1b)" - **CANNOT SKIP - Required before Phase 2**
+- [ ] Section "Operation Response Analysis (Step 1c)" - **CANNOT SKIP - Required before Step 7**
+- [ ] Section "Process Properties Analysis (Steps 2-3)" - **Required for Step 4**
+- [ ] Section "Data Dependency Graph (Step 4)" - **CANNOT SKIP**
+- [ ] Section "Control Flow Graph (Step 5)" - **Required for flow understanding**
+- [ ] Section "Decision Shape Analysis (Step 7)" - **CANNOT SKIP - Must include data source analysis**
+- [ ] Section "Branch Shape Analysis (Step 8)" - **CANNOT SKIP**
+- [ ] Section "Execution Order (Step 9)" - **CANNOT SKIP - Must include business logic verification**
+- [ ] Section "Sequence Diagram (Step 10)" - **Only after sections 3, 4, 5, 6, 7 complete** (Decision, Dependency, Control Flow, Branch, Execution Order)
+
+**SELF-CHECK ANSWERS (MUST BE SHOWN):**
+- [ ] All Step 7 self-check answers shown in Phase 1 document with YES answers
+- [ ] All Step 8 self-check answers shown in Phase 1 document with YES answers
+- [ ] All Step 9 self-check answers shown in Phase 1 document with YES answers
+
+**VALIDATION:**
+- [ ] Sequence diagram references Step 4 (dependency graph)
+- [ ] Sequence diagram references Step 5 (control flow graph)
+- [ ] Sequence diagram references Step 7 (decision analysis)
+- [ ] Sequence diagram references Step 8 (branch analysis)
+- [ ] Sequence diagram references Step 9 (execution order)
+
+**IF ANY MISSING → Extraction NOT complete → CANNOT proceed to Phase 2**
+
+---
+
+## 🛑 ERROR PREVENTION PROTOCOL
+
+**If an error is discovered in extraction:**
+
+1. **STOP** - Do not continue with extraction
+2. **IDENTIFY** - Which step was skipped or done incorrectly
+3. **REDO** - Complete that step correctly following the rulebook
+4. **REVALIDATE** - Complete all validation checklists again
+5. **DOCUMENT** - Note the error and correction
+
+**Before declaring extraction complete, verify:**
+- [ ] All Steps 1-10 completed in order
+- [ ] All validation checklists completed
+- [ ] All "NEVER ASSUME" self-checks answered YES
+- [ ] Sequence diagram cross-checked against JSON dragpoints
+- [ ] Execution order verified against dependency graph
+
+**If ANY item is missing → Extraction is NOT complete**
+
+---
+
+## 🔍 EDGE CASE HANDLING
+
+### Edge Case 1: Circular Dependencies
+
+**Detection:**
+```
+IF topological_sort fails (len(sorted_paths) != total_paths):
+  ERROR: Circular dependency detected
+  ACTION: Review dependency graph for cycles
+  SOLUTION: One dependency must be broken (likely design issue)
+```
+
+### Edge Case 2: Missing Property Writers
+
+**Detection:**
+```
+FOR EACH property in property_reads:
+  IF property not in property_writes:
+    CHECK:
+      - Is property input parameter? (from process trigger)
+      - Is property written in subprocess? (check subprocess analysis)
+      - Is property set by connector? (check connection settings)
+      - Is property missing? (ERROR - must be fixed)
+```
+
+### Edge Case 3: Decision Without Both Paths
+
+**Detection:**
+```
+FOR EACH decision shape:
+  IF missing true dragpoint OR missing false dragpoint:
+    ERROR: Incomplete decision shape
+    ACTION: Document as incomplete, note which path is missing
+```
+
+### Edge Case 4: Branch Path Without Terminal
+
+**Detection:**
+```
+FOR EACH branch path:
+  terminal = trace_to_termination(path[0])
+  IF terminal.type == "rejoins" AND no convergence point found:
+    WARNING: Path may loop or be incomplete
+    ACTION: Check for cycles or missing terminal shapes
+```
+
+### Edge Case 5: Subprocess Without Return Paths
+
+**Detection:**
+```
+FOR EACH subprocess:
+  IF no Return Documents AND no Stop(continue=true):
+    ERROR: Subprocess has no return mechanism
+    ACTION: Check if subprocess is incomplete or uses exception
+```
+
+---
+
+## 📚 JSON STRUCTURE REFERENCE
+
+### Property WRITE (from API response)
+```json
+{
+  "shapeId": "shapeX",
+  "shapetype": "documentproperties",
+  "documentproperties": {
+    "propertyassignments": [{
+      "propertyId": "process.Property_X",
+      "sourcevalues": [{
+            "valueType": "profile",
+            "profileElementId": "elem_123",
+        "profileId": "profile-guid"
+      }]
+    }]
+  }
+}
+```
+**Extraction:** shapeX WRITES process.Property_X from profile element
+
+### Property READ (in operation request)
+```json
+{
+  "shapeId": "shapeX",
+  "shapetype": "connectoraction",
+  "connectoraction": {
+    "operationId": "operation_abc"
+  }
+}
+```
+**Operation JSON:**
+```json
+{
+  "componentId": "operation_abc",
+  "request": {
+    "body": "<GetEntity><EntityID>${process.Property_EntityID}</EntityID></GetEntity>"
+  }
+}
+```
+**Extraction:** shapeX READS process.Property_EntityID (used in request body)
+
+### Decision Shape
+```json
+{
+  "shapeId": "shapeX",
+  "shapetype": "decision",
+  "decision": {
+    "comparison": "equals",
+    "decisionvalue": [{
+        "valueType": "profile",
+        "profileElementId": "elem_456"
+    }, {
+        "valueType": "static",
+        "value": ""
+    }]
+  },
+  "dragpoints": [{
+      "identifier": "true",
+      "toShape": "shapeY"
+  }, {
+      "identifier": "false",
+      "toShape": "shapeZ"
+  }]
+}
+```
+**Extraction:** shapeX compares profile element to empty string, TRUE→shapeY, FALSE→shapeZ
+
+### Branch Shape
+```json
+{
+  "shapeId": "shapeX",
+  "shapetype": "branch",
+  "branch": {
+    "numBranches": "6"
+  },
+  "dragpoints": [{
+    "identifier": "1",
+    "toShape": "shapeY"
+  }, {
+    "identifier": "2",
+    "toShape": "shapeZ"
+  }]
+}
+```
+**Extraction:** shapeX is 6-path branch, Path1→shapeY, Path2→shapeZ
+
+### ProcessCall (Subprocess) Shape
+```json
+{
+  "shapeId": "shapeX",
+  "shapetype": "processcall",
+  "processcall": {
+    "processId": "subprocess_guid_abc",
+    "returnpaths": [{
+      "returnpaths": [{
+        "returnLabel": "Error_Label",
+        "childShapeName": "shapeY"
+      }]
+    }]
+  },
+  "dragpoints": [{
+    "identifier": "shapeY",
+    "text": "Error_Label",
+    "toShape": "shapeY"
+  }]
+}
+```
+**Extraction:** shapeX calls subprocess_guid_abc, if subprocess returns "Error_Label" → goes to shapeY, otherwise continues normally
+
+### Try/Catch Shape
+```json
+{
+  "shapeId": "shapeX",
+  "shapetype": "catcherrors",
+  "dragpoints": [{
+    "identifier": "default",
+    "text": "Try",
+    "toShape": "shapeY"
+  }, {
+    "identifier": "error",
+    "text": "Catch",
+    "toShape": "shapeZ"
+  }]
+}
+```
+**Extraction:** shapeX wraps Try path (shapeY) and Catch path (shapeZ), if any error in Try → jumps to Catch
+
+### Stop Shape (Continue)
+```json
+{
+  "shapeId": "shapeX",
+  "shapetype": "stop",
+  "stop": {
+    "continue": "true"
+  },
+  "dragpoints": []
+}
+```
+**Extraction:** shapeX is Stop with continue=true, execution continues (used in subprocesses to return data)
+
+### Stop Shape (Terminate)
+```json
+{
+  "shapeId": "shapeX",
+  "shapetype": "stop",
+  "stop": {
+    "continue": "false"
+  },
+  "dragpoints": []
+}
+```
+**Extraction:** shapeX is Stop with continue=false, process terminates here
+
+### Return Documents Shape
+```json
+{
+  "shapeId": "shapeX",
+  "shapetype": "returndocuments",
+  "returndocuments": {
+    "label": "Return Documents"
+  },
+  "dragpoints": []
+}
+```
+**Extraction:** shapeX returns documents to caller, process ends (no dragpoints = terminal)
+
+---
+
+## 📋 PHASE 1 DOCUMENT STRUCTURE (MANDATORY SECTIONS)
+
+**🚨 CRITICAL ENFORCEMENT: These sections MUST be created in order. You CANNOT skip sections or create later sections before earlier ones are complete.**
+
+**Every Phase 1 document MUST include these sections in this exact order:**
+
+1. **Operations Inventory** - All operations listed
+2. **Process Properties Analysis** - All properties WRITTEN and READ
+3. **Map Analysis (Step 1d)** - ⚠️ **NEW MANDATORY SECTION** - SOAP request field mappings
+   - **🛑 CRITICAL**: This section MUST exist before Phase 2 (SOAP envelope creation)
+   - **🛑 CRITICAL**: Must show profile vs map field name discrepancies
+   - **🛑 CRITICAL**: Must mark map field names as AUTHORITATIVE
+4. **Decision Shape Analysis (Step 7)** - All decisions with TRUE/FALSE paths
+   - **🛑 CRITICAL**: This section MUST exist before creating Sequence Diagram
+   - **🛑 CRITICAL**: Must show all self-check answers from Step 7
+5. **Data Dependency Graph (Step 4)** - Dependency chains documented
+   - **🛑 CRITICAL**: This section MUST exist before creating Sequence Diagram
+6. **Control Flow Graph (Step 5)** - Dragpoint connections mapped
+7. **Branch Shape Analysis (Step 8)** - All branches classified
+   - **🛑 CRITICAL**: This section MUST exist before creating Sequence Diagram
+   - **🛑 CRITICAL**: Must show all self-check answers from Step 8
+   - **🛑 CRITICAL**: Must show dependency graph, classification, topological sort
+8. **Execution Order (Step 9)** - True execution sequence
+   - **🛑 CRITICAL**: This section MUST exist before creating Sequence Diagram
+   - **🛑 CRITICAL**: Must show all self-check answers from Step 9
+   - **🛑 CRITICAL**: Must reference Step 4 (dependency graph) and Step 8 (branch analysis)
+9. **Sequence Diagram (Step 10)** - Visual flow representation
+   - **🛑 CRITICAL**: CANNOT CREATE until sections 3, 4, 5, 6, 7, 8 are complete
+   - **🛑 CRITICAL**: Must reference sections 4, 5, 7, 8, 9 in the diagram
+10. **Subprocess Analysis** - Internal flows traced
+11. **Critical Patterns Identified** - Check-before-create, etc.
+12. **Validation Checklist** - All items checked
+13. **System Layer Identification** - Third-party systems identified
+14. **Input Structure Analysis** - ⚠️ **MANDATORY SECTION**
+15. **Field Mapping Analysis** - ⚠️ **MANDATORY SECTION**
+
+**🚨 ENFORCEMENT CHECKPOINT BEFORE SECTION 8 (Sequence Diagram):**
+
+Before creating section 8 (Sequence Diagram), you MUST verify:
+- [ ] Section 3 (Decision Shape Analysis - Step 7) exists and is complete
+- [ ] Section 4 (Data Dependency Graph - Step 4) exists and is complete
+- [ ] Section 5 (Control Flow Graph - Step 5) exists and is complete (includes Step 6 reverse flow)
+- [ ] Section 6 (Branch Shape Analysis - Step 8) exists and is complete
+- [ ] Section 7 (Execution Order - Step 9) exists and is complete
+- [ ] All self-check answers from Steps 7-9 are shown in their respective sections
+
+**IF ANY MISSING OR INCOMPLETE → STOP → Complete missing sections → Then create Sequence Diagram**
+
+### Section 14: Input Structure Analysis (MANDATORY)
+
+**Must Include:**
+- Request profile ID and name
+- Profile type (JSON/XML)
+- Root structure path
+- Array detection (isArray: true/false)
+- Array cardinality (minOccurs, maxOccurs)
+- Complete JSON/XML structure example
+- Document processing behavior
+- Field count (total fields including nested)
+
+**Example Format:**
+```markdown
+## 14. Input Structure Analysis
+
+### Request Profile Structure
+- **Profile ID:** [profile-guid]
+- **Profile Name:** [RequestProfileName]
+- **Profile Type:** profile.json
+- **Root Structure:** Root/Object/entityArray/Array/ArrayElement1/Object/...
+- **Array Detection:** ✅ YES - entityArray is an array
+- **Array Cardinality:** 
+  - minOccurs: 0
+  - maxOccurs: -1 (unlimited)
+- **Input Type:** singlejson
+
+### Input Format
+[Complete JSON structure]
+
+### Document Processing Behavior
+- **Boomi Processing:** Each array element triggers separate process execution
+- **Azure Function Requirement:** Must accept array and process each element
+- **Implementation Pattern:** Loop through array, process each work order, aggregate results
+```
+
+### Section 15: Field Mapping Analysis (MANDATORY)
+
+**Must Include:**
+- Complete field mapping table (Boomi → Azure DTO)
+- All fields from request profile
+- All fields from response profile
+- Nested structures documented
+- Required vs optional fields identified
+
+**Example Format:**
+```markdown
+## 15. Field Mapping Analysis
+
+### Request Field Mapping
+
+| Boomi Field Path | Boomi Field Name | Data Type | Required | Azure DTO Property | Notes |
+|------------------|------------------|-----------|----------|-------------------|-------|
+| Root/Object/entityArray/Array/ArrayElement1/Object/field1 | field1 | character | Yes | Field1 | Used in OperationA |
+| Root/Object/entityArray/Array/ArrayElement1/Object/field2 | field2 | character | Yes | Field2 | Used in OperationB |
+| ... | ... | ... | ... | ... | ... |
+
+### Response Field Mapping
+
+| Boomi Field Path | Boomi Field Name | Data Type | Azure DTO Property | Notes |
+|------------------|------------------|-----------|-------------------|-------|
+| ... | ... | ... | ... | ... |
+```
+
+**Validation:**
+- [ ] Section 3 (Map Analysis) present ⚠️ **NEW MANDATORY**
+- [ ] Section 14 (Input Structure Analysis) present
+- [ ] Section 15 (Field Mapping Analysis) present
+- [ ] All request fields mapped
+- [ ] All response fields mapped
+- [ ] All SOAP request maps analyzed
+- [ ] Profile vs map discrepancies documented
+- [ ] Map field names marked as authoritative
+- [ ] Scripting functions analyzed
+- [ ] Element names documented
+- [ ] Namespace declarations documented
+- [ ] Array structures documented
+- [ ] Nested structures documented
+
+---
+
+**Document Version:** 2.2  
+**Purpose:** Prescriptive guide for extracting execution sequence from ANY Boomi process  
+**Key Changes:** 
+- Version 2.0: Made rules explicit, mandatory, and non-negotiable
+- Version 2.1: Added mandatory Input/Output Structure Analysis (Contract Verification)
+- Version 2.2: Added Step 1d (Map Analysis) - CRITICAL for SOAP field name accuracy
+  * Maps show ACTUAL field names used in SOAP requests
+  * Profiles show SCHEMA field names (technical names)
+  * Map field names are AUTHORITATIVE (use in SOAP envelopes)
+  * Prevents field name mismatches (CategoryId vs BDET_FKEY_CAT_SEQ)
+  * Mandatory before Phase 2 (SOAP envelope creation)
