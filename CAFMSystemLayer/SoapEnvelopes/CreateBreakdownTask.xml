@@ -1,0 +1,25 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.fsi.co.uk/services/evolution/04/09">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ns:CreateBreakdownTask>
+         <ns:sessionId>{{SessionId}}</ns:sessionId>
+         <ns:breakdownTask>
+            <ns:locationId>{{LocationId}}</ns:locationId>
+            <ns:instructionSetId>{{InstructionSetId}}</ns:instructionSetId>
+            <ns:description>{{Description}}</ns:description>
+            <ns:serviceRequestNumber>{{ServiceRequestNumber}}</ns:serviceRequestNumber>
+            <ns:reporterName>{{ReporterName}}</ns:reporterName>
+            <ns:reporterEmail>{{ReporterEmail}}</ns:reporterEmail>
+            <ns:reporterPhoneNumber>{{ReporterPhoneNumber}}</ns:reporterPhoneNumber>
+            <ns:status>{{Status}}</ns:status>
+            <ns:subStatus>{{SubStatus}}</ns:subStatus>
+            <ns:priority>{{Priority}}</ns:priority>
+            <ns:scheduledDate>{{ScheduledDate}}</ns:scheduledDate>
+            <ns:scheduledTimeStart>{{ScheduledTimeStart}}</ns:scheduledTimeStart>
+            <ns:scheduledTimeEnd>{{ScheduledTimeEnd}}</ns:scheduledTimeEnd>
+            {{TechnicianElement}}
+            {{SourceOrgIdElement}}
+         </ns:breakdownTask>
+      </ns:CreateBreakdownTask>
+   </soapenv:Body>
+</soapenv:Envelope>
