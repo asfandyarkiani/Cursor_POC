@@ -1,0 +1,29 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.fsi.co.uk/services/evolution/04/09" xmlns:fsi="http://schemas.datacontract.org/2004/07/Fsi.Platform.Contracts.ServiceModel" xmlns:fsi1="http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ns:CreateBreakdownTask>
+         <ns:sessionId>{{SessionId}}</ns:sessionId>
+         <ns:dto>
+            <fsi1:BDET_CALLER_SOURCE_ID>{{CallerSourceId}}</fsi1:CALLER_SOURCE_ID>
+            <fsi1:BDET_COMMENTS>{{Comments}}</fsi1:BDET_COMMENTS>
+            <fsi1:BDET_CONTACT_EMAIL>{{ContactEmail}}</fsi1:BDET_CONTACT_EMAIL>
+            <fsi1:BDET_CONTACT_NAME>{{ContactName}}</fsi1:BDET_CONTACT_NAME>
+            <fsi1:BDET_CONTACT_PHONE>{{ContactPhone}}</fsi1:BDET_CONTACT_PHONE>
+            <fsi1:BDET_FKEY_BLD_SEQ>{{BuildingId}}</fsi1:BDET_FKEY_BLD_SEQ>
+            <fsi1:BDET_FKEY_CAT_SEQ>{{CategoryId}}</fsi1:BDET_FKEY_CAT_SEQ>
+            <fsi1:BDET_FKEY_LAB_SEQ>{{DisciplineId}}</fsi1:BDET_FKEY_LAB_SEQ>
+            <fsi1:BDET_FKEY_LOC_SEQ>{{LocationId}}</fsi1:BDET_FKEY_LOC_SEQ>
+            <fsi1:BDET_FKEY_PRI_SEQ>{{PriorityId}}</fsi1:BDET_FKEY_PRI_SEQ>
+            <fsi1:BDET_LOGGED_BY>{{LoggedBy}}</fsi1:BDET_LOGGED_BY>
+            <fsi1:BDET_RAISED_DATE>{{RaisedDate}}</fsi1:BDET_RAISED_DATE>
+            <fsi1:BDET_SCHEDULED_DATE>{{ScheduledDate}}</fsi1:BDET_SCHEDULED_DATE>
+            <fsi1:BDET_SCHEDULED_END_TIME>{{ScheduledEndTime}}</fsi1:BDET_SCHEDULED_END_TIME>
+            <fsi1:BDET_SCHEDULED_START_TIME>{{ScheduledStartTime}}</fsi1:BDET_SCHEDULED_START_TIME>
+            <fsi1:BDET_STATUS>{{Status}}</fsi1:BDET_STATUS>
+            <fsi1:BDET_SUB_STATUS>{{SubStatus}}</fsi1:BDET_SUB_STATUS>
+            <fsi1:ContractId>{{ContractId}}</fsi1:ContractId>
+            <fsi1:IN_SEQ>{{InstructionId}}</fsi1:IN_SEQ>
+         </ns:dto>
+      </ns:CreateBreakdownTask>
+   </soapenv:Body>
+</soapenv:Envelope>
