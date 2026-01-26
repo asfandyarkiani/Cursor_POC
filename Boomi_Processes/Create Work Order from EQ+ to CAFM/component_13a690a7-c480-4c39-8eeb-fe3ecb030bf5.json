@@ -1,0 +1,318 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Facilities/EQ+ Work Order/Create CAFM Work Order",
+      "componentId": "13a690a7-c480-4c39-8eeb-fe3ecb030bf5",
+      "version": "14",
+      "name": "PP_Create_Work Order",
+      "type": "processproperty",
+      "createdDate": "2025-02-19T08:41:37Z",
+      "createdBy": "gowri.sankar@al-ghurair.com",
+      "modifiedDate": "2025-04-29T07:01:39Z",
+      "modifiedBy": "gowri.sankar@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Create CAFM Work Order",
+      "folderId": "Rjo3NDI4MzIx",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "DefinedProcessProperties": {
+        "definedProcessProperty": [
+          {
+            "$": {
+              "key": "d6ecf8c0-217b-4b43-bc3e-7b506b3bc88f"
+            },
+            "helpText": "",
+            "label": {
+              "_": "File_Name"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "Work_Order"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "c6514be1-6009-4ea6-9b0d-3a0198db6df0"
+            },
+            "helpText": "",
+            "label": {
+              "_": "Has_Attachment"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "Y"
+            },
+            "allowedValues": {
+              "allowedValueSet": [
+                {
+                  "$": {
+                    "label": "Y",
+                    "value": "Y"
+                  }
+                },
+                {
+                  "$": {
+                    "label": "N",
+                    "value": "N"
+                  }
+                }
+              ]
+            },
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "549ccadb-c514-477d-bdc8-102d31b4de16"
+            },
+            "helpText": "",
+            "label": {
+              "_": "To_Email"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "BoomiIntegrationTeam@al-ghurair.com"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "5c9f86d5-14e1-41ed-bcad-8529fc8c164e"
+            },
+            "helpText": "",
+            "label": {
+              "_": "SOAPAction_GetLocationsByDto"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "http://www.fsi.co.uk/services/evolution/04/09/IPropertyServiceV3/GetLocationsByDto"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "c209f1f6-9406-473e-9060-4f4cbf075d36"
+            },
+            "helpText": {
+              "_": "RP (Resourse path)"
+            },
+            "label": {
+              "_": "GetLocationsByDto_CAFM_RP"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "Evolution/Services/Basic/PropertyServiceV3.svc"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "c022cb67-5458-4174-bf63-6c2be86371a8"
+            },
+            "helpText": {
+              "_": "RP (Resourse path)"
+            },
+            "label": {
+              "_": "GetInstructionSetsByDto&CreateBreakdownTask_CAFM_RP"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "Evolution/Services/Basic/TaskServiceV3.svc"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "aa795f94-2e91-45a2-b6ee-06d27582c3c7"
+            },
+            "helpText": "",
+            "label": {
+              "_": "SOAPAction_GetInstructionSetsByDto"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "http://www.fsi.co.uk/services/evolution/04/09/ITaskServiceV3/GetInstructionSetsByDto"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "1741c4e5-deb5-4672-bcd1-dcfcda0c96b7"
+            },
+            "helpText": "",
+            "label": {
+              "_": "SOAPAction_CreateBreakdownTask"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "http://www.fsi.co.uk/services/evolution/04/09/ITaskServiceV3/CreateBreakdownTask"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "0d916a8e-a664-4147-9e1a-d1a965ae738a"
+            },
+            "helpText": "",
+            "label": {
+              "_": "SOAPAction_CreateEvent"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "http://www.fsi.co.uk/services/evolution/04/09/ITaskEventsService/CreateEvent"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "f3c2ad05-c9b5-4163-85ca-9ded978d9ad8"
+            },
+            "helpText": {
+              "_": "RP (Resourse path)"
+            },
+            "label": {
+              "_": "CreateEvent_RP"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "Evolution/Services/Basic/TaskEventsService.svc"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "8a8d5c37-de99-427a-802a-729c8aac8145"
+            },
+            "helpText": "",
+            "label": {
+              "_": "ContractId"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "301"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "5a18fe55-1d7b-4a5c-89e2-3dec92373ce9"
+            },
+            "helpText": "",
+            "label": {
+              "_": "BDET_CALLER_SOURCE_ID"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "1004"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "ede3d1ae-bc86-4819-a787-090208388fea"
+            },
+            "helpText": "",
+            "label": {
+              "_": "SOAPAction_GETBreakdownTasksByDto"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "http://www.fsi.co.uk/services/evolution/04/09/ITaskServiceV3/GetBreakdownTasksByDto"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "01867220-3736-454d-9a93-693bae28cd47"
+            },
+            "helpText": {
+              "_": "RP (Resourse path)"
+            },
+            "label": {
+              "_": "GETBreakdownTasksByDto_CAFM_RP"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "Evolution/Services/Basic/TaskServiceV3.svc"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

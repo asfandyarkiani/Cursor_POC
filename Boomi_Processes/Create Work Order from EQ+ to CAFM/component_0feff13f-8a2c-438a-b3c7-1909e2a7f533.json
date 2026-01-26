@@ -1,0 +1,158 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/#Commom/Common Process/Email",
+      "componentId": "0feff13f-8a2c-438a-b3c7-1909e2a7f533",
+      "version": "7",
+      "name": "PP_Office365_Email",
+      "type": "processproperty",
+      "createdDate": "2022-09-08T06:29:50Z",
+      "createdBy": "Rajesh.Muppala@al-ghurair.com",
+      "modifiedDate": "2022-10-31T12:39:07Z",
+      "modifiedBy": "Rajesh.Muppala@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Email",
+      "folderId": "Rjo1MTgzNTU1",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "DefinedProcessProperties": {
+        "definedProcessProperty": [
+          {
+            "$": {
+              "key": "804b6d40-eeee-4ac0-ab4b-94e1aca9f4b7"
+            },
+            "helpText": "",
+            "label": {
+              "_": "From_Email"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "Boomi.Dev.failures@al-ghurair.com"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "600acadb-ee02-4369-af85-ee70af380b6c"
+            },
+            "helpText": "",
+            "label": {
+              "_": "To_Email"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "Rajesh.Muppala@al-ghurair.com;mohan.jonnalagadda@al-ghurair.com"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "2fa6ce9e-437a-44cc-b44f-5c7e61052f41"
+            },
+            "helpText": "",
+            "label": {
+              "_": "HasAttachment"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "Y"
+            },
+            "allowedValues": {
+              "allowedValueSet": [
+                {
+                  "$": {
+                    "label": "Y",
+                    "value": "Y"
+                  }
+                },
+                {
+                  "$": {
+                    "label": "N",
+                    "value": "N"
+                  }
+                }
+              ]
+            },
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "3ca9f307-cecb-4d1e-b9ec-007839509ed7"
+            },
+            "helpText": "",
+            "label": {
+              "_": "EmailBody"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": "",
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "d8fc7496-ec2c-4308-a4ca-e9f49c0c9500"
+            },
+            "helpText": "",
+            "label": {
+              "_": "Environment"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "DEV Failure :"
+            },
+            "allowedValues": {
+              "allowedValueSet": [
+                {
+                  "$": {
+                    "label": "DEV Failure :",
+                    "value": "DEV Failure :"
+                  }
+                },
+                {
+                  "$": {
+                    "label": "QA Failure :",
+                    "value": "QA Failure :"
+                  }
+                },
+                {
+                  "$": {
+                    "label": "PROD Failure :",
+                    "value": "PROD Failure :"
+                  }
+                }
+              ]
+            },
+            "persisted": {
+              "_": "false"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

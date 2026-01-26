@@ -1,0 +1,76 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Facilities/Masters/Outbound/Vendor",
+      "componentId": "c20e5991-4d70-47f7-8e25-847df3e5eb6d",
+      "version": "8",
+      "name": "Login",
+      "type": "connector-action",
+      "subType": "http",
+      "createdDate": "2023-06-09T11:52:30Z",
+      "createdBy": "Rajesh.Muppala@al-ghurair.com",
+      "modifiedDate": "2023-06-12T08:01:15Z",
+      "modifiedBy": "Rajesh.Muppala@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Vendor",
+      "folderId": "Rjo1OTA3MDUw",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "Operation": {
+        "Archiving": {
+          "$": {
+            "directory": "",
+            "enabled": "false"
+          }
+        },
+        "Configuration": {
+          "HttpSendAction": {
+            "$": {
+              "dataContentType": "text/xml",
+              "followRedirects": "false",
+              "methodType": "POST",
+              "mimePassthrough": "false",
+              "requestProfile": "60e1aeea-348e-4505-8e49-e823a6a82194",
+              "requestProfileType": "XML",
+              "responseProfile": "992136d3-da44-4f22-994b-f7181624215b",
+              "responseProfileType": "XML",
+              "returnErrors": "true",
+              "returnMimeResponse": "false",
+              "returnResponses": "true"
+            },
+            "requestHeaders": {
+              "header": {
+                "$": {
+                  "headerName": "SOAPAction",
+                  "headerValue": "SOAPAction",
+                  "isVariable": "true",
+                  "key": "1000000"
+                }
+              }
+            },
+            "pathElements": {
+              "element": {
+                "$": {
+                  "isVariable": "true",
+                  "key": "2000000",
+                  "name": "URL"
+                }
+              }
+            },
+            "responseHeaderMapping": "",
+            "reflectHeaders": ""
+          }
+        },
+        "Tracking": {
+          "TrackedFields": ""
+        },
+        "Caching": ""
+      }
+    }
+  }
+}

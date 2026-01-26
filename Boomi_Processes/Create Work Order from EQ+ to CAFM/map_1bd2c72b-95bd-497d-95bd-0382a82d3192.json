@@ -1,0 +1,174 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Facilities/EQ+ Work Order/Create CAFM Work Order",
+      "componentId": "1bd2c72b-95bd-497d-95bd-0382a82d3192",
+      "version": "8",
+      "name": "Work Order_Create_Success",
+      "type": "transform.map",
+      "createdDate": "2025-02-19T08:50:12Z",
+      "createdBy": "gowri.sankar@al-ghurair.com",
+      "modifiedDate": "2025-02-24T07:39:36Z",
+      "modifiedBy": "gowri.sankar@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Create CAFM Work Order",
+      "folderId": "Rjo3NDI4MzIx",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "Map": {
+        "$": {
+          "fromProfile": "dbcca2ef-55cc-48e0-9329-1e8db4ada0c8",
+          "toProfile": "9e542ed5-2c65-4af8-b0c6-821cbc58ca31"
+        },
+        "Mappings": {
+          "Mapping": [
+            {
+              "$": {
+                "fromCacheJoinKey": "0",
+                "fromKey": "349",
+                "fromKeyPath": "*[@key='1']/*[@key='151']/*[@key='153']/*[@key='155']/*[@key='349']",
+                "fromNamePath": "Envelope/Body/CreateBreakdownTaskResponse/CreateBreakdownTaskResult/TaskId",
+                "fromType": "profile",
+                "toKey": "7",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='3']/*[@key='4']/*[@key='5']/*[@key='6']/*[@key='7']",
+                "toNamePath": "Root/Object/workOrder/Array/ArrayElement1/Object/cafmSRNumber",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromFunction": "1",
+                "fromKey": "3",
+                "fromType": "function",
+                "toKey": "8",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='3']/*[@key='4']/*[@key='5']/*[@key='6']/*[@key='8']",
+                "toNamePath": "Root/Object/workOrder/Array/ArrayElement1/Object/sourceSRNumber",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromFunction": "2",
+                "fromKey": "3",
+                "fromType": "function",
+                "toKey": "9",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='3']/*[@key='4']/*[@key='5']/*[@key='6']/*[@key='9']",
+                "toNamePath": "Root/Object/workOrder/Array/ArrayElement1/Object/sourceOrgId",
+                "toType": "profile"
+              }
+            }
+          ]
+        },
+        "Functions": {
+          "$": {
+            "optimizeExecutionOrder": "true"
+          },
+          "FunctionStep": [
+            {
+              "$": {
+                "cacheEnabled": "true",
+                "cacheOption": "none",
+                "category": "ProcessProperty",
+                "key": "1",
+                "name": "Get Dynamic Process Property",
+                "position": "1",
+                "sumEnabled": "false",
+                "type": "PropertyGet",
+                "x": "10.0",
+                "y": "10.0"
+              },
+              "Inputs": {
+                "Input": [
+                  {
+                    "$": {
+                      "default": "DPP_SourseSRNumber",
+                      "key": "1",
+                      "name": "Property Name"
+                    }
+                  },
+                  {
+                    "$": {
+                      "key": "2",
+                      "name": "Default Value"
+                    }
+                  }
+                ]
+              },
+              "Outputs": {
+                "Output": {
+                  "$": {
+                    "key": "3",
+                    "name": "Result"
+                  }
+                }
+              },
+              "Configuration": ""
+            },
+            {
+              "$": {
+                "cacheEnabled": "true",
+                "cacheOption": "none",
+                "category": "ProcessProperty",
+                "key": "2",
+                "name": "Get Dynamic Process Property",
+                "position": "2",
+                "sumEnabled": "false",
+                "type": "PropertyGet",
+                "x": "10.0",
+                "y": "128.0"
+              },
+              "Inputs": {
+                "Input": [
+                  {
+                    "$": {
+                      "default": "DPP_sourseORGId",
+                      "key": "1",
+                      "name": "Property Name"
+                    }
+                  },
+                  {
+                    "$": {
+                      "key": "2",
+                      "name": "Default Value"
+                    }
+                  }
+                ]
+              },
+              "Outputs": {
+                "Output": {
+                  "$": {
+                    "key": "3",
+                    "name": "Result"
+                  }
+                }
+              },
+              "Configuration": ""
+            }
+          ]
+        },
+        "Defaults": {
+          "Default": [
+            {
+              "$": {
+                "toKey": "10",
+                "value": "true"
+              }
+            },
+            {
+              "$": {
+                "toKey": "11",
+                "value": "Work order created successfully "
+              }
+            }
+          ]
+        },
+        "DocumentCacheJoins": ""
+      }
+    }
+  }
+}

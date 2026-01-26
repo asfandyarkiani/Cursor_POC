@@ -1,0 +1,208 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Facilities/EQ+ Work Order/Create CAFM Work Order",
+      "componentId": "59c7be49-24c8-4826-a20a-cfb14ed33d15",
+      "version": "7",
+      "name": "WorkOrder_Create_Error",
+      "type": "transform.map",
+      "createdDate": "2025-02-19T08:50:41Z",
+      "createdBy": "gowri.sankar@al-ghurair.com",
+      "modifiedDate": "2025-03-13T05:35:36Z",
+      "modifiedBy": "hari.krishna@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Create CAFM Work Order",
+      "folderId": "Rjo3NDI4MzIx",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "Map": {
+        "$": {
+          "fromProfile": "e97e0ca7-639c-4d6e-bd03-694e648e4f04",
+          "toProfile": "9e542ed5-2c65-4af8-b0c6-821cbc58ca31"
+        },
+        "Mappings": {
+          "Mapping": [
+            {
+              "$": {
+                "fromFunction": "1",
+                "fromKey": "3",
+                "fromType": "function",
+                "toKey": "8",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='3']/*[@key='4']/*[@key='5']/*[@key='6']/*[@key='8']",
+                "toNamePath": "Root/Object/workOrder/Array/ArrayElement1/Object/sourceSRNumber",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromFunction": "2",
+                "fromKey": "3",
+                "fromType": "function",
+                "toKey": "9",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='3']/*[@key='4']/*[@key='5']/*[@key='6']/*[@key='9']",
+                "toNamePath": "Root/Object/workOrder/Array/ArrayElement1/Object/sourceOrgId",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromFunction": "3",
+                "fromKey": "3",
+                "fromType": "function",
+                "toKey": "11",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='3']/*[@key='4']/*[@key='5']/*[@key='6']/*[@key='11']",
+                "toNamePath": "Root/Object/workOrder/Array/ArrayElement1/Object/message",
+                "toType": "profile"
+              }
+            }
+          ]
+        },
+        "Functions": {
+          "$": {
+            "optimizeExecutionOrder": "true"
+          },
+          "FunctionStep": [
+            {
+              "$": {
+                "cacheEnabled": "true",
+                "cacheOption": "none",
+                "category": "ProcessProperty",
+                "key": "1",
+                "name": "Get Dynamic Process Property",
+                "position": "1",
+                "sumEnabled": "false",
+                "type": "PropertyGet",
+                "x": "10.0",
+                "y": "10.0"
+              },
+              "Inputs": {
+                "Input": [
+                  {
+                    "$": {
+                      "default": "DPP_SourseSRNumber",
+                      "key": "1",
+                      "name": "Property Name"
+                    }
+                  },
+                  {
+                    "$": {
+                      "key": "2",
+                      "name": "Default Value"
+                    }
+                  }
+                ]
+              },
+              "Outputs": {
+                "Output": {
+                  "$": {
+                    "key": "3",
+                    "name": "Result"
+                  }
+                }
+              },
+              "Configuration": ""
+            },
+            {
+              "$": {
+                "cacheEnabled": "true",
+                "cacheOption": "none",
+                "category": "ProcessProperty",
+                "enabled": "true",
+                "key": "2",
+                "name": "Get Dynamic Process Property",
+                "position": "2",
+                "sumEnabled": "false",
+                "type": "PropertyGet",
+                "x": "30.0",
+                "y": "261.0"
+              },
+              "Inputs": {
+                "Input": [
+                  {
+                    "$": {
+                      "default": "DPP_sourseORGId",
+                      "isReset": "false",
+                      "key": "1",
+                      "name": "Property Name"
+                    }
+                  },
+                  {
+                    "$": {
+                      "isReset": "false",
+                      "key": "2",
+                      "name": "Default Value"
+                    }
+                  }
+                ]
+              },
+              "Outputs": {
+                "Output": {
+                  "$": {
+                    "isReset": "false",
+                    "key": "3",
+                    "name": "Result"
+                  }
+                }
+              },
+              "Configuration": ""
+            },
+            {
+              "$": {
+                "cacheEnabled": "true",
+                "cacheOption": "none",
+                "category": "ProcessProperty",
+                "key": "3",
+                "name": "Get Dynamic Process Property",
+                "position": "3",
+                "sumEnabled": "false",
+                "type": "PropertyGet",
+                "x": "30.0",
+                "y": "441.0"
+              },
+              "Inputs": {
+                "Input": [
+                  {
+                    "$": {
+                      "default": "DPP_Currentdata",
+                      "key": "1",
+                      "name": "Property Name"
+                    }
+                  },
+                  {
+                    "$": {
+                      "key": "2",
+                      "name": "Default Value"
+                    }
+                  }
+                ]
+              },
+              "Outputs": {
+                "Output": {
+                  "$": {
+                    "key": "3",
+                    "name": "Result"
+                  }
+                }
+              },
+              "Configuration": ""
+            }
+          ]
+        },
+        "Defaults": {
+          "Default": {
+            "$": {
+              "toKey": "10",
+              "value": "false"
+            }
+          }
+        },
+        "DocumentCacheJoins": ""
+      }
+    }
+  }
+}

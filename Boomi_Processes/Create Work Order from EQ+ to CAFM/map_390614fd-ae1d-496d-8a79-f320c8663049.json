@@ -1,0 +1,736 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Facilities/EQ+ Work Order/Create CAFM Work Order",
+      "componentId": "390614fd-ae1d-496d-8a79-f320c8663049",
+      "version": "25",
+      "name": "CreateBreakdownTask  EQ+_to_CAFM_Create",
+      "type": "transform.map",
+      "createdDate": "2025-02-19T08:53:19Z",
+      "createdBy": "gowri.sankar@al-ghurair.com",
+      "modifiedDate": "2025-02-27T11:40:09Z",
+      "modifiedBy": "gowri.sankar@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Create CAFM Work Order",
+      "folderId": "Rjo3NDI4MzIx",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "Map": {
+        "$": {
+          "fromProfile": "af096014-313f-4565-9091-2bdd56eb46df",
+          "toProfile": "362c3ec8-053c-4694-8a26-cdb931e6a411"
+        },
+        "Mappings": {
+          "Mapping": [
+            {
+              "$": {
+                "fromKey": "72",
+                "fromKeyPath": "*[@key='1']/*[@key='46']/*[@key='47']/*[@key='48']/*[@key='49']/*[@key='50']/*[@key='72']",
+                "fromNamePath": "Root/Object/workOrder/Array/ArrayElement1/Object/reporterName",
+                "fromType": "profile",
+                "toKey": "415",
+                "toKeyPath": "*[@key='1']/*[@key='153']/*[@key='155']/*[@key='161']/*[@key='415']",
+                "toNamePath": "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/ReporterName",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromKey": "73",
+                "fromKeyPath": "*[@key='1']/*[@key='46']/*[@key='47']/*[@key='48']/*[@key='49']/*[@key='50']/*[@key='73']",
+                "fromNamePath": "Root/Object/workOrder/Array/ArrayElement1/Object/reporterEmail",
+                "fromType": "profile",
+                "toKey": "399",
+                "toKeyPath": "*[@key='1']/*[@key='153']/*[@key='155']/*[@key='161']/*[@key='399']",
+                "toNamePath": "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/BDET_EMAIL",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromKey": "74",
+                "fromKeyPath": "*[@key='1']/*[@key='46']/*[@key='47']/*[@key='48']/*[@key='49']/*[@key='50']/*[@key='74']",
+                "fromNamePath": "Root/Object/workOrder/Array/ArrayElement1/Object/reporterPhoneNumber",
+                "fromType": "profile",
+                "toKey": "411",
+                "toKeyPath": "*[@key='1']/*[@key='153']/*[@key='155']/*[@key='161']/*[@key='411']",
+                "toNamePath": "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/Phone",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromKey": "53",
+                "fromKeyPath": "*[@key='1']/*[@key='46']/*[@key='47']/*[@key='48']/*[@key='49']/*[@key='50']/*[@key='53']",
+                "fromNamePath": "Root/Object/workOrder/Array/ArrayElement1/Object/serviceRequestNumber",
+                "fromType": "profile",
+                "toKey": "403",
+                "toKeyPath": "*[@key='1']/*[@key='153']/*[@key='155']/*[@key='161']/*[@key='403']",
+                "toNamePath": "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/CallId",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromFunction": "1",
+                "fromKey": "3",
+                "fromType": "function",
+                "toKey": "157",
+                "toKeyPath": "*[@key='1']/*[@key='153']/*[@key='155']/*[@key='157']",
+                "toNamePath": "Envelope/Body/CreateBreakdownTask/sessionId",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromFunction": "2",
+                "fromKey": "3",
+                "fromType": "function",
+                "toKey": "201",
+                "toKeyPath": "*[@key='1']/*[@key='153']/*[@key='155']/*[@key='161']/*[@key='201']",
+                "toNamePath": "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/CategoryId",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromFunction": "4",
+                "fromKey": "3",
+                "fromType": "function",
+                "toKey": "305",
+                "toKeyPath": "*[@key='1']/*[@key='153']/*[@key='155']/*[@key='161']/*[@key='305']",
+                "toNamePath": "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/PriorityId",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromFunction": "6",
+                "fromKey": "3",
+                "fromType": "function",
+                "toKey": "195",
+                "toKeyPath": "*[@key='1']/*[@key='153']/*[@key='155']/*[@key='161']/*[@key='195']",
+                "toNamePath": "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/BuildingId",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromFunction": "7",
+                "fromKey": "3",
+                "fromType": "function",
+                "toKey": "271",
+                "toKeyPath": "*[@key='1']/*[@key='153']/*[@key='155']/*[@key='161']/*[@key='271']",
+                "toNamePath": "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/LocationId",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromFunction": "5",
+                "fromKey": "3",
+                "fromType": "function",
+                "toKey": "251",
+                "toKeyPath": "*[@key='1']/*[@key='153']/*[@key='155']/*[@key='161']/*[@key='251']",
+                "toNamePath": "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/InstructionId",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromKey": "52",
+                "fromKeyPath": "*[@key='1']/*[@key='46']/*[@key='47']/*[@key='48']/*[@key='49']/*[@key='50']/*[@key='52']",
+                "fromNamePath": "Root/Object/workOrder/Array/ArrayElement1/Object/description",
+                "fromType": "profile",
+                "toKey": "275",
+                "toKeyPath": "*[@key='1']/*[@key='153']/*[@key='155']/*[@key='161']/*[@key='275']",
+                "toNamePath": "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/LongDescription",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromFunction": "3",
+                "fromKey": "3",
+                "fromType": "function",
+                "toKey": "233",
+                "toKeyPath": "*[@key='1']/*[@key='153']/*[@key='155']/*[@key='161']/*[@key='233']",
+                "toNamePath": "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/DisciplineId",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromKey": "67",
+                "fromKeyPath": "*[@key='1']/*[@key='46']/*[@key='47']/*[@key='48']/*[@key='49']/*[@key='50']/*[@key='61']/*[@key='62']/*[@key='67']",
+                "fromNamePath": "Root/Object/workOrder/Array/ArrayElement1/Object/ticketDetails/Object/scheduledDate",
+                "fromType": "profile",
+                "toFunction": "11",
+                "toKey": "1",
+                "toType": "function"
+              }
+            },
+            {
+              "$": {
+                "fromKey": "68",
+                "fromKeyPath": "*[@key='1']/*[@key='46']/*[@key='47']/*[@key='48']/*[@key='49']/*[@key='50']/*[@key='61']/*[@key='62']/*[@key='68']",
+                "fromNamePath": "Root/Object/workOrder/Array/ArrayElement1/Object/ticketDetails/Object/scheduledTimeStart",
+                "fromType": "profile",
+                "toFunction": "11",
+                "toKey": "2",
+                "toType": "function"
+              }
+            },
+            {
+              "$": {
+                "fromFunction": "11",
+                "fromKey": "4",
+                "fromType": "function",
+                "toKey": "315",
+                "toKeyPath": "*[@key='1']/*[@key='153']/*[@key='155']/*[@key='161']/*[@key='315']",
+                "toNamePath": "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/ScheduledDateUtc",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromKey": "78",
+                "fromKeyPath": "*[@key='1']/*[@key='46']/*[@key='47']/*[@key='48']/*[@key='49']/*[@key='50']/*[@key='61']/*[@key='62']/*[@key='78']",
+                "fromNamePath": "Root/Object/workOrder/Array/ArrayElement1/Object/ticketDetails/Object/raisedDateUtc",
+                "fromType": "profile",
+                "toFunction": "13",
+                "toKey": "3",
+                "toType": "function"
+              }
+            },
+            {
+              "$": {
+                "fromFunction": "13",
+                "fromKey": "4",
+                "fromType": "function",
+                "toKey": "307",
+                "toKeyPath": "*[@key='1']/*[@key='153']/*[@key='155']/*[@key='161']/*[@key='307']",
+                "toNamePath": "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/RaisedDateUtc",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromFunction": "14",
+                "fromKey": "1",
+                "fromType": "function",
+                "toKey": "207",
+                "toKeyPath": "*[@key='1']/*[@key='153']/*[@key='155']/*[@key='161']/*[@key='207']",
+                "toNamePath": "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/ContractId",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromFunction": "15",
+                "fromKey": "1",
+                "fromType": "function",
+                "toKey": "397",
+                "toKeyPath": "*[@key='1']/*[@key='153']/*[@key='155']/*[@key='161']/*[@key='397']",
+                "toNamePath": "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/BDET_CALLER_SOURCE_ID",
+                "toType": "profile"
+              }
+            }
+          ]
+        },
+        "Functions": {
+          "$": {
+            "optimizeExecutionOrder": "true"
+          },
+          "FunctionStep": [
+            {
+              "$": {
+                "cacheEnabled": "true",
+                "cacheOption": "none",
+                "category": "ProcessProperty",
+                "key": "1",
+                "name": "Get Dynamic Process Property",
+                "position": "1",
+                "sumEnabled": "false",
+                "type": "PropertyGet",
+                "x": "10.0",
+                "y": "10.0"
+              },
+              "Inputs": {
+                "Input": [
+                  {
+                    "$": {
+                      "default": "DPP_SessionId",
+                      "key": "1",
+                      "name": "Property Name"
+                    }
+                  },
+                  {
+                    "$": {
+                      "key": "2",
+                      "name": "Default Value"
+                    }
+                  }
+                ]
+              },
+              "Outputs": {
+                "Output": {
+                  "$": {
+                    "key": "3",
+                    "name": "Result"
+                  }
+                }
+              },
+              "Configuration": ""
+            },
+            {
+              "$": {
+                "cacheEnabled": "true",
+                "cacheOption": "none",
+                "category": "ProcessProperty",
+                "key": "2",
+                "name": "Get Dynamic Process Property",
+                "position": "2",
+                "sumEnabled": "false",
+                "type": "PropertyGet",
+                "x": "10.0",
+                "y": "128.0"
+              },
+              "Inputs": {
+                "Input": [
+                  {
+                    "$": {
+                      "default": "DPP_CategoryId",
+                      "key": "1",
+                      "name": "Property Name"
+                    }
+                  },
+                  {
+                    "$": {
+                      "key": "2",
+                      "name": "Default Value"
+                    }
+                  }
+                ]
+              },
+              "Outputs": {
+                "Output": {
+                  "$": {
+                    "key": "3",
+                    "name": "Result"
+                  }
+                }
+              },
+              "Configuration": ""
+            },
+            {
+              "$": {
+                "cacheEnabled": "true",
+                "cacheOption": "none",
+                "category": "ProcessProperty",
+                "enabled": "true",
+                "key": "3",
+                "name": "Get Dynamic Process Property",
+                "position": "3",
+                "sumEnabled": "false",
+                "type": "PropertyGet",
+                "x": "10.0",
+                "y": "246.0"
+              },
+              "Inputs": {
+                "Input": [
+                  {
+                    "$": {
+                      "default": "DDP_DisciplineId",
+                      "isReset": "false",
+                      "key": "1",
+                      "name": "Property Name"
+                    }
+                  },
+                  {
+                    "$": {
+                      "isReset": "false",
+                      "key": "2",
+                      "name": "Default Value"
+                    }
+                  }
+                ]
+              },
+              "Outputs": {
+                "Output": {
+                  "$": {
+                    "isReset": "false",
+                    "key": "3",
+                    "name": "Result"
+                  }
+                }
+              },
+              "Configuration": ""
+            },
+            {
+              "$": {
+                "cacheEnabled": "true",
+                "cacheOption": "none",
+                "category": "ProcessProperty",
+                "key": "4",
+                "name": "Get Dynamic Process Property",
+                "position": "4",
+                "sumEnabled": "false",
+                "type": "PropertyGet",
+                "x": "30.0",
+                "y": "364.0"
+              },
+              "Inputs": {
+                "Input": [
+                  {
+                    "$": {
+                      "default": "DPP_PriorityId",
+                      "key": "1",
+                      "name": "Property Name"
+                    }
+                  },
+                  {
+                    "$": {
+                      "key": "2",
+                      "name": "Default Value"
+                    }
+                  }
+                ]
+              },
+              "Outputs": {
+                "Output": {
+                  "$": {
+                    "key": "3",
+                    "name": "Result"
+                  }
+                }
+              },
+              "Configuration": ""
+            },
+            {
+              "$": {
+                "cacheEnabled": "true",
+                "cacheOption": "none",
+                "category": "ProcessProperty",
+                "key": "5",
+                "name": "Get Dynamic Process Property",
+                "position": "5",
+                "sumEnabled": "false",
+                "type": "PropertyGet",
+                "x": "30.0",
+                "y": "479.0"
+              },
+              "Inputs": {
+                "Input": [
+                  {
+                    "$": {
+                      "default": "DPP_InstructionId",
+                      "key": "1",
+                      "name": "Property Name"
+                    }
+                  },
+                  {
+                    "$": {
+                      "key": "2",
+                      "name": "Default Value"
+                    }
+                  }
+                ]
+              },
+              "Outputs": {
+                "Output": {
+                  "$": {
+                    "key": "3",
+                    "name": "Result"
+                  }
+                }
+              },
+              "Configuration": ""
+            },
+            {
+              "$": {
+                "cacheEnabled": "true",
+                "cacheOption": "none",
+                "category": "ProcessProperty",
+                "key": "6",
+                "name": "Get Dynamic Process Property",
+                "position": "6",
+                "sumEnabled": "false",
+                "type": "PropertyGet",
+                "x": "30.0",
+                "y": "598.0"
+              },
+              "Inputs": {
+                "Input": [
+                  {
+                    "$": {
+                      "default": "DPP_BuildingID",
+                      "key": "1",
+                      "name": "Property Name"
+                    }
+                  },
+                  {
+                    "$": {
+                      "key": "2",
+                      "name": "Default Value"
+                    }
+                  }
+                ]
+              },
+              "Outputs": {
+                "Output": {
+                  "$": {
+                    "key": "3",
+                    "name": "Result"
+                  }
+                }
+              },
+              "Configuration": ""
+            },
+            {
+              "$": {
+                "cacheEnabled": "true",
+                "cacheOption": "none",
+                "category": "ProcessProperty",
+                "key": "7",
+                "name": "Get Dynamic Process Property",
+                "position": "7",
+                "sumEnabled": "false",
+                "type": "PropertyGet",
+                "x": "30.0",
+                "y": "718.0"
+              },
+              "Inputs": {
+                "Input": [
+                  {
+                    "$": {
+                      "default": "DPP_LocationID",
+                      "key": "1",
+                      "name": "Property Name"
+                    }
+                  },
+                  {
+                    "$": {
+                      "key": "2",
+                      "name": "Default Value"
+                    }
+                  }
+                ]
+              },
+              "Outputs": {
+                "Output": {
+                  "$": {
+                    "key": "3",
+                    "name": "Result"
+                  }
+                }
+              },
+              "Configuration": ""
+            },
+            {
+              "$": {
+                "cacheEnabled": "true",
+                "cacheOption": "none",
+                "category": "Scripting",
+                "key": "11",
+                "name": "Scripting",
+                "position": "11",
+                "sumEnabled": "false",
+                "type": "Scripting",
+                "x": "30.0",
+                "y": "930.0"
+              },
+              "Inputs": {
+                "Input": [
+                  {
+                    "$": {
+                      "key": "1",
+                      "name": "scheduledDate"
+                    }
+                  },
+                  {
+                    "$": {
+                      "key": "2",
+                      "name": "scheduledTimeStart"
+                    }
+                  }
+                ]
+              },
+              "Outputs": {
+                "Output": {
+                  "$": {
+                    "key": "4",
+                    "name": "ScheduledDateUtc"
+                  }
+                }
+              },
+              "Configuration": {
+                "Scripting": {
+                  "$": {
+                    "language": "javascript",
+                    "preserveOrder": "true",
+                    "useCache": "true",
+                    "useComponent": "false"
+                  },
+                  "ScriptToExecute": {
+                    "_": "scheduledDate = \"2025-02-25\";\nscheduledTimeStart = \"11:05:41\";  // Example scheduled start time\nfullDateTime = scheduledDate + \"T\" + scheduledTimeStart + \"Z\";\nvar date = new Date(fullDateTime);\nvar formattedDate = date.toISOString();\nvar ScheduledDateUtc = formattedDate.replace(/(\\.\\d{3})Z$/, \".0208713Z\");"
+                  },
+                  "Input": [
+                    {
+                      "$": {
+                        "dataType": "character",
+                        "index": "1",
+                        "name": "scheduledDate"
+                      }
+                    },
+                    {
+                      "$": {
+                        "dataType": "character",
+                        "index": "2",
+                        "name": "scheduledTimeStart"
+                      }
+                    }
+                  ],
+                  "Output": {
+                    "$": {
+                      "index": "4",
+                      "name": "ScheduledDateUtc"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "cacheEnabled": "true",
+                "cacheOption": "none",
+                "category": "Scripting",
+                "enabled": "true",
+                "key": "13",
+                "name": "Scripting",
+                "position": "13",
+                "sumEnabled": "false",
+                "type": "Scripting",
+                "x": "30.0",
+                "y": "837.0"
+              },
+              "Inputs": {
+                "Input": {
+                  "$": {
+                    "key": "3",
+                    "name": "raisedDateUtc"
+                  }
+                }
+              },
+              "Outputs": {
+                "Output": {
+                  "$": {
+                    "key": "4",
+                    "name": "RaisedDateUtc"
+                  }
+                }
+              },
+              "Configuration": {
+                "Scripting": {
+                  "$": {
+                    "language": "javascript",
+                    "preserveOrder": "true",
+                    "useCache": "true",
+                    "useComponent": "false"
+                  },
+                  "ScriptToExecute": {
+                    "_": "raisedDateUtc;\ndate = new Date(raisedDateUtc);\nformattedDate = date.toISOString();\nRaisedDateUtc = formattedDate.replace(/(\\.\\d{3})Z$/, \".0208713Z\");"
+                  },
+                  "Input": {
+                    "$": {
+                      "dataType": "character",
+                      "index": "3",
+                      "name": "raisedDateUtc"
+                    }
+                  },
+                  "Output": {
+                    "$": {
+                      "index": "4",
+                      "name": "RaisedDateUtc"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "cacheEnabled": "true",
+                "category": "ProcessProperty",
+                "key": "14",
+                "name": "Get Process Property",
+                "position": "14",
+                "sumEnabled": "false",
+                "type": "DefinedProcessPropertyGet",
+                "x": "30.0",
+                "y": "1043.0"
+              },
+              "Inputs": "",
+              "Outputs": {
+                "Output": {
+                  "$": {
+                    "key": "1",
+                    "name": "ContractId"
+                  }
+                }
+              },
+              "Configuration": {
+                "DefinedProcessProperty": {
+                  "$": {
+                    "componentId": "13a690a7-c480-4c39-8eeb-fe3ecb030bf5",
+                    "componentName": "PP_Create_Work Order",
+                    "propertyKey": "8a8d5c37-de99-427a-802a-729c8aac8145",
+                    "propertyName": "ContractId"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "cacheEnabled": "true",
+                "category": "ProcessProperty",
+                "key": "15",
+                "name": "Get Process Property",
+                "position": "15",
+                "sumEnabled": "false",
+                "type": "DefinedProcessPropertyGet",
+                "x": "30.0",
+                "y": "1111.0"
+              },
+              "Inputs": "",
+              "Outputs": {
+                "Output": {
+                  "$": {
+                    "key": "1",
+                    "name": "BDET_CALLER_SOURCE_ID"
+                  }
+                }
+              },
+              "Configuration": {
+                "DefinedProcessProperty": {
+                  "$": {
+                    "componentId": "13a690a7-c480-4c39-8eeb-fe3ecb030bf5",
+                    "componentName": "PP_Create_Work Order",
+                    "propertyKey": "5a18fe55-1d7b-4a5c-89e2-3dec92373ce9",
+                    "propertyName": "BDET_CALLER_SOURCE_ID"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Defaults": "",
+        "DocumentCacheJoins": ""
+      }
+    }
+  }
+}

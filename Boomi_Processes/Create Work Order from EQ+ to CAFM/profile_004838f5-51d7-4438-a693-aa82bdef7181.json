@@ -1,0 +1,226 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Facilities/EQ+ Work Order/Create CAFM Work Order",
+      "componentId": "004838f5-51d7-4438-a693-aa82bdef7181",
+      "version": "3",
+      "name": "Web Services SOAP Client GetBreakdownTasksByDto EXECUTE Request",
+      "type": "profile.xml",
+      "createdDate": "2025-04-29T06:57:15Z",
+      "createdBy": "gowri.sankar@al-ghurair.com",
+      "modifiedDate": "2025-04-29T08:41:38Z",
+      "modifiedBy": "gowri.sankar@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Create CAFM Work Order",
+      "folderId": "Rjo3NDI4MzIx",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "XMLProfile": {
+        "$": {
+          "modelVersion": "2",
+          "strict": "true"
+        },
+        "ProfileProperties": {
+          "XMLGeneralInfo": "",
+          "XMLOptions": {
+            "$": {
+              "encoding": "utf8",
+              "implicitElementOrdering": "true",
+              "parseRespectMaxOccurs": "true",
+              "respectMinOccurs": "false",
+              "respectMinOccursAlways": "false"
+            }
+          }
+        },
+        "DataElements": {
+          "XMLElement": {
+            "$": {
+              "dataType": "character",
+              "isMappable": "true",
+              "isNode": "true",
+              "key": "1",
+              "maxOccurs": "1",
+              "minOccurs": "1",
+              "name": "Envelope",
+              "useNamespace": "2"
+            },
+            "DataFormat": {
+              "ProfileCharacterFormat": ""
+            },
+            "XMLNSDeclList": {
+              "XMLNSDeclaration": {
+                "$": {
+                  "defaultNamespace": "false",
+                  "isMappable": "false",
+                  "isNode": "true",
+                  "key": "2"
+                }
+              }
+            },
+            "XMLElement": [
+              {
+                "$": {
+                  "dataType": "character",
+                  "isMappable": "true",
+                  "isNode": "true",
+                  "key": "152",
+                  "maxOccurs": "1",
+                  "minOccurs": "0",
+                  "name": "Header",
+                  "useNamespace": "2"
+                },
+                "DataFormat": {
+                  "ProfileCharacterFormat": ""
+                }
+              },
+              {
+                "$": {
+                  "dataType": "character",
+                  "isMappable": "true",
+                  "isNode": "true",
+                  "key": "154",
+                  "maxOccurs": "1",
+                  "minOccurs": "0",
+                  "name": "Body",
+                  "useNamespace": "2"
+                },
+                "DataFormat": {
+                  "ProfileCharacterFormat": ""
+                },
+                "XMLElement": {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "156",
+                    "maxOccurs": "1",
+                    "minOccurs": "0",
+                    "name": "GetBreakdownTasksByDto",
+                    "useNamespace": "12"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  },
+                  "XMLNSDeclList": {
+                    "XMLNSDeclaration": {
+                      "$": {
+                        "defaultNamespace": "false",
+                        "isMappable": "false",
+                        "isNode": "true",
+                        "key": "12"
+                      }
+                    }
+                  },
+                  "XMLElement": [
+                    {
+                      "$": {
+                        "dataType": "character",
+                        "isMappable": "true",
+                        "isNode": "true",
+                        "key": "158",
+                        "maxOccurs": "1",
+                        "minOccurs": "0",
+                        "name": "sessionId",
+                        "useNamespace": "12"
+                      },
+                      "DataFormat": {
+                        "ProfileCharacterFormat": ""
+                      }
+                    },
+                    {
+                      "$": {
+                        "dataType": "character",
+                        "isMappable": "true",
+                        "isNode": "true",
+                        "key": "162",
+                        "maxOccurs": "1",
+                        "minOccurs": "0",
+                        "name": "dto",
+                        "useNamespace": "12"
+                      },
+                      "DataFormat": {
+                        "ProfileCharacterFormat": ""
+                      },
+                      "XMLElement": {
+                        "$": {
+                          "dataType": "character",
+                          "isMappable": "true",
+                          "isNode": "true",
+                          "key": "406",
+                          "maxOccurs": "1",
+                          "minOccurs": "0",
+                          "name": "CallId",
+                          "useNamespace": "18",
+                          "validateData": "false"
+                        },
+                        "DataFormat": {
+                          "ProfileCharacterFormat": ""
+                        },
+                        "XMLNSDeclList": {
+                          "XMLNSDeclaration": {
+                            "$": {
+                              "defaultNamespace": "false",
+                              "isMappable": "false",
+                              "isNode": "true",
+                              "key": "18"
+                            }
+                          }
+                        },
+                        "QualifierList": ""
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "Namespaces": {
+          "XMLNamespace": [
+            {
+              "$": {
+                "key": "-1",
+                "name": "Empty Namespace"
+              },
+              "Types": ""
+            },
+            {
+              "$": {
+                "key": "18",
+                "name": "http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel",
+                "prefix": "ns4"
+              }
+            },
+            {
+              "$": {
+                "key": "22",
+                "name": "http://schemas.datacontract.org/2004/07/Fsi.Platform.Contracts.ServiceModel",
+                "prefix": "ns3"
+              }
+            },
+            {
+              "$": {
+                "key": "2",
+                "name": "http://schemas.xmlsoap.org/soap/envelope/",
+                "prefix": "ns1"
+              }
+            },
+            {
+              "$": {
+                "key": "12",
+                "name": "http://www.fsi.co.uk/services/evolution/04/09",
+                "prefix": "ns2"
+              }
+            }
+          ]
+        },
+        "tagLists": ""
+      }
+    }
+  }
+}

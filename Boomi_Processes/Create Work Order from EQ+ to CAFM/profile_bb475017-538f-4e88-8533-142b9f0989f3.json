@@ -1,0 +1,86 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Facilities/Masters/Outbound/Vendor",
+      "componentId": "bb475017-538f-4e88-8533-142b9f0989f3",
+      "version": "1",
+      "name": "dummy",
+      "type": "profile.flatfile",
+      "createdDate": "2025-03-12T06:38:42Z",
+      "createdBy": "hari.krishna@al-ghurair.com",
+      "modifiedDate": "2025-03-12T06:38:42Z",
+      "modifiedBy": "hari.krishna@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Vendor",
+      "folderId": "Rjo1OTA3MDUw",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "FlatFileProfile": {
+        "$": {
+          "modelVersion": "2",
+          "strict": "true"
+        },
+        "ProfileProperties": {
+          "GeneralInfo": {
+            "$": {
+              "fileType": "delimited",
+              "useColumnHeaders": "false"
+            }
+          },
+          "Options": {
+            "DataOptions": "",
+            "DelimitedOptions": {
+              "$": {
+                "fileDelimiter": "stardelimited",
+                "removeEscape": "false",
+                "textQualifier": "na"
+              }
+            }
+          }
+        },
+        "DataElements": {
+          "FlatFileRecord": {
+            "$": {
+              "detectFormat": "numberofcolumns",
+              "isNode": "true",
+              "key": "1",
+              "name": "Record"
+            },
+            "FlatFileElements": {
+              "$": {
+                "isNode": "true",
+                "key": "2",
+                "name": "Elements"
+              },
+              "FlatFileElement": {
+                "$": {
+                  "dataType": "character",
+                  "enforceUnique": "false",
+                  "identityValue": "",
+                  "isMappable": "true",
+                  "isNode": "true",
+                  "justification": "left",
+                  "key": "3",
+                  "mandatory": "false",
+                  "maxLength": "0",
+                  "minLength": "0",
+                  "name": "message",
+                  "useToIdentifyFormat": "false",
+                  "validateData": "false"
+                },
+                "DataFormat": {
+                  "ProfileCharacterFormat": ""
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
