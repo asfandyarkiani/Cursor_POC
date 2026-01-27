@@ -1,0 +1,25 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.fsi.co.uk/services/evolution/04/09">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <ns:CreateBreakdownTask>
+      <ns:sessionId>{{SessionId}}</ns:sessionId>
+      <ns:breakdownTaskDto>
+        <ns:ReporterName>{{ReporterName}}</ns:ReporterName>
+        <ns:BDET_EMAIL>{{ReporterEmail}}</ns:BDET_EMAIL>
+        <ns:Phone>{{ReporterPhoneNumber}}</ns:Phone>
+        <ns:CallId>{{CallId}}</ns:CallId>
+        <ns:CategoryId>{{CategoryId}}</ns:CategoryId>
+        <ns:DisciplineId>{{DisciplineId}}</ns:DisciplineId>
+        <ns:PriorityId>{{PriorityId}}</ns:PriorityId>
+        <ns:BuildingId>{{BuildingId}}</ns:BuildingId>
+        <ns:LocationId>{{LocationId}}</ns:LocationId>
+        <ns:InstructionId>{{InstructionId}}</ns:InstructionId>
+        <ns:LongDescription>{{LongDescription}}</ns:LongDescription>
+        <ns:ScheduledDateUtc>{{ScheduledDateUtc}}</ns:ScheduledDateUtc>
+        <ns:RaisedDateUtc>{{RaisedDateUtc}}</ns:RaisedDateUtc>
+        <ns:ContractId>{{ContractId}}</ns:ContractId>
+        <ns:BDET_CALLER_SOURCE_ID>{{CallerSourceId}}</ns:BDET_CALLER_SOURCE_ID>
+      </ns:breakdownTaskDto>
+    </ns:CreateBreakdownTask>
+  </soapenv:Body>
+</soapenv:Envelope>
