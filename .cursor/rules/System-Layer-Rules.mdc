@@ -1,11 +1,41 @@
 ---
-description: Always apply. Non-negotiable rules for System Layer generation in this repo.
+description: "Always apply. Non-negotiable System Layer rules for this repo."
 alwaysApply: true
 ---
+
 ---
 ---
 
 # 🚨 CRITICAL - READ THIS FIRST 🚨
+
+## 🛑 MANDATORY PRE-GENERATION VALIDATION (STOP IF NOT COMPLETE)
+
+**🚨 YOU CANNOT GENERATE ANY CODE UNTIL THIS VALIDATION IS COMPLETE:**
+
+**STEP 1: Verify Phase Context**
+- [ ] **STOP AND VERIFY:** Am I in Phase 2 (Code Generation)?
+- [ ] **STOP AND VERIFY:** Have I completed Phase 1 (Extraction)?
+- [ ] **STOP AND VERIFY:** Do I have Phase 1 document with Operations Inventory, DTOs, and Sequence Diagram?
+- [ ] **IF ANY NO → STOP → Complete Phase 1 first**
+
+**STEP 2: Verify Function Exposure Decision**
+- [ ] **STOP AND VERIFY:** Have I created Function Exposure Decision table?
+- [ ] **STOP AND VERIFY:** Does table show which operations become Functions vs Atomic Handlers?
+- [ ] **IF NO → STOP → Create Function Exposure Decision table first (Boomi-Azure-Migration.md Step 1)**
+
+**STEP 3: Verify System Layer Identification**
+- [ ] **STOP AND VERIFY:** Have I identified all third-party systems (REST API, SOAP API, SMTP, FTP)?
+- [ ] **STOP AND VERIFY:** Do I know which System Layer project to create/modify?
+- [ ] **IF NO → STOP → Identify System Layers first (Boomi-Azure-Migration.md Step 0)**
+
+**STEP 4: Load Correct Rulebook**
+- [ ] **STOP AND VERIFY:** Am I generating System Layer code?
+- [ ] **STOP AND VERIFY:** Am I reading System-Layer-Rules.md (this document)?
+- [ ] **IF NO → STOP → Load correct rulebook (Process-Layer-Rules.md for Process Layer)**
+
+**🛑 IF ANY CHECKPOINT FAILS → STOP ALL CODE GENERATION → Complete missing step → Then proceed**
+
+---
 
 ## MANDATORY RULE BEFORE ANY IMPLEMENTATION:
 
@@ -16,6 +46,8 @@ alwaysApply: true
 3. ✅ **CHECK required interfaces** (IRequestSysDTO, IDownStreamRequestDTO, etc.)
 4. ✅ **CONFIRM naming conventions** (suffixes, PascalCase, file=class name)
 5. ✅ **VALIDATE mandatory patterns** (validation methods, static Map(), etc.)
+6. ✅ **🔴 NON-NEGOTIABLE: Check Core Framework extensions first** - All simple conversion or helper functionality MUST first leverage existing Core Framework extension methods. Only create new extensions if Core Framework does not provide a suitable option. Applies to DTOs, Handlers, Atomic Handlers, Services, and all components.
+7. ✅ **🔴 NON-NEGOTIABLE: Use descriptive variable names** - Variable names MUST clearly reflect what they are or what they are doing. Avoid ambiguous, generic, or unclear names. Names should be self-documenting and improve code readability.
 
 **❌ DO NOT:**
 - ❌ Create components without reading rules first
@@ -23,6 +55,7 @@ alwaysApply: true
 - ❌ Skip interface implementations
 - ❌ Ignore naming conventions
 - ❌ Use 'var' keyword (NEVER use 'var' - always declare explicit types)
+- ❌ Use ambiguous or unclear variable names (🔴 NON-NEGOTIABLE: Variable names must clearly reflect what they are or what they are doing)
 
 **⚠️ COMMON MISTAKES TO AVOID:**
 - Creating Extensions in Helpers/ directory (WRONG - use Extensions/)
@@ -31,6 +64,10 @@ alwaysApply: true
 - Missing IDownStreamRequestDTO on *HandlerReqDTO (WRONG - MANDATORY interface)
 - Services at root level (WRONG - must be in Implementations/<Vendor>/Services/)
 - Using 'var' keyword (WRONG - NEVER use 'var', always use explicit types)
+- **Using ambiguous or unclear variable names** (WRONG - 🔴 NON-NEGOTIABLE: Variable names must clearly reflect what they are or what they are doing. Examples: ❌ `data`, `result`, `item`, `temp` → ✅ `entityResponse`, `validationResult`, `entityItem`, `temporaryEntityId`)
+- **Creating new extensions without checking Core Framework FIRST** (WRONG - 🔴 NON-NEGOTIABLE: Always check Core Framework extensions before creating new ones)
+- **Wrong host.json format** (WRONG - Use EXACT template from Section 19.1, NO extensionBundle, NO maxTelemetryItemsPerSecond)
+- **Wrong error constant format** (WRONG - System Layer: AAA_AAAAAA_DDDD where AAA = 3 chars, AAAAAA = 6 chars, DDDD = 4 digits)
 
 **📖 IMPLEMENTATION WORKFLOW:**
 ```
@@ -40,6 +77,58 @@ Step 3: Read ALL rules for that component
 Step 4: Create component following ALL rules exactly
 Step 5: Verify against checklist in rules section
 ```
+
+## 🔴 NON-NEGOTIABLE: VARIABLE NAMING RULES
+
+**CRITICAL RULE:** Variable names MUST clearly reflect what they are or what they are doing. This applies to ALL variables in ALL components (DTOs, Handlers, Atomic Handlers, Services, Functions, Extensions, Helpers, etc.).
+
+### ✅ CORRECT Variable Naming
+- **Descriptive and specific:** `entityDetailResponse`, `validationErrorList`, `authenticationToken`, `downstreamApiResponse`
+- **Reflects purpose:** `existingEntityData`, `lookupResult`, `createEntityRequest`, `mappedResponseDto`
+- **Clear intent:** `isEntityExists`, `shouldLinkRelatedEntity`, `hasValidationErrors`, `canRetryOperation`
+- **Context-appropriate:** `entityIdFromRequest`, `sessionIdFromContext`, `errorDetailsFromValidation`
+
+### ❌ WRONG Variable Naming
+- **Too generic:** `data`, `result`, `item`, `temp`, `obj`, `value`, `response`, `request`
+- **Ambiguous:** `x`, `y`, `i`, `j`, `count`, `flag`, `status`, `type`
+- **Unclear purpose:** `thing`, `stuff`, `info`, `details`, `content`
+- **Abbreviations without context:** `dto`, `dto2`, `resp`, `req`, `api`, `svc`
+
+### Examples
+
+**❌ WRONG:**
+```csharp
+var data = await GetEntity();
+var result = ProcessData(data);
+var item = result.Items.First();
+if (item != null) { var temp = item.Value; }
+```
+
+**✅ CORRECT:**
+```csharp
+GetEntityDetailApiResDTO entityDetailResponse = await GetEntityDetailFromDownstream(request);
+BaseResponseDTO mappedResponse = ProcessEntityResponse(entityDetailResponse);
+EntityDetailItem entityDetailItem = mappedResponse.Items.First();
+if (entityDetailItem != null) { 
+    string entityDetailValue = entityDetailItem.Value; 
+}
+```
+
+**❌ WRONG:**
+```csharp
+var response = await _handler.Handle(request);
+if (response.IsSuccess) { var data = response.Data; }
+```
+
+**✅ CORRECT:**
+```csharp
+HttpResponseSnapshot downstreamApiResponse = await GetEntityDetailFromDownstream(request);
+if (downstreamApiResponse.IsSuccessStatusCode) { 
+    GetEntityDetailApiResDTO entityDetailApiResponse = RestApiHelper.DeserializeJsonResponse<GetEntityDetailApiResDTO>(downstreamApiResponse.Content!); 
+}
+```
+
+**🔴 ENFORCEMENT:** All variable names must be reviewed to ensure they clearly communicate their purpose. If a variable name requires a comment to explain what it is, the name needs to be improved.
 
 ---
 ---
@@ -65,9 +154,12 @@ Step 5: Verify against checklist in rules section
 │       ├── AuthenticateAtomicHandler.cs  # For middleware
 │       └── LogoutAtomicHandler.cs
 ├── DTO/
-│   ├── HandlerDTOs/                       # Feature subfolders
-│   │   ├── GetEntityDetailDTO/GetEntityDetailReqDTO.cs, GetEntityDetailResDTO.cs
-│   │   └── CreateRecordDTO/CreateRecordReqDTO.cs, CreateRecordResDTO.cs
+│   ├── GetEntityDetailDTO/                # Entity-related directory
+│   │   ├── GetEntityDetailReqDTO.cs
+│   │   └── GetEntityDetailResDTO.cs
+│   ├── CreateRecordDTO/                   # Entity-related directory
+│   │   ├── CreateRecordReqDTO.cs
+│   │   └── CreateRecordResDTO.cs
 │   ├── AtomicHandlerDTOs/                 # FLAT - GetEntityDetailHandlerReqDTO.cs, AuthenticationRequestDTO.cs
 │   └── DownstreamDTOs/                    # ALL *ApiResDTO here (GetEntityDetailApiResDTO.cs, CreateRecordApiResDTO.cs, AuthenticationResponseDTO.cs)
 │       └── Common/                        # Shared nested objects (ContactInfo.cs, LocationInfo.cs) # optional
@@ -92,8 +184,8 @@ Step 5: Verify against checklist in rules section
 - **100% of implementations follow this pattern**
 
 ### 2.2 ApiResDTO Placement
-- ✅ **ALL *ApiResDTO in `DTO/DownstreamDTOs/`** | ❌ **NEVER in HandlerDTOs/ or AtomicHandlerDTOs/**
-- **Rationale:** HandlerDTOs=API-level communication | DownstreamDTOs=external API responses | Clear separation
+- ✅ **ALL *ApiResDTO in `DTO/DownstreamDTOs/`** | ❌ **NEVER in entity DTO directories or AtomicHandlerDTOs/**
+- **Rationale:** Entity DTO directories=API-level communication | DownstreamDTOs=external API responses | Clear separation
 
 ### 2.3 AtomicHandler Structure
 - **MANDATORY:** FLAT structure - all AtomicHandlers directly in AtomicHandlers/ folder | ❌ NO subfolders
@@ -106,12 +198,12 @@ Step 5: Verify against checklist in rules section
 
 | DTO Type | Pattern | Location | Purpose |
 |----------|---------|----------|---------|
-| API Request | `*ReqDTO` | `HandlerDTOs/<Feature>/` | Incoming from Process Layer |
-| API Response | `*ResDTO` | `HandlerDTOs/<Feature>/` | Outgoing to Process Layer |
+| API Request | `*ReqDTO` | `<Entity>DTO/` (directly under DTO/) | Incoming from Process Layer |
+| API Response | `*ResDTO` | `<Entity>DTO/` (directly under DTO/) | Outgoing to Process Layer |
 | Atomic Request | `*HandlerReqDTO` | `AtomicHandlerDTOs/` (FLAT) | To Atomic Handler |
 | External Response | `*ApiResDTO` | `DownstreamDTOs/` (FLAT) | From external/downstream API |
 
-**HandlerDTOs:** Feature subfolders (GetEntityDetailDTO/, CreateRecordDTO/) | **AtomicHandlerDTOs:** FLAT, NO subfolders | **DownstreamDTOs:** FLAT + Common/ subfolder for shared nested objects
+**Entity DTO Directories:** Entity-related subfolders directly under DTO/ (GetEntityDetailDTO/, CreateRecordDTO/) | **AtomicHandlerDTOs:** FLAT, NO subfolders | **DownstreamDTOs:** FLAT + Common/ subfolder for shared nested objects
 
 ## 4. OPTIONAL FOLDERS (Conditional)
 
@@ -144,7 +236,7 @@ Step 5: Verify against checklist in rules section
 | Services | `<NS>.Implementations.<Vendor>.Services` | `ProjectMgmtSystem.Implementations.VendorName.Services` |
 | Handlers | `<NS>.Implementations.<Vendor>.Handlers` | `ProjectMgmtSystem.Implementations.VendorName.Handlers` |
 | AtomicHandlers | `<NS>.Implementations.<Vendor>.AtomicHandlers` | `ProjectMgmtSystem.Implementations.VendorName.AtomicHandlers` |
-| HandlerDTOs | `<NS>.DTO.HandlerDTOs.<Feature>` | `ProjectMgmtSystem.DTO.HandlerDTOs.GetEntityDetailDTO` |
+| Entity DTO Directories | `<NS>.DTO.<Entity>DTO` | `ProjectMgmtSystem.DTO.GetEntityDetailDTO` |
 | AtomicHandlerDTOs | `<NS>.DTO.AtomicHandlerDTOs` | `ProjectMgmtSystem.DTO.AtomicHandlerDTOs` |
 | DownstreamDTOs | `<NS>.DTO.DownstreamDTOs` | `ProjectMgmtSystem.DTO.DownstreamDTOs` |
 | Common (DownstreamDTOs) | `<NS>.DTO.DownstreamDTOs.Common` | `ProjectMgmtSystem.DTO.DownstreamDTOs.Common` |
@@ -176,8 +268,8 @@ Step 5: Verify against checklist in rules section
 - [ ] Abstractions/ at ROOT (NOT in Implementations/)
 - [ ] Services/ INSIDE Implementations/<Vendor>/ (NOT root)
 - [ ] AtomicHandlers/ flat (NO subfolders)
-- [ ] ALL *ApiResDTO in DownstreamDTOs/ (NOT HandlerDTOs/)
-- [ ] HandlerDTOs in feature subfolders
+- [ ] ALL *ApiResDTO in DownstreamDTOs/ (NOT in entity DTO directories)
+- [ ] Entity DTO directories directly under DTO/ (NO HandlerDTOs/ intermediate folder)
 - [ ] AtomicHandlerDTOs flat (NO subfolders)
 - [ ] Functions/ flat (NO subfolders)
 - [ ] Attributes/ only if token/session auth with middleware
@@ -192,7 +284,8 @@ Step 5: Verify against checklist in rules section
 | Mistake | Impact | Fix |
 |---------|--------|-----|
 | Services/ at root | ❌ P0 - Architecture break | Move to Implementations/<Vendor>/Services/ |
-| ApiResDTO in HandlerDTOs/ | ❌ DTO organization break | Move to DownstreamDTOs/ |
+| ApiResDTO in entity DTO directories | ❌ DTO organization break | Move to DownstreamDTOs/ |
+| HandlerDTOs/ intermediate folder | ❌ Violates pattern | Remove - entity directories directly under DTO/ |
 | AtomicHandlers with subfolders | ❌ Violates pattern | Flatten - all .cs files directly in AtomicHandlers/ |
 | Functions/ with subfolders | ❌ Violates pattern | Flatten |
 | Missing Abstractions/ at root | ❌ DI break | Create at root |
@@ -207,14 +300,15 @@ Step 5: Verify against checklist in rules section
 1. **Services ALWAYS Implementations/<Vendor>/Services/** - NEVER root
 2. **Abstractions ALWAYS root** - NEVER Implementations/
 3. **AtomicHandlers/ flat** - NEVER subfolders
-4. **ALL *ApiResDTO DownstreamDTOs/** - NEVER HandlerDTOs/
-5. **Functions/ flat** - NEVER subfolders
-6. **Attributes/ conditional** - ONLY token/session auth with middleware (one attribute per file)
-7. **Middleware/ conditional** - ONLY token/session auth
-8. **SoapEnvelopes/ conditional** - ONLY SOAP (register EmbeddedResource)
-9. **Extensions/ conditional** - ONLY domain-specific
-10. **Namespaces match folder paths** - Must be consistent
-11. **Config files mandatory** - appsettings.json, host.json, .csproj, .sln
+4. **ALL *ApiResDTO DownstreamDTOs/** - NEVER in entity DTO directories
+5. **Entity DTO directories directly under DTO/** - NO HandlerDTOs/ intermediate folder
+6. **Functions/ flat** - NEVER subfolders
+7. **Attributes/ conditional** - ONLY token/session auth with middleware (one attribute per file)
+8. **Middleware/ conditional** - ONLY token/session auth
+9. **SoapEnvelopes/ conditional** - ONLY SOAP (register EmbeddedResource)
+10. **Extensions/ conditional** - ONLY domain-specific
+11. **Namespaces match folder paths** - Must be consistent
+12. **Config files mandatory** - appsettings.json, host.json, .csproj, .sln
 
 ---
 
@@ -449,6 +543,19 @@ ServiceLocator.ServiceProvider = builder.Services.BuildServiceProvider(); builde
 
 # AZURE FUNCTIONS RULES
 *ALL RULES CRITICAL & MANDATORY - NO EXCEPTIONS*
+
+## 🛑 PRE-CREATION VALIDATION (MANDATORY - STOP IF NOT COMPLETE)
+
+**🚨 YOU CANNOT CREATE ANY FUNCTION UNTIL:**
+
+1. ✅ **STOP AND VERIFY:** Have I completed Function Exposure Decision table?
+2. ✅ **STOP AND VERIFY:** Does decision table show this operation should be a Function (not Atomic Handler)?
+3. ✅ **STOP AND VERIFY:** Have I read ALL sections in "AZURE FUNCTIONS RULES"?
+4. ✅ **STOP AND VERIFY:** Do I know the exact folder location (Functions/ folder, flat structure)?
+
+**🛑 IF ANY CHECKPOINT FAILS → STOP → Complete missing step → Then create Function**
+
+---
 
 **📚 FRAMEWORK REFERENCE:** Review `Framework/Core` and `Framework/Cache` directories to understand framework-level implementation patterns, base classes, interfaces, and helper methods that these rules build upon.
 
@@ -749,13 +856,6 @@ builder.Services.AddApplicationInsightsTelemetryWorkerService().ConfigureFunctio
 
 **END OF SERVICES & ABSTRACTIONS RULES**
 
-
-
-
-
-
-
-
 # Handler RULES
 *ALL RULES CRITICAL & MANDATORY - NO EXCEPTIONS*
 
@@ -775,24 +875,33 @@ namespace Core.SystemLayer.Handlers { public interface IBaseHandler<T> where T :
 
 ### Handler Pattern
 ```csharp
-using Core.DTOs; using Core.Exceptions; using Core.Extensions; using Core.SystemLayer.Handlers; using Core.SystemLayer.Exceptions; using Microsoft.Extensions.Logging; using System.Net;
 public class GetEntityDetailHandler : IBaseHandler<GetEntityDetailReqDTO> {
-    private readonly ILogger<GetEntityDetailHandler> _logger; private readonly GetEntityDetailAtomicHandler _getEntityDetailAtomicHandler;
-    public GetEntityDetailHandler(ILogger<GetEntityDetailHandler> logger, GetEntityDetailAtomicHandler handler) { _logger = logger; _getEntityDetailAtomicHandler = handler; }
+    private readonly ILogger<GetEntityDetailHandler> _logger; 
+    private readonly GetEntityDetailAtomicHandler _getEntityDetailAtomicHandler;
+    
     public async Task<BaseResponseDTO> HandleAsync(GetEntityDetailReqDTO request) {
         _logger.Info("[System Layer]-Initiating Get Entity Detail");
+        HttpResponseSnapshot response = await GetEntityDetailFromDownstream(request);
+        if (!response.IsSuccessStatusCode) throw new DownStreamApiFailureException(statusCode: (HttpStatusCode)response.StatusCode, error: ErrorConstants.GET_ENTITY_FAILURE, errorDetails: [$"Response: {response.Content}"], stepName: "GetEntityDetailHandler.cs / HandleAsync");
+        else {
+            GetEntityDetailApiResDTO? apiResponse = RestApiHelper.DeserializeJsonResponse<GetEntityDetailApiResDTO>(response.Content!);
+            if (apiResponse == null || apiResponse.Items.Count < 1) throw new NotFoundException(ErrorConstants.NO_ENTITY_FOUND, ["No details found"], "GetEntityDetailHandler.cs / HandleAsync");
+            else {
+                _logger.Info("[System Layer]-Completed"); 
+                return new BaseResponseDTO(message: InfoConstants.GET_ENTITY_SUCCESS, data: GetEntityDetailResDTO.Map(apiResponse), errorCode: null);
+            }
+        }
+    }
+    
+    private async Task<HttpResponseSnapshot> GetEntityDetailFromDownstream(GetEntityDetailReqDTO request) {
         GetEntityDetailHandlerReqDTO atomicRequest = new GetEntityDetailHandlerReqDTO { EntityId = request.EntityId };
-        HttpResponseSnapshot response = await _getEntityDetailAtomicHandler.Handle(atomicRequest);
-        if (!response.IsSuccessStatusCode) { _logger.Error($"Failed: {response.StatusCode}"); throw new DownStreamApiFailureException(statusCode: (HttpStatusCode)response.StatusCode, error: ErrorConstants.GET_ENTITY_FAILURE, errorDetails: [$"Response: {response.Content}"], stepName: "GetEntityDetailHandler.cs / HandleAsync"); }
-        GetEntityDetailApiResDTO? apiResponse = RestApiHelper.DeserializeJsonResponse<GetEntityDetailApiResDTO>(response.Content!);
-        if (apiResponse == null || apiResponse.Items.Count < 1) throw new NotFoundException(ErrorConstants.NO_ENTITY_FOUND, ["No details found"], "GetEntityDetailHandler.cs / HandleAsync");
-        _logger.Info("[System Layer]-Completed"); return new BaseResponseDTO(message: InfoConstants.GET_ENTITY_SUCCESS, data: GetEntityDetailResDTO.Map(apiResponse), errorCode: null);
+        return await _getEntityDetailAtomicHandler.Handle(atomicRequest);
     }
 }
 ```
 
-## 3. MANDATORY RULES (13 Core)
-1. Name ends with `Handler` | 2. Implements `IBaseHandler<TRequest>` where TRequest : IRequestSysDTO | 3. Inject Atomic Handlers + ILogger via constructor | 4. Orchestrate Atomic Handlers (call 1+) | 5. Check `IsSuccessStatusCode` after each call | 6. Throw `DownStreamApiFailureException` for failed calls | 7. Throw `NotFoundException` when data not found | 8. Deserialize with `*ApiResDTO` classes | 9. Map `ApiResDTO` to `ResDTO` before return | 10. Return `BaseResponseDTO` | 11. Log start/completion | 12. Location: `Implementations/<Vendor>/Handlers/` | 13. Method name: `HandleAsync`
+## 3. MANDATORY RULES (16 Core)
+1. Name ends with `Handler` | 2. Implements `IBaseHandler<TRequest>` where TRequest : IRequestSysDTO | 3. Inject Atomic Handlers + ILogger via constructor | 4. Orchestrate Atomic Handlers (call 1+) | 5. Check `IsSuccessStatusCode` after each call | 6. Throw `DownStreamApiFailureException` for failed calls | 7. Throw `NotFoundException` when data not found | 8. Deserialize with `*ApiResDTO` classes | 9. Map `ApiResDTO` to `ResDTO` before return | 10. Return `BaseResponseDTO` | 11. Log start/completion | 12. Location: `Implementations/<Vendor>/Handlers/` | 13. Method name: `HandleAsync` | 14. **🔴 CRITICAL: Every `if` statement MUST have an explicit `else` clause** (no standalone if statements) | 15. **🔴 CRITICAL: Empty else blocks are FORBIDDEN** (else block MUST contain meaningful code/logic, not just comments - only allowed in very rare cases with explicit justification) | 16. **🔴 CRITICAL: Each atomic handler call MUST be in a private method** that takes Handler DTO as input, transforms to Atomic Handler DTO, and returns `HttpResponseSnapshot`
 
 ## 4. HANDLER ORCHESTRATION RULES (⚠️ CRITICAL)
 
@@ -823,39 +932,49 @@ public class GetEntityDetailHandler : IBaseHandler<GetEntityDetailReqDTO> {
 
 ### Example 1: ALLOWED (Same SOR, Simple Aggregation)
 ```csharp
-// ✅ ONE Function - Handler orchestrates lookups + create (same SOR)
 public class CreateEntityHandler : IBaseHandler<CreateEntityReqDTO> {
     private readonly GetEntityTypeAtomicHandler _getType;
     private readonly GetCategoryAtomicHandler _getCategory;
     private readonly CreateEntityAtomicHandler _create;
     
     public async Task<BaseResponseDTO> HandleAsync(CreateEntityReqDTO request) {
-        // Get Type (internal lookup)
-        HttpResponseSnapshot typeResp = await _getType.Handle(new GetEntityTypeHandlerReqDTO { TypeCode = request.TypeCode });
+        HttpResponseSnapshot typeResp = await GetEntityTypeFromDownstream(request);
         if (!typeResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
-        EntityTypeApiResDTO? typeData = RestApiHelper.DeserializeJsonResponse<EntityTypeApiResDTO>(typeResp.Content);
-        
-        // Get Category (internal lookup)
-        HttpResponseSnapshot catResp = await _getCategory.Handle(new GetCategoryHandlerReqDTO { CategoryCode = request.CategoryCode });
-        if (!catResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
-        CategoryApiResDTO? catData = RestApiHelper.DeserializeJsonResponse<CategoryApiResDTO>(catResp.Content);
-        
-        // Create Entity (aggregate + create)
-        HttpResponseSnapshot createResp = await _create.Handle(new CreateEntityHandlerReqDTO { 
-            EntityTypeId = typeData.TypeId, 
-            CategoryId = catData.CategoryId 
-        });
-        if (!createResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
-        CreateEntityApiResDTO? apiResp = RestApiHelper.DeserializeJsonResponse<CreateEntityApiResDTO>(createResp.Content);
-        
-        return new BaseResponseDTO(message: InfoConstants.CREATE_ENTITY_SUCCESS, data: CreateEntityResDTO.Map(apiResp));
+        else {
+            EntityTypeApiResDTO? typeData = RestApiHelper.DeserializeJsonResponse<EntityTypeApiResDTO>(typeResp.Content);
+            HttpResponseSnapshot catResp = await GetCategoryFromDownstream(request);
+            if (!catResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
+            else {
+                CategoryApiResDTO? catData = RestApiHelper.DeserializeJsonResponse<CategoryApiResDTO>(catResp.Content);
+                HttpResponseSnapshot createResp = await CreateEntityInDownstream(request, typeData.TypeId, catData.CategoryId);
+                if (!createResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
+                else {
+                    CreateEntityApiResDTO? apiResp = RestApiHelper.DeserializeJsonResponse<CreateEntityApiResDTO>(createResp.Content);
+                    return new BaseResponseDTO(message: InfoConstants.CREATE_ENTITY_SUCCESS, data: CreateEntityResDTO.Map(apiResp));
+                }
+            }
+        }
+    }
+    
+    private async Task<HttpResponseSnapshot> GetEntityTypeFromDownstream(CreateEntityReqDTO request) {
+        GetEntityTypeHandlerReqDTO atomicRequest = new GetEntityTypeHandlerReqDTO { TypeCode = request.TypeCode };
+        return await _getType.Handle(atomicRequest);
+    }
+    
+    private async Task<HttpResponseSnapshot> GetCategoryFromDownstream(CreateEntityReqDTO request) {
+        GetCategoryHandlerReqDTO atomicRequest = new GetCategoryHandlerReqDTO { CategoryCode = request.CategoryCode };
+        return await _getCategory.Handle(atomicRequest);
+    }
+    
+    private async Task<HttpResponseSnapshot> CreateEntityInDownstream(CreateEntityReqDTO request, int entityTypeId, int categoryId) {
+        CreateEntityHandlerReqDTO atomicRequest = new CreateEntityHandlerReqDTO { EntityTypeId = entityTypeId, CategoryId = categoryId };
+        return await _create.Handle(atomicRequest);
     }
 }
 ```
 
 ### Example 2: ALLOWED (Same SOR, Check-Before-Create Pattern)
 ```csharp
-// ✅ ONE Function - Handler orchestrates check + if/else + enrich + create (same SOR)
 public class CreateEntityHandler : IBaseHandler<CreateEntityReqDTO> {
     private readonly GetEntityByIdAtomicHandler _getEntity;
     private readonly GetLookupDataAAtomicHandler _getLookupA;
@@ -863,58 +982,90 @@ public class CreateEntityHandler : IBaseHandler<CreateEntityReqDTO> {
     private readonly CreateEntityAtomicHandler _createEntity;
     
     public async Task<BaseResponseDTO> HandleAsync(CreateEntityReqDTO request) {
-        // Check if entity exists
-        HttpResponseSnapshot checkResp = await _getEntity.Handle(new GetEntityByIdHandlerReqDTO { EntityId = request.EntityId });
+        HttpResponseSnapshot checkResp = await GetEntityByIdFromDownstream(request);
         if (!checkResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
-        EntityApiResDTO? existing = RestApiHelper.DeserializeJsonResponse<EntityApiResDTO>(checkResp.Content);
-        
-        // Simple if/else: if exists → return, if not → create
-        if (!string.IsNullOrEmpty(existing?.EntityId)) {
-            return new BaseResponseDTO(message: InfoConstants.ENTITY_EXISTS, data: EntityResDTO.Map(existing));
+        else {
+            EntityApiResDTO? existing = RestApiHelper.DeserializeJsonResponse<EntityApiResDTO>(checkResp.Content);
+            if (!string.IsNullOrEmpty(existing?.EntityId)) {
+                return new BaseResponseDTO(message: InfoConstants.ENTITY_EXISTS, data: EntityResDTO.Map(existing));
+            } else {
+                HttpResponseSnapshot lookupAResp = await GetLookupDataAFromDownstream(request);
+                if (!lookupAResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
+                else {
+                    LookupDataAApiResDTO? lookupA = RestApiHelper.DeserializeJsonResponse<LookupDataAApiResDTO>(lookupAResp.Content);
+                    HttpResponseSnapshot lookupBResp = await GetLookupDataBFromDownstream(request);
+                    if (!lookupBResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
+                    else {
+                        LookupDataBApiResDTO? lookupB = RestApiHelper.DeserializeJsonResponse<LookupDataBApiResDTO>(lookupBResp.Content);
+                        HttpResponseSnapshot createResp = await CreateEntityInDownstream(request, lookupA.LookupId, lookupB.LookupId);
+                        if (!createResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
+                        else {
+                            CreateEntityApiResDTO? apiResp = RestApiHelper.DeserializeJsonResponse<CreateEntityApiResDTO>(createResp.Content);
+                            return new BaseResponseDTO(message: InfoConstants.CREATE_ENTITY_SUCCESS, data: EntityResDTO.Map(apiResp));
+                        }
+                    }
+                }
+            }
         }
-        
-        // Entity doesn't exist → enrich + create
-        HttpResponseSnapshot lookupAResp = await _getLookupA.Handle(new GetLookupDataAHandlerReqDTO { Code = request.LookupCodeA });
-        if (!lookupAResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
-        LookupDataAApiResDTO? lookupA = RestApiHelper.DeserializeJsonResponse<LookupDataAApiResDTO>(lookupAResp.Content);
-        
-        HttpResponseSnapshot lookupBResp = await _getLookupB.Handle(new GetLookupDataBHandlerReqDTO { Code = request.LookupCodeB });
-        if (!lookupBResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
-        LookupDataBApiResDTO? lookupB = RestApiHelper.DeserializeJsonResponse<LookupDataBApiResDTO>(lookupBResp.Content);
-        
-        HttpResponseSnapshot createResp = await _createEntity.Handle(new CreateEntityHandlerReqDTO { 
-            EntityId = request.EntityId,
-            LookupIdA = lookupA.LookupId,
-            LookupIdB = lookupB.LookupId
-        });
-        if (!createResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
-        CreateEntityApiResDTO? apiResp = RestApiHelper.DeserializeJsonResponse<CreateEntityApiResDTO>(createResp.Content);
-        
-        return new BaseResponseDTO(message: InfoConstants.CREATE_ENTITY_SUCCESS, data: EntityResDTO.Map(apiResp));
+    }
+    
+    private async Task<HttpResponseSnapshot> GetEntityByIdFromDownstream(CreateEntityReqDTO request) {
+        GetEntityByIdHandlerReqDTO atomicRequest = new GetEntityByIdHandlerReqDTO { EntityId = request.EntityId };
+        return await _getEntity.Handle(atomicRequest);
+    }
+    
+    private async Task<HttpResponseSnapshot> GetLookupDataAFromDownstream(CreateEntityReqDTO request) {
+        GetLookupDataAHandlerReqDTO atomicRequest = new GetLookupDataAHandlerReqDTO { Code = request.LookupCodeA };
+        return await _getLookupA.Handle(atomicRequest);
+    }
+    
+    private async Task<HttpResponseSnapshot> GetLookupDataBFromDownstream(CreateEntityReqDTO request) {
+        GetLookupDataBHandlerReqDTO atomicRequest = new GetLookupDataBHandlerReqDTO { Code = request.LookupCodeB };
+        return await _getLookupB.Handle(atomicRequest);
+    }
+    
+    private async Task<HttpResponseSnapshot> CreateEntityInDownstream(CreateEntityReqDTO request, int lookupIdA, int lookupIdB) {
+        CreateEntityHandlerReqDTO atomicRequest = new CreateEntityHandlerReqDTO { EntityId = request.EntityId, LookupIdA = lookupIdA, LookupIdB = lookupIdB };
+        return await _createEntity.Handle(atomicRequest);
     }
 }
 ```
 
 ### Example 3: ALLOWED (Same SOR, Simple Flag Check)
 ```csharp
-// ✅ ONE Function - Handler orchestrates create + if flag (same SOR)
 public class CreateItemHandler : IBaseHandler<CreateItemReqDTO> {
     private readonly CreateItemAtomicHandler _createItem;
     private readonly LinkRelatedEntityAtomicHandler _linkRelated;
     
     public async Task<BaseResponseDTO> HandleAsync(CreateItemReqDTO request) {
-        // Create item
-        HttpResponseSnapshot itemResp = await _createItem.Handle(new CreateItemHandlerReqDTO { ItemData = request.ItemData });
+        HttpResponseSnapshot itemResp = await CreateItemInDownstream(request);
         if (!itemResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
-        ItemApiResDTO? item = RestApiHelper.DeserializeJsonResponse<ItemApiResDTO>(itemResp.Content);
-        
-        // Simple if: if flag → link
-        if (request.ShouldLinkRelated) {
-            HttpResponseSnapshot linkResp = await _linkRelated.Handle(new LinkRelatedEntityHandlerReqDTO { ItemId = item.ItemId });
-            if (!linkResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
+        else {
+            ItemApiResDTO? item = RestApiHelper.DeserializeJsonResponse<ItemApiResDTO>(itemResp.Content);
+            if (request.ShouldLinkRelated) {
+                HttpResponseSnapshot linkResp = await LinkRelatedEntityInDownstream(item.ItemId);
+                if (!linkResp.IsSuccessStatusCode) throw new DownStreamApiFailureException(...);
+                else {
+                    LinkRelatedEntityApiResDTO? linkResult = RestApiHelper.DeserializeJsonResponse<LinkRelatedEntityApiResDTO>(linkResp.Content);
+                    if (linkResult == null || !linkResult.IsLinked) {
+                        throw new BusinessCaseFailureException(ErrorConstants.LINK_FAILED, ["Failed to link related entity"], "CreateItemHandler.cs / HandleAsync");
+                    }
+                }
+            } else {
+                _logger.Info("Skipping related entity linking as per request flag");
+            }
+            return new BaseResponseDTO(message: InfoConstants.CREATE_ITEM_SUCCESS, data: ItemResDTO.Map(item));
         }
-        
-        return new BaseResponseDTO(message: InfoConstants.CREATE_ITEM_SUCCESS, data: ItemResDTO.Map(item));
+    }
+    
+    private async Task<HttpResponseSnapshot> CreateItemInDownstream(CreateItemReqDTO request) {
+        CreateItemHandlerReqDTO atomicRequest = new CreateItemHandlerReqDTO { ItemData = request.ItemData };
+        return await _createItem.Handle(atomicRequest);
+    }
+    
+    private async Task<HttpResponseSnapshot> LinkRelatedEntityInDownstream(int itemId) {
+        LinkRelatedEntityHandlerReqDTO atomicRequest = new LinkRelatedEntityHandlerReqDTO { ItemId = itemId };
+        return await _linkRelated.Handle(atomicRequest);
     }
 }
 ```
@@ -954,6 +1105,39 @@ public class CreateItemHandler : IBaseHandler<CreateItemReqDTO> {
 **Q4:** Complete business operation Process Layer needs? YES → **Azure Function** | NO → **Atomic (internal)**
 
 ### Simple If/Else Rules
+**🔴 CRITICAL RULE 1:** Every `if` statement in Handlers MUST have an explicit `else` clause. No standalone `if` statements allowed.
+- ✅ **CORRECT:** `if (condition) { ... } else { ... }` (else block contains meaningful code)
+- ❌ **WRONG:** `if (condition) { ... }` (missing else)
+- ❌ **WRONG:** `if (condition) { ... } else { }` (empty else block - only allowed in very rare cases with explicit justification)
+
+**🔴 CRITICAL RULE 1a:** Empty else blocks are FORBIDDEN except in very rare cases where explicitly justified. The else block MUST contain meaningful code/logic, not just comments.
+- ✅ **CORRECT:** `if (condition) { doA(); } else { doB(); }` (both branches have logic)
+- ❌ **WRONG:** `if (condition) { doA(); } else { // no action }` (empty else with only comment)
+- ⚠️ **RARE EXCEPTION:** Empty else allowed only when explicitly documented why no action is needed AND alternative structure would be less readable
+
+**🔴 CRITICAL RULE 2:** Each call to downstream API via atomic handler MUST be separated into a private method that:
+- Takes Handler DTO as input parameter
+- Transforms Handler DTO to Atomic Handler DTO
+- Returns `HttpResponseSnapshot`
+- Resides in the Handler class
+
+**Example Pattern:**
+```csharp
+private async Task<HttpResponseSnapshot> GetEntityFromDownstream(GetEntityReqDTO request) {
+    // Transform Handler DTO to Atomic Handler DTO
+    GetEntityHandlerReqDTO atomicRequest = new GetEntityHandlerReqDTO { 
+        EntityId = request.EntityId 
+    };
+    return await _getEntityAtomicHandler.Handle(atomicRequest);
+}
+```
+
+**Note:** This rule applies to all conditional logic in Handlers, including:
+- Business logic conditionals (if exists → return, else → create)
+- Flag checks (if flag → do X, else → skip)
+- Status checks (if status=X → do Y, else → do Z)
+- Guard clauses that throw exceptions should also follow this pattern when possible, or use early returns with explicit else blocks
+
 **ALLOWED:** Check-before-create (if exists skip, if not create), simple flag checks (if X do Y), null/empty checks - Same SOR operations only
 **FORBIDDEN:** Cross-SOR decisions (if SOR-1 exists, call SOR-2) - Process Layer orchestrates
 
@@ -1057,7 +1241,7 @@ if (apiResponse == null || apiResponse.Items.Count < 1) throw new NotFoundExcept
 
 | Exception | When to Throw | HTTP Status | Constructor Params | Where Used |
 |-----------|--------------|-------------|-------------------|------------|
-| **RequestValidationFailureException** | Request validation fails (missing fields, invalid format, bad input) | 400 | `ErrorProperties: List<string>` OR `error: (code, msg), errorDetails: List<string>, stepName` | Functions, Handlers, DTOs |
+| **RequestValidationFailureException** | Request validation fails (missing fields, invalid format, bad input) | 400 | `errorDetails: List<string>, stepName` (DTOs use Core Framework default error) OR `error: (code, msg), errorDetails: List<string>, stepName` (Handlers/Functions may use custom error) | Functions, Handlers, DTOs |
 | **NoRequestBodyException** | Incoming request has no body (null/empty POST/PUT) | 400 | `errorDetails: List<string>, stepName` | Functions (after deserialization) |
 | **NotFoundException** | Resource not found (record doesn't exist, query returns empty) | 404 | `error: (code, msg), errorDetails: List<string>, stepName` | Handlers (after query) |
 | **BusinessCaseFailureException** | Business rule violated (duplicate record, state conflict, invalid operation) | 409/422 | `error: (code, msg), errorDetails: List<string>, stepName` | Handlers, Services |
@@ -1078,9 +1262,15 @@ if (apiResponse == null || apiResponse.Items.Count < 1) throw new NotFoundExcept
 **1. RequestValidationFailureException (400 - Validation Errors)**
 ```csharp
 // Pattern 1: Simple (in ValidateAPIRequestParameters())
-if (string.IsNullOrWhiteSpace(EntityId)) throw new RequestValidationFailureException() { ErrorProperties = [ErrorConstants.INVALID_ENTITY_ID] };
+if (string.IsNullOrWhiteSpace(EntityId)) throw new RequestValidationFailureException(
+    errorDetails: ["EntityId is required"],
+    stepName: "GetEntityReqDTO.cs / Executing ValidateAPIRequestParameters"
+);
 // Pattern 2: Detailed (collect all errors)
-List<string> errors = new List<string>(); if (string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId required"); if (!Email.Contains("@")) errors.Add("Invalid email"); if (errors.Count > 0) throw new RequestValidationFailureException(error: ErrorConstants.SYS_VAL_0001, errorDetails: errors, stepName: "GetEntityReqDTO / ValidateAPIRequestParameters");
+List<string> errors = new List<string>(); if (string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId required"); if (!Email.Contains("@")) errors.Add("Invalid email"); if (errors.Count > 0) throw new RequestValidationFailureException(
+    errorDetails: errors,
+    stepName: "GetEntityReqDTO.cs / Executing ValidateAPIRequestParameters"
+);
 ```
 
 **2. NoRequestBodyException (400 - Missing Request Body)**
@@ -1137,10 +1327,16 @@ return new BaseResponseDTO(message: InfoConstants.GET_ENTITY_SUCCESS, data: GetE
 using Core.SystemLayer.DTOs;
 public class GetEntityDetailReqDTO : IRequestSysDTO {
     public string EntityId { get; set; } = string.Empty; public bool IncludeDetails { get; set; }
-    public void ValidateAPIRequestParameters() { if (string.IsNullOrWhiteSpace(EntityId)) throw new RequestValidationFailureException() { ErrorProperties = [ErrorConstants.INVALID_ENTITY_ID] }; }
+    public void ValidateAPIRequestParameters() {
+        if (string.IsNullOrWhiteSpace(EntityId))
+            throw new RequestValidationFailureException(
+                errorDetails: ["EntityId is required"],
+                stepName: "GetEntityDetailReqDTO.cs / Executing ValidateAPIRequestParameters"
+            );
+    }
 }
 ```
-**Location:** `DTO/HandlerDTOs/<Feature>/`
+**Location:** `DTO/<Entity>DTO/`
 
 ### Response DTO (ResDTO with Map)
 ```csharp
@@ -1149,7 +1345,7 @@ public class GetEntityDetailResDTO {
     public static GetEntityDetailResDTO Map(GetEntityDetailApiResDTO apiResponse) => new() { EntityId = apiResponse.Id ?? "", EntityName = apiResponse.Name ?? "", Status = apiResponse.StatusCode ?? "Unknown" };
 }
 ```
-**Location:** `DTO/HandlerDTOs/<Feature>/`
+**Location:** `DTO/<Entity>DTO/`
 
 ## 9. LOGGING (MANDATORY)
 
@@ -1304,11 +1500,11 @@ Implementations/<VendorName>/
 
 ### ✅ DO
 **Function Exposure:** Complete decision table BEFORE Handlers | Answer all 4 questions for each operation | Document reasoning | Verify decision points | Write summary
-**Implementation:** Implement `IBaseHandler<TRequest>` | Inject Atomic Handlers via constructor | Orchestrate multiple (same SOR, no logic) | Check `IsSuccessStatusCode` | Throw `DownStreamApiFailureException` for failures | Throw `NotFoundException` for missing data | Deserialize with `ApiResDTO` | Map `ApiResDTO` to `ResDTO` | Log start/completion/errors | Use `Core.Extensions` logging | Return `BaseResponseDTO` | Register `AddScoped<>` concrete | Place in `Implementations/<Vendor>/Handlers/` | Name method `HandleAsync` | Apply "Can PL invoke independently?" test
+**Implementation:** Implement `IBaseHandler<TRequest>` | Inject Atomic Handlers via constructor | Orchestrate multiple (same SOR, no logic) | Check `IsSuccessStatusCode` | Throw `DownStreamApiFailureException` for failures | Throw `NotFoundException` for missing data | Deserialize with `ApiResDTO` | Map `ApiResDTO` to `ResDTO` | Log start/completion/errors | Use `Core.Extensions` logging | Return `BaseResponseDTO` | Register `AddScoped<>` concrete | Place in `Implementations/<Vendor>/Handlers/` | Name method `HandleAsync` | Apply "Can PL invoke independently?" test | **🔴 CRITICAL: Every `if` statement MUST have an explicit `else` clause** | **🔴 CRITICAL: Else blocks MUST contain meaningful code/logic** (not just comments - empty else blocks forbidden except very rare cases) | **🔴 CRITICAL: Each atomic handler call MUST be in a private method** (takes Handler DTO, transforms to Atomic Handler DTO, returns HttpResponseSnapshot) | **🔴 NON-NEGOTIABLE: Leverage Core Framework extensions FIRST** - Check Core Framework extension methods before creating new conversion/helper functionality | **🔴 NON-NEGOTIABLE: Use descriptive variable names** - Variable names must clearly reflect what they are or what they are doing | **🔴 CRITICAL: DON'T read from RequestContext, KeyVault, or AppConfigs** - All reading from these sources MUST be done in Atomic Handlers, not in Handlers
 
 ### ❌ DON'T
 **Function Exposure:** Skip decision table (MANDATORY) | Assume operations are Functions without verification | Pattern-match without table | Create Functions for internal lookups | Expose Login/Logout as Functions | Proceed without 7 verification questions
-**Implementation:** Expose internal operations as Functions | Orchestrate different SORs (use PL) | Include business logic | Use if/else for business decisions (use PL) | Return `ApiResDTO` directly | Forget `IsSuccessStatusCode` check | Swallow exceptions | Use `_logger.LogInformation()` (use `.Info()`) | Use `_logger.LogError()` (use `.Error()`) | Create custom HttpClients | Register with interfaces (use concrete) | Forget to inject Atomic Handlers | Call another System Layer (FORBIDDEN) | Create Function Explosion
+**Implementation:** Expose internal operations as Functions | Orchestrate different SORs (use PL) | Include business logic | Use if/else for business decisions (use PL) | Return `ApiResDTO` directly | Forget `IsSuccessStatusCode` check | Swallow exceptions | Use `_logger.LogInformation()` (use `.Info()`) | Use `_logger.LogError()` (use `.Error()`) | Create custom HttpClients | Register with interfaces (use concrete) | Forget to inject Atomic Handlers | Call another System Layer (FORBIDDEN) | Create Function Explosion | **🔴 CRITICAL: Use standalone `if` statements without `else` clause** | **🔴 CRITICAL: Use empty else blocks** (else blocks with only comments or no code - must contain meaningful logic) | **🔴 CRITICAL: Call atomic handlers directly in `HandleAsync`** (must use private methods) | **🔴 NON-NEGOTIABLE: Use ambiguous or unclear variable names** (variable names must clearly reflect what they are or what they are doing - avoid generic names like `data`, `result`, `item`, `temp`) | **🔴 CRITICAL: Read from RequestContext, KeyVault, or AppConfigs in Handlers** (all reading from these sources MUST be done in Atomic Handlers only)
 
 ## 15. ARCHITECTURE INVARIANTS (NEVER VIOLATE)
 1. **Function Exposure Decision Table MANDATORY** (BLOCKING gate) | 2. **Complete table BEFORE Handlers/Functions** (BLOCKING) | 3. **Answer 5 questions for EACH operation** (no exceptions) | 4. **SL NEVER calls another SL** (Cross-SL → Process Layer) | 5. **Handler orchestration INTERNAL** (not Function-to-Function) | 6. **Only create Functions PL calls** (internal = Atomic Handlers) | 7. **Handlers orchestrate Atomic Handlers** (1 Function → multiple Atomic Handlers) | 8. **Same SOR ONLY** (Handler orchestration allowed ONLY same SOR) | 9. **Simple Business Logic ALLOWED at Handler** (same SOR: check-before-create, simple if/else, flag checks) | 10. **Internal lookups = Atomic Handlers (NOT Functions)** (field extraction operations) | 11. **Same-SOR decisions = Handler orchestrates** (if all operations same SOR → 1 Function with if/else in Handler) | 12. **Cross-SOR decisions = Process Layer** (if operations span SORs → Multiple Functions, PL orchestrates) | 13. **Looping/Iteration = Process Layer** (any loop/foreach/iteration over multiple API calls → Process Layer orchestrates, even if same SOR - this is business logic) | 14. **ALWAYS map ApiResDTO → ResDTO** (NEVER return ApiResDTO directly) | 15. **ALWAYS check IsSuccessStatusCode** (throw DownStreamApiFailureException)
@@ -1344,7 +1540,7 @@ Implementations/<VendorName>/
 - [ ] Business decisions assigned to Process Layer
 
 ### Handler Implementation
-- [ ] Name ends with `Handler` | [ ] Implements `IBaseHandler<TRequest>` | [ ] Method named `HandleAsync` | [ ] Returns `BaseResponseDTO` | [ ] Injects Atomic Handlers | [ ] Checks `IsSuccessStatusCode` after each call | [ ] Throws `DownStreamApiFailureException` for failures | [ ] Throws `NotFoundException` for missing | [ ] Deserializes with `ApiResDTO` | [ ] Maps `ApiResDTO` to `ResDTO` | [ ] Logs start/completion | [ ] Logs errors with details | [ ] Uses `Core.Extensions` logging | [ ] Registered `AddScoped<>` | [ ] Located `Implementations/<Vendor>/Handlers/` | [ ] NOT orchestrate different SORs | [ ] NOT include business logic | [ ] NOT expose internal ops as Functions
+- [ ] Name ends with `Handler` | [ ] Implements `IBaseHandler<TRequest>` | [ ] Method named `HandleAsync` | [ ] Returns `BaseResponseDTO` | [ ] Injects Atomic Handlers | [ ] Checks `IsSuccessStatusCode` after each call | [ ] Throws `DownStreamApiFailureException` for failures | [ ] Throws `NotFoundException` for missing | [ ] Deserializes with `ApiResDTO` | [ ] Maps `ApiResDTO` to `ResDTO` | [ ] Logs start/completion | [ ] Logs errors with details | [ ] Uses `Core.Extensions` logging | [ ] Registered `AddScoped<>` | [ ] Located `Implementations/<Vendor>/Handlers/` | [ ] NOT orchestrate different SORs | [ ] NOT include business logic | [ ] NOT expose internal ops as Functions | [ ] **🔴 CRITICAL: Every `if` statement has an explicit `else` clause** | [ ] **🔴 CRITICAL: Else blocks contain meaningful code/logic** (no empty else blocks with only comments) | [ ] **🔴 CRITICAL: Each atomic handler call is in a private method** (takes Handler DTO, transforms to Atomic Handler DTO, returns HttpResponseSnapshot) | [ ] **🔴 CRITICAL: Does NOT read from RequestContext, KeyVault, or AppConfigs** (all reading from these sources is done in Atomic Handlers only)
 
 ## 18. COMPLETE HANDLER TEMPLATE
 ```csharp
@@ -1366,10 +1562,6 @@ namespace <Namespace>.Implementations.<Vendor>.Handlers {
 }
 ```
 
----
-
-**END OF DOCUMENT - ALL HANDLER RULES**
-
 # Atomic Handler RULES
 *ALL RULES CRITICAL & MANDATORY - NO EXCEPTIONS*
 
@@ -1380,8 +1572,8 @@ namespace <Namespace>.Implementations.<Vendor>.Handlers {
 ## 1. DEFINITION & CORE RULES
 **Atomic Handler:** Single-responsibility operation = EXACTLY ONE external call | **Key Principle:** One Atomic Handler = One External Call (Rule #4)
 
-**11 MANDATORY Rules:**
-1. Name ends with `AtomicHandler` | 2. Implement `IAtomicHandler<HttpResponseSnapshot>` | 3. Make EXACTLY ONE external operation | 4. Accept `IDownStreamRequestDTO` interface parameter | 5. Cast parameter to concrete type (first line) | 6. Call `ValidateDownStreamRequestParameters()` (second line) | 7. Return `HttpResponseSnapshot` (NEVER throw on HTTP error) | 8. Location: `Implementations/<Vendor>/AtomicHandlers/<Operation>AtomicHandler.cs` (FLAT, NO subfolders) | 9. Inject correct HTTP client: **CustomRestClient** (for REST/JSON APIs) OR **CustomSoapClient** (for SOAP/XML APIs) OR **CustomHTTPClient** (for low-level HTTP) | 10. Inject `IOptions<AppConfigs>` | 11. Inject `ILogger<TAtomicHandler>`
+**13 MANDATORY Rules:**
+1. Name ends with `AtomicHandler` | 2. Implement `IAtomicHandler<HttpResponseSnapshot>` | 3. Make EXACTLY ONE external operation | 4. Accept `IDownStreamRequestDTO` interface parameter | 5. Cast parameter to concrete type (first line) | 6. Call `ValidateDownStreamRequestParameters()` (second line) | 7. Return `HttpResponseSnapshot` (NEVER throw on HTTP error) | 8. Location: `Implementations/<Vendor>/AtomicHandlers/<Operation>AtomicHandler.cs` (FLAT, NO subfolders) | 9. Inject correct HTTP client: **CustomRestClient** (for REST/JSON APIs) OR **CustomSoapClient** (for SOAP/XML APIs) OR **CustomHTTPClient** (for low-level HTTP) | 10. Inject `IOptions<AppConfigs>` | 11. Inject `ILogger<TAtomicHandler>` | 12. **🔴 CRITICAL: If mapping/transformation occurs, it MUST be in a separate private method** within the same Atomic Handler class | 13. **🔴 CRITICAL: ALL reading from RequestContext, KeyVault, and AppConfigs MUST be done in Atomic Handlers** - Since SOR calling requires these values and Atomic Handlers make the SOR calls, all reads must occur here (NOT in Handlers or Functions)
 
 ## 2. INTERFACE & HANDLE() METHOD (CRITICAL)
 
@@ -1407,7 +1599,18 @@ public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamR
 
 ```csharp
 using Core.Exceptions; using Core.SystemLayer.DTOs;
-public class GetEntityReqDTO : IDownStreamRequestDTO { public string EntityId { get; set; } = string.Empty; public void ValidateDownStreamRequestParameters() { List<string> errors = new List<string>(); if (string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId is required"); if (errors.Count > 0) throw new RequestValidationFailureException(error: ("VAL_001", "Validation failed"), errorDetails: errors, stepName: "GetEntityReqDTO / ValidateDownStreamRequestParameters"); } }
+public class GetEntityReqDTO : IDownStreamRequestDTO {
+    public string EntityId { get; set; } = string.Empty;
+    public void ValidateDownStreamRequestParameters() {
+        List<string> errors = new List<string>();
+        if (string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId is required");
+        if (errors.Count > 0)
+            throw new RequestValidationFailureException(
+                errorDetails: errors,
+                stepName: "GetEntityReqDTO.cs / Executing ValidateDownStreamRequestParameters"
+            );
+    }
+}
 ```
 
 ## 4. MANDATORY USING STATEMENTS
@@ -1487,9 +1690,15 @@ public CreateTaskAtomicHandler(CustomSoapClient soapClient, IOptions<AppConfigs>
 - **CustomRestClient** (REST APIs - Framework: `Core.Middlewares`)
 - **CustomSoapClient** (SOAP APIs - Project Helper: `<ProjectName>.Helper` - **YOU MUST CREATE THIS**)
 - **CustomHTTPClient** (low-level HTTP - Framework: `Core.Middlewares`)
-- **IOptions<AppConfigs>** (config)
+- **IOptions<AppConfigs>** (config - **🔴 CRITICAL: All AppConfigs reading MUST be in Atomic Handlers**)
 - **ILogger<T>** (logging)
-- **KeyVaultReader** (secrets - if needed)
+- **KeyVaultReader** (secrets - if needed - **🔴 CRITICAL: All KeyVault reading MUST be in Atomic Handlers**)
+
+**🔴 CRITICAL RULE - Configuration & Context Reading:**
+- **ALL reading from RequestContext** (SessionId, Token, Username, Password, etc.) **MUST be done in Atomic Handlers**
+- **ALL reading from KeyVault** (secrets, credentials) **MUST be done in Atomic Handlers**
+- **ALL reading from AppConfigs** (URLs, timeouts, settings) **MUST be done in Atomic Handlers**
+- **Rationale:** Atomic Handlers make the actual SOR calls and need these values for authentication, URLs, and configuration. Handlers should NOT read from these sources - they should pass data via DTOs to Atomic Handlers.
 
 **⚠️ IMPORTANT:** `CustomSoapClient` is NOT in Framework. For SOAP integrations, you must create `CustomSoapClient.cs` in your project's `Helper/` folder. **MANDATORY:** Custom clients MUST implement timing tracking - see Section 5.1 for complete example with timing pattern.
 
@@ -1499,14 +1708,89 @@ builder.Services.AddScoped<GetEntityDetailAtomicHandler>(); builder.Services.Add
 builder.Services.AddScoped<AuthenticateAtomicHandler>(); builder.Services.AddScoped<LogoutAtomicHandler>();
 ```
 
-## 7. LOGGING (MANDATORY - Core.Extensions Only)
+## 7. CONFIGURATION & CONTEXT READING (🔴 CRITICAL - MUST BE IN ATOMIC HANDLERS)
+
+**🔴 NON-NEGOTIABLE RULE:** ALL reading from RequestContext, KeyVault, and AppConfigs MUST be done in Atomic Handlers. Handlers should NOT read from these sources.
+
+### Why This Rule Exists
+- Atomic Handlers make the actual SOR calls and need these values for:
+  - **Authentication:** SessionId, Token, Username, Password from RequestContext or KeyVault
+  - **Configuration:** API URLs, timeouts, retry counts from AppConfigs
+  - **Secrets:** API keys, passwords from KeyVault
+- Handlers should only pass business data via DTOs to Atomic Handlers
+- This ensures all SOR-related configuration is centralized in Atomic Handlers
+
+### Examples
+
+**Example 1: Reading from RequestContext in Atomic Handler**
+```csharp
+public class GetEntityAtomicHandler : IAtomicHandler<HttpResponseSnapshot> {
+    private readonly CustomRestClient _restClient; private readonly AppConfigs _appConfigs; private readonly ILogger<GetEntityAtomicHandler> _logger;
+    public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamRequestDTO) {
+        GetEntityReqDTO requestDTO = downStreamRequestDTO as GetEntityReqDTO ?? throw new ArgumentException("Invalid DTO");
+        requestDTO.ValidateDownStreamRequestParameters();
+        // ✅ CORRECT: Read from RequestContext in Atomic Handler
+        string? sessionId = RequestContext.GetSessionId(); string? username = RequestContext.GetUsername(); string? password = RequestContext.GetPassword();
+        // ✅ CORRECT: Read from AppConfigs in Atomic Handler
+        string apiUrl = $"{_appConfigs.BaseApiUrl}/api/entities/{requestDTO.EntityId}"; int timeoutSeconds = _appConfigs.TimeoutSeconds;
+        HttpResponseSnapshot response = await _restClient.ExecuteCustomRestRequestAsync(operationName: OperationNames.GET_ENTITY, apiUrl: apiUrl, httpMethod: HttpMethod.Get, username: username, password: password);
+        return response;
+    }
+}
+```
+
+**Example 2: Reading from KeyVault in Atomic Handler**
+```csharp
+public class CreateEntityAtomicHandler : IAtomicHandler<HttpResponseSnapshot> {
+    private readonly CustomRestClient _restClient; private readonly AppConfigs _appConfigs; private readonly KeyVaultReader _keyVaultReader; private readonly ILogger<CreateEntityAtomicHandler> _logger;
+    public CreateEntityAtomicHandler(CustomRestClient restClient, IOptions<AppConfigs> options, KeyVaultReader keyVaultReader, ILogger<CreateEntityAtomicHandler> logger) { _restClient = restClient; _appConfigs = options.Value; _keyVaultReader = keyVaultReader; _logger = logger; }
+    public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamRequestDTO) {
+        CreateEntityReqDTO requestDTO = downStreamRequestDTO as CreateEntityReqDTO ?? throw new ArgumentException("Invalid DTO");
+        requestDTO.ValidateDownStreamRequestParameters();
+        // ✅ CORRECT: Read from KeyVault in Atomic Handler
+        Dictionary<string, string> secrets = await _keyVaultReader.GetAuthSecretsAsync(); string apiKey = secrets["ApiKey"]; string password = secrets["Password"];
+        // ✅ CORRECT: Read from AppConfigs in Atomic Handler
+        string apiUrl = $"{_appConfigs.BaseApiUrl}/api/entities";
+        HttpResponseSnapshot response = await _restClient.ExecuteCustomRestRequestAsync(operationName: OperationNames.CREATE_ENTITY, apiUrl: apiUrl, httpMethod: HttpMethod.Post, customHeaders: new Dictionary<string, string> { { "X-API-Key", apiKey } });
+        return response;
+    }
+}
+```
+
+**❌ WRONG: Reading in Handler**
+```csharp
+// ❌ WRONG: Handler reading from RequestContext
+public class GetEntityHandler : IBaseHandler<GetEntityReqDTO> {
+    public async Task<BaseResponseDTO> HandleAsync(GetEntityReqDTO request) {
+        // ❌ DON'T read here - Atomic Handler should read
+        string? sessionId = RequestContext.GetSessionId(); string apiUrl = _appConfigs.BaseApiUrl; // ❌ DON'T read AppConfigs here
+        GetEntityHandlerReqDTO atomicRequest = new GetEntityHandlerReqDTO { EntityId = request.EntityId, SessionId = sessionId }; // ❌ DON'T pass values read in Handler
+        // ...
+    }
+}
+```
+
+**✅ CORRECT: Handler passes only business data**
+```csharp
+// ✅ CORRECT: Handler passes only business data
+public class GetEntityHandler : IBaseHandler<GetEntityReqDTO> {
+    public async Task<BaseResponseDTO> HandleAsync(GetEntityReqDTO request) {
+        // ✅ CORRECT: Only pass business data - Atomic Handler reads from RequestContext/KeyVault/AppConfigs
+        GetEntityHandlerReqDTO atomicRequest = new GetEntityHandlerReqDTO { EntityId = request.EntityId }; // Only business data
+        HttpResponseSnapshot response = await _getEntityAtomicHandler.Handle(atomicRequest);
+        // ...
+    }
+}
+```
+
+## 8. LOGGING (MANDATORY - Core.Extensions Only)
 ```csharp
 using Core.Extensions; // ← REQUIRED
 _logger.Info("Starting operation"); _logger.Info($"EntityId: {requestDTO.EntityId}"); _logger.Error(ex, "Operation failed"); _logger.Warn("Retry");
 ```
 **Forbidden:** ❌ `_logger.LogInformation()` (use `_logger.Info()`) | ❌ `_logger.LogError()` (use `_logger.Error()`) | ❌ `Console.WriteLine()`
 
-## 8. ERROR HANDLING
+## 9. ERROR HANDLING
 **Atomic Handler Rules:** DON'T throw for HTTP errors (return HttpResponseSnapshot) | DO throw for validation failures (RequestValidationFailureException) | DO throw for invalid DTO cast (ArgumentException) | Let Handler check response status
 
 **Handler's Job (NOT Atomic Handler):**
@@ -1517,7 +1801,7 @@ if (!response.IsSuccessStatusCode) throw new DownStreamApiFailureException(
     errorDetails: [$"API failed: {response.Content}"], stepName: "GetEntityHandler.cs / HandleAsync");
 ```
 
-## 9. CACHING SUPPORT (OPTIONAL)
+## 10. CACHING SUPPORT (OPTIONAL)
 
 **Framework Reference:** Look at `Framework/Cache/Handlers/ICacheableAtomicHandler.cs` for implementation.
 
@@ -1548,15 +1832,19 @@ public class GetLOVAtomicHandler : ICacheableAtomicHandler<HttpResponseSnapshot>
 
 ### Usage in Handler (Cached Call)
 ```csharp
-public class GetEntityHandler : IBaseHandler<GetEntityReqDTO> { private readonly GetLOVAtomicHandler _lovAtomicHandler;
+public class GetEntityHandler : IBaseHandler<GetEntityReqDTO> { 
+    private readonly GetLOVAtomicHandler _lovAtomicHandler;
     public async Task<BaseResponseDTO> HandleAsync(GetEntityReqDTO request) {
-        GetLOVHandlerReqDTO lovRequest = new GetLOVHandlerReqDTO { LOVType = "EntityStatus", Username = RequestContext.GetUsername(), Password = RequestContext.GetPassword() };
-        CacheKeySettings cacheSettings = new CacheKeySettings { TimeToLive = TimeSpan.FromHours(24) }; // Custom TTL
+        // ✅ CORRECT: Pass only business data - Atomic Handler reads from RequestContext/KeyVault/AppConfigs
+        GetLOVHandlerReqDTO lovRequest = new GetLOVHandlerReqDTO { LOVType = "EntityStatus" }; // Username and Password will be read by Atomic Handler from RequestContext/KeyVault
+        CacheKeySettings cacheSettings = new CacheKeySettings { TimeToLive = TimeSpan.FromHours(24) };
         HttpResponseSnapshot response = await ((ICacheableAtomicHandler<HttpResponseSnapshot>)_lovAtomicHandler).HandleCacheAsync(lovRequest, cacheSettings);
         // ... process response ...
     }
 }
 ```
+
+**🔴 CRITICAL:** Handlers should NOT read from RequestContext, KeyVault, or AppConfigs. These reads MUST happen in Atomic Handlers where the SOR calls are made.
 
 ### Rules
 1. Atomic Handler implements `ICacheableAtomicHandler<HttpResponseSnapshot>` | 2. *HandlerReqDTO implements `ICacheable` (see DTO section) | 3. Default TTL: 30 days (override with CacheKeySettings) | 4. Call `HandleCacheAsync()` instead of `Handle()` for cached | 5. DON'T cache write operations | 6. Cache key generated from DTO properties via `ICacheable.GetCacheKey()`
@@ -1564,7 +1852,7 @@ public class GetEntityHandler : IBaseHandler<GetEntityReqDTO> { private readonly
 **Program.cs:** `builder.Services.AddRedisCacheLibrary(builder.Configuration);`  
 **appsettings.json:** `"RedisCache": { "ConnectionString": "", "InstanceName": "ProjectName:" }`
 
-## 10. HTTP CLIENT PATTERNS
+## 11. HTTP CLIENT PATTERNS
 
 **🔴 CRITICAL - Client Selection by Integration Type:**
 
@@ -1579,11 +1867,25 @@ public class GetEntityHandler : IBaseHandler<GetEntityReqDTO> { private readonly
 ### A. REST API Calls (CustomRestClient - Framework)
 
 ```csharp
-using Core.Extensions; using Core.Middlewares; using Core.SystemLayer.DTOs; using Core.SystemLayer.Handlers; using <ProjectName>.ConfigModels; using <ProjectName>.Constants; using <ProjectName>.DTO.HandlerDTOs.AtomicHandlerDTOs; using Microsoft.Extensions.Logging; using Microsoft.Extensions.Options;
-namespace <ProjectName>.Implementations.<Vendor>.AtomicHandlers { public class CreateEntityAtomicHandler : IAtomicHandler<HttpResponseSnapshot> { private readonly ILogger<CreateEntityAtomicHandler> _logger; private readonly CustomRestClient _customRestClient; private readonly AppConfigs _appConfigs;
-    public CreateEntityAtomicHandler(ILogger<CreateEntityAtomicHandler> logger, CustomRestClient customRestClient, IOptions<AppConfigs> options) { _logger = logger; _customRestClient = customRestClient; _appConfigs = options.Value; }
-    public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamRequestDTO) { CreateEntityHandlerReqDTO? dto = downStreamRequestDTO as CreateEntityHandlerReqDTO; dto?.ValidateDownStreamRequestParameters(); _logger.Info($"CreateEntityAtomicHandler processing for Entity: {dto.EntityId}"); string apiUrl = RestApiHelper.BuildUrl(_appConfigs.BaseApiUrl, new List<string>() { "entities" }); HttpResponseSnapshot response = await _customRestClient.ExecuteCustomRestRequestAsync(operationName: OperationNames.CREATE_ENTITY, apiUrl: apiUrl, httpMethod: HttpMethod.Post, contentFactory: () => CustomRestClient.CreateJsonContent(new { Id = dto.EntityId, Name = dto.Name }), username: dto.Username, password: dto.Password, queryParameters: null, customHeaders: null); _logger.Info($"Received response: {response.StatusCode}"); return response; } } }
+using Core.Extensions; using Core.Middlewares; using Core.SystemLayer.DTOs; using Core.SystemLayer.Handlers; using <ProjectName>.ConfigModels; using <ProjectName>.Constants; using <ProjectName>.DTO.AtomicHandlerDTOs; using Microsoft.Extensions.Logging; using Microsoft.Extensions.Options;
+namespace <ProjectName>.Implementations.<Vendor>.AtomicHandlers { 
+    public class CreateEntityAtomicHandler : IAtomicHandler<HttpResponseSnapshot> { 
+        private readonly ILogger<CreateEntityAtomicHandler> _logger; private readonly CustomRestClient _customRestClient; private readonly AppConfigs _appConfigs;
+        public CreateEntityAtomicHandler(ILogger<CreateEntityAtomicHandler> logger, CustomRestClient customRestClient, IOptions<AppConfigs> options) { _logger = logger; _customRestClient = customRestClient; _appConfigs = options.Value; }
+        public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamRequestDTO) { 
+            CreateEntityHandlerReqDTO? dto = downStreamRequestDTO as CreateEntityHandlerReqDTO; dto?.ValidateDownStreamRequestParameters(); 
+            _logger.Info($"CreateEntityAtomicHandler processing for Entity: {dto.EntityId}"); 
+            string apiUrl = RestApiHelper.BuildUrl(_appConfigs.BaseApiUrl, new List<string>() { "entities" }); 
+            object requestBody = MapDtoToRequestBody(dto); 
+            HttpResponseSnapshot response = await _customRestClient.ExecuteCustomRestRequestAsync(operationName: OperationNames.CREATE_ENTITY, apiUrl: apiUrl, httpMethod: HttpMethod.Post, contentFactory: () => CustomRestClient.CreateJsonContent(requestBody), username: dto.Username, password: dto.Password, queryParameters: null, customHeaders: null); 
+            _logger.Info($"Received response: {response.StatusCode}"); return response; 
+        }
+        private object MapDtoToRequestBody(CreateEntityHandlerReqDTO dto) { return new { Id = dto.EntityId, Name = dto.Name }; }
+    } 
+}
 ```
+
+**🔴 CRITICAL:** If mapping/transformation occurs (DTO to request body, field transformations, etc.), it MUST be in a separate private method like `MapDtoToRequestBody()` shown above.
 
 ### B. SOAP API Calls (CustomSoapClient - Project Helper)
 
@@ -1591,10 +1893,28 @@ namespace <ProjectName>.Implementations.<Vendor>.AtomicHandlers { public class C
 
 ```csharp
 using Core.Extensions; using Core.System.DTOs; using Core.System.Handlers; using Core.System.Middlewares; using <ProjectName>.ConfigModels; using <ProjectName>.Constants; using <ProjectName>.DTO.HandlerDTO.AtomicHandlerDTO; using <ProjectName>.Helper; using Microsoft.Extensions.Logging; using Microsoft.Extensions.Options;
-namespace <ProjectName>.Implementations.<Vendor>.AtomicHandlers { public class CreateTaskAtomicHandler : IAtomicHandler<HttpResponseSnapshot> { private readonly ILogger<CreateTaskAtomicHandler> _logger; private readonly CustomSoapClient _customSOAPClient; private readonly AppConfigs _appConfigs;
-    public CreateTaskAtomicHandler(ILogger<CreateTaskAtomicHandler> logger, CustomSoapClient soapClient, IOptions<AppConfigs> options) { _logger = logger; _customSOAPClient = soapClient; _appConfigs = options.Value; }
-    public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamRequestDTO) { _logger.Info("CreateTaskAtomicHandler processing started"); CreateTaskHandlerReqDTO? dto = downStreamRequestDTO as CreateTaskHandlerReqDTO; if (dto is not CreateTaskHandlerReqDTO) throw new InvalidCastException("Expected CreateTaskHandlerReqDTO"); dto.ValidateDownStreamRequestParameters(); string envelopeTemplate = SOAPHelper.LoadSoapEnvelopeTemplate("<ProjectName>.SoapEnvelopes.CreateTask.xml"); string soapEnvelope = envelopeTemplate.Replace("{{SessionId}}", SOAPHelper.GetValueOrEmpty(dto.SessionId)).Replace("{{TaskIdElement}}", SOAPHelper.GetElementOrEmpty("ns:TaskId", dto.TaskId)).Replace("{{DescriptionElement}}", SOAPHelper.GetElementOrEmpty("ns:Description", dto.Description)); _logger.Debug("SOAP envelope created"); HttpResponseSnapshot response = await _customSOAPClient.ExecuteCustomSoapRequestAsync(operationName: OperationNames.CREATE_TASK, soapEnvelope: soapEnvelope, apiUrl: _appConfigs.SoapEndpointUrl, soapActionUrl: _appConfigs.SoapActionUrl, httpMethod: HttpMethod.Post); _logger.Info($"Processing completed: {response.StatusCode}"); return response; } } }
+namespace <ProjectName>.Implementations.<Vendor>.AtomicHandlers { 
+    public class CreateTaskAtomicHandler : IAtomicHandler<HttpResponseSnapshot> { 
+        private readonly ILogger<CreateTaskAtomicHandler> _logger; private readonly CustomSoapClient _customSOAPClient; private readonly AppConfigs _appConfigs;
+        public CreateTaskAtomicHandler(ILogger<CreateTaskAtomicHandler> logger, CustomSoapClient soapClient, IOptions<AppConfigs> options) { _logger = logger; _customSOAPClient = soapClient; _appConfigs = options.Value; }
+        public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamRequestDTO) { 
+            _logger.Info("CreateTaskAtomicHandler processing started"); 
+            CreateTaskHandlerReqDTO? dto = downStreamRequestDTO as CreateTaskHandlerReqDTO; if (dto is not CreateTaskHandlerReqDTO) throw new InvalidCastException("Expected CreateTaskHandlerReqDTO"); 
+            dto.ValidateDownStreamRequestParameters(); 
+            string soapEnvelope = MapDtoToSoapEnvelope(dto); 
+            _logger.Debug("SOAP envelope created"); 
+            HttpResponseSnapshot response = await _customSOAPClient.ExecuteCustomSoapRequestAsync(operationName: OperationNames.CREATE_TASK, soapEnvelope: soapEnvelope, apiUrl: _appConfigs.SoapEndpointUrl, soapActionUrl: _appConfigs.SoapActionUrl, httpMethod: HttpMethod.Post); 
+            _logger.Info($"Processing completed: {response.StatusCode}"); return response; 
+        }
+        private string MapDtoToSoapEnvelope(CreateTaskHandlerReqDTO dto) { 
+            string envelopeTemplate = SOAPHelper.LoadSoapEnvelopeTemplate("<ProjectName>.SoapEnvelopes.CreateTask.xml"); 
+            return envelopeTemplate.Replace("{{SessionId}}", SOAPHelper.GetValueOrEmpty(dto.SessionId)).Replace("{{TaskIdElement}}", SOAPHelper.GetElementOrEmpty("ns:TaskId", dto.TaskId)).Replace("{{DescriptionElement}}", SOAPHelper.GetElementOrEmpty("ns:Description", dto.Description)); 
+        }
+    } 
+}
 ```
+
+**🔴 CRITICAL:** The mapping from DTO to SOAP envelope is in a separate private method `MapDtoToSoapEnvelope()`. All mapping/transformation logic MUST be in separate private methods, NOT directly in the `Handle()` method.
 
 **⚠️ CustomSoapClient Pattern:**
 - **Location:** `Helpers/CustomSoapClient.cs` (YOU MUST CREATE - NOT in Framework)
@@ -1616,7 +1936,7 @@ namespace <ProjectName>.Implementations.<Vendor>.AtomicHandlers { public class C
 - **SOAPHelper:** Static utility → Loads templates, deserializes responses, helper methods → NO HTTP calls
 - **Workflow:** Atomic Handler uses `SOAPHelper.LoadSoapEnvelopeTemplate()` → Builds envelope → Calls `CustomSoapClient.ExecuteCustomSoapRequestAsync()`
 
-## 11. FOLDER STRUCTURE & NAMING
+## 12. FOLDER STRUCTURE & NAMING
 
 **Folder:**
 ```
@@ -1626,14 +1946,25 @@ DTO/AtomicHandlerDTOs/<Feature>AtomicHandlerReqDTO.cs
 
 **Naming:** Class=`<Feature>AtomicHandler` | File=match class | RequestDTO=`<Feature>ReqDTO` or `<Feature>HandlerReqDTO` | Method=`Handle` (FIXED) | OperationName=descriptive (for logging/timing)
 
-## 12. VALIDATION PATTERNS
+## 13. VALIDATION PATTERNS
 ```csharp
-public void ValidateDownStreamRequestParameters() { List<string> errors = new List<string>(); if (string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId is required"); if (!string.IsNullOrWhiteSpace(Email) && !Email.Contains("@")) errors.Add("Invalid email"); if (Age < 0 || Age > 150) errors.Add("Age must be 0-150"); if (Items == null || Items.Count == 0) errors.Add("Items cannot be empty"); if (errors.Count > 0) throw new RequestValidationFailureException(error: ("VAL_001", "Validation failed"), errorDetails: errors, stepName: $"{GetType().Name} / ValidateDownStreamRequestParameters"); }
+public void ValidateDownStreamRequestParameters() {
+    List<string> errors = new List<string>();
+    if (string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId is required");
+    if (!string.IsNullOrWhiteSpace(Email) && !Email.Contains("@")) errors.Add("Invalid email");
+    if (Age < 0 || Age > 150) errors.Add("Age must be 0-150");
+    if (Items == null || Items.Count == 0) errors.Add("Items cannot be empty");
+    if (errors.Count > 0)
+        throw new RequestValidationFailureException(
+            errorDetails: errors,
+            stepName: $"{GetType().Name}.cs / Executing ValidateDownStreamRequestParameters"
+        );
+}
 ```
 
 **Null Checks:** Cast: `GetEntityReqDTO dto = request as GetEntityReqDTO ?? throw new ArgumentException("Invalid DTO")` | Collection: `if (request.Items == null || request.Items.Count == 0)` | String: `if (string.IsNullOrWhiteSpace(request.Desc))`
 
-## 13. DO'S & DON'TS
+## 14. DO'S & DON'TS
 
 ### ✅ DO
 - Use `IDownStreamRequestDTO` interface parameter in Handle() | Cast to concrete type (first line) with null check | Call `ValidateDownStreamRequestParameters()` (second line)
@@ -1641,14 +1972,18 @@ public void ValidateDownStreamRequestParameters() { List<string> errors = new Li
 - Inject IOptions<AppConfigs>, ILogger via constructor | Extract `.Value` from IOptions<AppConfigs> | Register concrete class in Program.cs: `AddScoped<ConcreteClass>()`
 - Use Core.Extensions logging (`_logger.Info()`, `_logger.Error()`) | Create AuthenticateAtomicHandler+LogoutAtomicHandler for auth (if session-based)
 - Log before and after external call | Include all required using statements (Core.SystemLayer.DTOs is CRITICAL) | **Use OperationNames.* constants for operationName parameter (NEVER string literals)**
+- **🔴 CRITICAL: If mapping/transformation occurs, use separate private method** - All mapping/transformation logic (DTO to SOAP envelope, DTO to request body, field transformations) MUST be in separate private methods within the same Atomic Handler class
+- **🔴 CRITICAL: ALL reading from RequestContext, KeyVault, and AppConfigs MUST be done in Atomic Handlers** - Handlers should NOT read from these sources, only pass business data via DTOs
 
 ### ❌ DON'T
 - DON'T use concrete type in Handle() signature (won't compile) | DON'T forget cast or validation | DON'T throw for HTTP errors (return HttpResponseSnapshot)
 - DON'T make multiple external calls | DON'T expose AuthenticateAtomicHandler/LogoutAtomicHandler as Azure Functions
 - DON'T use `_logger.LogInformation()` (use `_logger.Info()`) | DON'T create custom HttpClient | DON'T forget Program.cs registration
 - DON'T register with interface (use concrete) | DON'T forget `using Core.SystemLayer.DTOs;` | DON'T place DTO in wrong folder | **DON'T use string literals for operationName parameter (use OperationNames.* constants)**
+- **🔴 CRITICAL: DON'T perform mapping/transformation directly in Handle() method** - All mapping/transformation logic must be in separate private methods
+- **🔴 CRITICAL: DON'T read from RequestContext, KeyVault, or AppConfigs in Handlers** - All reading from these sources MUST be done in Atomic Handlers only
 
-## 14. COMMON ERRORS & FIXES
+## 15. COMMON ERRORS & FIXES
 
 | Error | Cause | Fix |
 |-------|-------|-----|
@@ -1677,8 +2012,10 @@ public void ValidateDownStreamRequestParameters() { List<string> errors = new Li
 - [ ] Logging uses `_logger.Info()`, `_logger.Error()` (NOT `_logger.LogInformation()`)
 - [ ] Located in correct folder: `Implementations/<Vendor>/AtomicHandlers/` (FLAT, NO subfolders)
 - [ ] **operationName uses OperationNames.* constant (NOT string literal)**
+- [ ] **🔴 CRITICAL: If mapping/transformation occurs, it is in a separate private method** (mapping logic not directly in Handle() method)
+- [ ] **🔴 CRITICAL: All reading from RequestContext, KeyVault, and AppConfigs is done in Atomic Handler** (NOT in Handlers or Functions)
 
-## 16. KEY INVARIANTS (NEVER VIOLATE)
+## 17. KEY INVARIANTS (NEVER VIOLATE)
 1. **ONE CALL RULE:** Atomic Handler = EXACTLY ONE external call
 2. **INTERFACE PARAMETER:** Handle() MUST use `IDownStreamRequestDTO` (NOT concrete type)
 3. **CAST + VALIDATE:** ALWAYS cast (line 1) + validate (line 2)
@@ -1690,6 +2027,8 @@ public void ValidateDownStreamRequestParameters() { List<string> errors = new Li
 9. **DTO INTERFACE:** All atomic handler DTOs MUST implement IDownStreamRequestDTO
 10. **VALIDATION METHOD:** All DTOs MUST have ValidateDownStreamRequestParameters()
 11. **OPERATION NAMES:** ALWAYS use OperationNames.* constants for operationName parameter (NEVER string literals)
+12. **MAPPING/TRANSFORMATION:** If mapping/transformation occurs, it MUST be in a separate private method within the same Atomic Handler class (NOT directly in Handle() method)
+13. **CONFIGURATION & CONTEXT READING:** ALL reading from RequestContext, KeyVault, and AppConfigs MUST be done in Atomic Handlers (NOT in Handlers or Functions) - Atomic Handlers make SOR calls and need these values for authentication, URLs, and configuration
 
 
 
@@ -1701,7 +2040,7 @@ public void ValidateDownStreamRequestParameters() { List<string> errors = new Li
 **🚨 BEFORE CREATING:** Read ALL rules in this section before creating DTOs. Verify interface implementation (IRequestSysDTO for *ReqDTO, IDownStreamRequestDTO for *HandlerReqDTO), folder locations, and validation methods.
 
 **🚨 AGENT ALERT - COMMONLY MISSED:**
-- ✅ ALL *ReqDTO in HandlerDTOs/ MUST implement `IRequestSysDTO`
+- ✅ ALL *ReqDTO in entity DTO directories MUST implement `IRequestSysDTO`
 - ✅ ALL *HandlerReqDTO in AtomicHandlerDTOs/ MUST implement `IDownStreamRequestDTO`
 - ❌ NEVER skip interface implementation - causes runtime failures
 
@@ -1709,8 +2048,8 @@ public void ValidateDownStreamRequestParameters() { List<string> errors = new Li
 
 | Type | Purpose | Location | Interface (MANDATORY) | Validation Method | Example |
 |------|---------|----------|----------------------|-------------------|---------|
-| ReqDTO | API request | `HandlerDTOs/<Feature>/` | ✅ **IRequestSysDTO** | ValidateAPIRequestParameters() | GetEntityReqDTO |
-| ResDTO | API response | `HandlerDTOs/<Feature>/` | ❌ NONE | static Map(ApiResDTO) | GetEntityResDTO |
+| ReqDTO | API request | `<Entity>DTO/` (directly under DTO/) | ✅ **IRequestSysDTO** | ValidateAPIRequestParameters() | GetEntityReqDTO |
+| ResDTO | API response | `<Entity>DTO/` (directly under DTO/) | ❌ NONE | static Map(ApiResDTO) | GetEntityResDTO |
 | HandlerReqDTO | Atomic input | `AtomicHandlerDTOs/` (FLAT) | ✅ **IDownStreamRequestDTO** | ValidateDownStreamRequestParameters() | GetEntityHandlerReqDTO |
 | ApiResDTO | External response | `DownstreamDTOs/` | ❌ NONE | - | GetEntityApiResDTO |
 
@@ -1718,14 +2057,18 @@ public void ValidateDownStreamRequestParameters() { List<string> errors = new Li
 
 ```
 DTO/
-├── HandlerDTOs/                           # Feature subfolders (GetEntityDetailDTO/, CreateRecordDTO/)
-│   └── <Feature>DTO/                      # *ReqDTO.cs, *ResDTO.cs
-├── AtomicHandlerDTOs/                     # FLAT (SIBLING of HandlerDTOs/) - *HandlerReqDTO.cs
+├── GetEntityDetailDTO/                    # Entity-related directory
+│   ├── GetEntityDetailReqDTO.cs
+│   └── GetEntityDetailResDTO.cs
+├── CreateRecordDTO/                       # Entity-related directory
+│   ├── CreateRecordReqDTO.cs
+│   └── CreateRecordResDTO.cs
+├── AtomicHandlerDTOs/                     # FLAT - *HandlerReqDTO.cs
 └── DownstreamDTOs/                        # ALL *ApiResDTO.cs here (FLAT)
     └── Common/                            # OPTIONAL: Only if shared nested objects across multiple ApiResDTO
 ```
 
-**🔴 CRITICAL:** AtomicHandlerDTOs/ is SIBLING of HandlerDTOs/ (NOT subfolder) | AtomicHandlerDTOs/ is FLAT (NO subfolders) | Common/ is OPTIONAL
+**🔴 CRITICAL:** Entity DTO directories directly under DTO/ (NO HandlerDTOs/ intermediate folder) | AtomicHandlerDTOs/ is FLAT (NO subfolders) | Common/ is OPTIONAL
 
 ## 3. INTERFACE IMPLEMENTATION (MANDATORY - AGENT COMMONLY MISSES THIS)
 
@@ -1733,12 +2076,12 @@ DTO/
 
 | DTO Location | MUST Implement Interface | Validation Method | Example |
 |--------------|-------------------------|-------------------|---------|
-| **HandlerDTOs/** (*ReqDTO.cs) | `IRequestSysDTO` | `ValidateAPIRequestParameters()` | `public class GetEntityReqDTO : IRequestSysDTO` |
+| **Entity DTO Directories/** (*ReqDTO.cs) | `IRequestSysDTO` | `ValidateAPIRequestParameters()` | `public class GetEntityReqDTO : IRequestSysDTO` |
 | **AtomicHandlerDTOs/** (*HandlerReqDTO.cs) | `IDownStreamRequestDTO` | `ValidateDownStreamRequestParameters()` | `public class GetEntityHandlerReqDTO : IDownStreamRequestDTO` |
-| **HandlerDTOs/** (*ResDTO.cs) | NONE | `static Map(ApiResDTO)` | `public class GetEntityResDTO` (no interface) |
+| **Entity DTO Directories/** (*ResDTO.cs) | NONE | `static Map(ApiResDTO)` | `public class GetEntityResDTO` (no interface) |
 | **DownstreamDTOs/** (*ApiResDTO.cs) | NONE | NONE | `public class GetEntityApiResDTO` (no interface) |
 
-**⚠️ AGENT ALERT:** ALL *ReqDTO in HandlerDTOs/ MUST implement `IRequestSysDTO` | ALL *HandlerReqDTO in AtomicHandlerDTOs/ MUST implement `IDownStreamRequestDTO`
+**⚠️ AGENT ALERT:** ALL *ReqDTO in entity DTO directories MUST implement `IRequestSysDTO` | ALL *HandlerReqDTO in AtomicHandlerDTOs/ MUST implement `IDownStreamRequestDTO`
 
 **Why This Matters:**
 - ✅ Enables polymorphic handling in framework
@@ -1771,7 +2114,15 @@ namespace Cache.DTO { public interface ICacheable { IDictionary<PropertyInfo, ob
 ```csharp
 using Cache.DTO; using Core.SystemLayer.DTOs; using System.Reflection;
 public class GetEntityReqDTO : IRequestSysDTO, ICacheable { public string EntityId { get; set; } = string.Empty; public bool IncludeInactive { get; set; }
-    public void ValidateAPIRequestParameters() { List<string> errors = new List<string>(); if (string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId required"); if (errors.Count > 0) throw new RequestValidationFailureException() { ErrorProperties = errors }; }
+    public void ValidateAPIRequestParameters() {
+        List<string> errors = new List<string>();
+        if (string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId required");
+        if (errors.Count > 0)
+            throw new RequestValidationFailureException(
+                errorDetails: errors,
+                stepName: "GetEntityReqDTO.cs / Executing ValidateAPIRequestParameters"
+            );
+    }
     public IDictionary<PropertyInfo, object> GetCacheKey() { return new Dictionary<PropertyInfo, object> { { GetType().GetProperty(nameof(EntityId))!, EntityId }, { GetType().GetProperty(nameof(IncludeInactive))!, IncludeInactive } }; }
 }
 ```
@@ -1780,7 +2131,15 @@ public class GetEntityReqDTO : IRequestSysDTO, ICacheable { public string Entity
 ```csharp
 using Cache.DTO; using Core.SystemLayer.DTOs; using System.Reflection;
 public class GetLOVHandlerReqDTO : IDownStreamRequestDTO, ICacheable { public string LOVType { get; set; } = string.Empty; public string Username { get; set; } = string.Empty; public string Password { get; set; } = string.Empty;
-    public void ValidateDownStreamRequestParameters() { List<string> errors = new List<string>(); if (string.IsNullOrWhiteSpace(LOVType)) errors.Add("LOVType required"); if (errors.Count > 0) throw new RequestValidationFailureException(error: ("VAL_001", "Validation failed"), errorDetails: errors, stepName: "GetLOVHandlerReqDTO/Validate"); }
+    public void ValidateDownStreamRequestParameters() {
+        List<string> errors = new List<string>();
+        if (string.IsNullOrWhiteSpace(LOVType)) errors.Add("LOVType required");
+        if (errors.Count > 0)
+            throw new RequestValidationFailureException(
+                errorDetails: errors,
+                stepName: "GetLOVHandlerReqDTO.cs / Executing ValidateDownStreamRequestParameters"
+            );
+    }
     public IDictionary<PropertyInfo, object> GetCacheKey() { return new Dictionary<PropertyInfo, object> { { GetType().GetProperty(nameof(LOVType))!, LOVType } }; } // Only LOVType affects cache
 }
 ```
@@ -1792,29 +2151,35 @@ public class GetLOVHandlerReqDTO : IDownStreamRequestDTO, ICacheable { public st
 
 **Pattern:** `<Operation><Type>` where Type = ReqDTO | ResDTO | HandlerReqDTO | ApiResDTO  
 **Examples:** GetEntityReqDTO, GetEntityResDTO, GetEntityHandlerReqDTO, GetEntityApiResDTO  
-**Rule:** ApiResDTO suffix ONLY for files in DownstreamDTOs/ | NEVER use ApiResDTO in HandlerDTOs/ or AtomicHandlerDTOs/
+**Rule:** ApiResDTO suffix ONLY for files in DownstreamDTOs/ | NEVER use ApiResDTO in entity DTO directories or AtomicHandlerDTOs/
 
 ## 6. INTERFACE DEFINITIONS & EXAMPLES
 
 ### IRequestSysDTO (Core.SystemLayer.DTOs)
 ```csharp
 public interface IRequestSysDTO { void ValidateAPIRequestParameters(); }
-// Implementation: public class GetEntityReqDTO : IRequestSysDTO { public string EntityId {get;set;}=string.Empty; public void ValidateAPIRequestParameters() { List<string> errors=new List<string>(); if(string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId required"); if(errors.Count>0) throw new RequestValidationFailureException(){ErrorProperties=errors}; } }
+// Implementation: public class GetEntityReqDTO : IRequestSysDTO { public string EntityId {get;set;}=string.Empty; public void ValidateAPIRequestParameters() { List<string> errors=new List<string>(); if(string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId required"); if(errors.Count>0) throw new RequestValidationFailureException(errorDetails:errors, stepName:"GetEntityReqDTO.cs / Executing ValidateAPIRequestParameters"); } }
 ```
 
 ### IDownStreamRequestDTO (Core.SystemLayer.DTOs)
 ```csharp
 public interface IDownStreamRequestDTO { void ValidateDownStreamRequestParameters(); }
-// Implementation: public class GetEntityHandlerReqDTO : IDownStreamRequestDTO { public string EntityId {get;set;}=string.Empty; public void ValidateDownStreamRequestParameters() { List<string> errors=new List<string>(); if(string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId required"); if(errors.Count>0) throw new RequestValidationFailureException(error:("VAL_001","Validation failed"),errorDetails:errors,stepName:"GetEntityHandlerReqDTO/Validate"); } }
+// Implementation: public class GetEntityHandlerReqDTO : IDownStreamRequestDTO { public string EntityId {get;set;}=string.Empty; public void ValidateDownStreamRequestParameters() { List<string> errors=new List<string>(); if(string.IsNullOrWhiteSpace(EntityId)) errors.Add("EntityId required"); if(errors.Count>0) throw new RequestValidationFailureException(errorDetails:errors,stepName:"GetEntityHandlerReqDTO.cs / Executing ValidateDownStreamRequestParameters"); } }
 ```
 
 ## 7. VALIDATION PATTERNS
+
+**🔴 CRITICAL - DTO Validation Exception Pattern:**
+- **DTOs MUST use Core Framework default error** - Do NOT provide `error` parameter
+- **Pattern:** `throw new RequestValidationFailureException(errorDetails: errors, stepName: "{ClassName}.cs / Executing {MethodName}");`
+- **Why:** Exception defaults to `ErrorCodes.REQ_VALIDATION_FAILURE` from Core Framework
+- **❌ WRONG:** `throw new RequestValidationFailureException(error: ("VAL_001", "Validation failed"), ...)` - Custom error constants NOT allowed in DTOs
 
 **Required:** `if (string.IsNullOrWhiteSpace(Field)) errors.Add("msg");`  
 **Format:** `if (!Email.Contains("@")) errors.Add("msg");` | `if (!DateTime.TryParse(Date, out _)) errors.Add("msg");`  
 **Range:** `if (Age < 0 || Age > 150) errors.Add("msg");` | `if (Desc.Length > 500) errors.Add("msg");`  
 **Collection:** `if (Items == null || Items.Count == 0) errors.Add("msg");` | `if (Items.Count > 100) errors.Add("msg");`  
-**Throw:** `if (errors.Count > 0) throw new RequestValidationFailureException() { ErrorProperties = errors };`
+**Throw:** `if (errors.Count > 0) throw new RequestValidationFailureException(errorDetails: errors, stepName: "{ClassName}.cs / Executing {MethodName}");`
 
 ## 8. PROPERTY INITIALIZATION
 
@@ -1827,7 +2192,7 @@ public interface IDownStreamRequestDTO { void ValidateDownStreamRequestParameter
 
 ```csharp
 using <NS>.DTO.DownstreamDTOs;
-namespace <NS>.DTO.HandlerDTOs.GetEntityDetailDTO { public class GetEntityDetailResDTO { public string EntityId { get; set; } = string.Empty; public string Name { get; set; } = string.Empty;
+namespace <NS>.DTO.GetEntityDetailDTO { public class GetEntityDetailResDTO { public string EntityId { get; set; } = string.Empty; public string Name { get; set; } = string.Empty;
     public static GetEntityDetailResDTO Map(GetEntityDetailApiResDTO apiRes) { return new GetEntityDetailResDTO { EntityId = apiRes.Id ?? string.Empty, Name = apiRes.Name ?? string.Empty }; } } }
 ```
 
@@ -1837,7 +2202,7 @@ namespace <NS>.DTO.HandlerDTOs.GetEntityDetailDTO { public class GetEntityDetail
 
 ## 10. ApiResDTO RULES
 
-**Location:** ONLY in `DTO/DownstreamDTOs/` | NEVER in HandlerDTOs/ or AtomicHandlerDTOs/  
+**Location:** ONLY in `DTO/DownstreamDTOs/` | NEVER in entity DTO directories or AtomicHandlerDTOs/  
 **Purpose:** Deserialize external API responses | Matches EXACT external API structure (their naming, their fields)  
 **Nullable:** All properties nullable (external API may return null)  
 **Template:**
@@ -1855,7 +2220,7 @@ namespace <NS>.DTO.DownstreamDTOs {
 ## 11. DTO FLOW
 
 ```
-External API → Deserialize → [ApiResDTO] (DownstreamDTOs/) → Map → [ResDTO] (HandlerDTOs/) → Wrap in BaseResponseDTO → Client
+External API → Deserialize → [ApiResDTO] (DownstreamDTOs/) → Map → [ResDTO] (Entity DTO directories) → Wrap in BaseResponseDTO → Client
 ```
 
 **Handler Pattern:**
@@ -1893,8 +2258,8 @@ return new BaseResponseDTO(data: AddEmergencyContactResDTO.Map(addData, countrie
 
 | Mistake | Fix |
 |---------|-----|
-| ❌ ApiResDTO in HandlerDTOs/ | ✅ Move to DownstreamDTOs/ |
-| ❌ AtomicHandlerDTOs/ under HandlerDTOs/ | ✅ Make SIBLING at DTO/ level |
+| ❌ ApiResDTO in entity DTO directories | ✅ Move to DownstreamDTOs/ |
+| ❌ HandlerDTOs/ intermediate folder | ✅ Remove - entity directories directly under DTO/ |
 | ❌ Subfolders in AtomicHandlerDTOs/ | ✅ FLAT structure only |
 | ❌ Return ApiResDTO to client | ✅ Map to ResDTO first |
 | ❌ ReqDTO missing IRequestSysDTO | ✅ Implement interface + ValidateAPIRequestParameters() |
@@ -1904,23 +2269,23 @@ return new BaseResponseDTO(data: AddEmergencyContactResDTO.Map(addData, countrie
 
 ## 15. VERIFICATION CHECKLIST
 
-**ReqDTO:** [ ] IRequestSysDTO | [ ] ValidateAPIRequestParameters() | [ ] RequestValidationFailureException | [ ] HandlerDTOs/<Feature>/ | [ ] *ReqDTO suffix | [ ] string.Empty init | [ ] ICacheable if cacheable  
-**ResDTO:** [ ] static Map() method | [ ] Accepts ApiResDTO | [ ] HandlerDTOs/<Feature>/ | [ ] *ResDTO suffix | [ ] string.Empty init  
-**HandlerReqDTO:** [ ] IDownStreamRequestDTO | [ ] ValidateDownStreamRequestParameters() | [ ] RequestValidationFailureException | [ ] AtomicHandlerDTOs/ (FLAT, SIBLING) | [ ] *HandlerReqDTO suffix | [ ] ICacheable if cacheable  
+**ReqDTO:** [ ] IRequestSysDTO | [ ] ValidateAPIRequestParameters() | [ ] RequestValidationFailureException | [ ] <Entity>DTO/ directory (directly under DTO/) | [ ] *ReqDTO suffix | [ ] string.Empty init | [ ] ICacheable if cacheable  
+**ResDTO:** [ ] static Map() method | [ ] Accepts ApiResDTO | [ ] <Entity>DTO/ directory (directly under DTO/) | [ ] *ResDTO suffix | [ ] string.Empty init  
+**HandlerReqDTO:** [ ] IDownStreamRequestDTO | [ ] ValidateDownStreamRequestParameters() | [ ] RequestValidationFailureException | [ ] AtomicHandlerDTOs/ (FLAT) | [ ] *HandlerReqDTO suffix | [ ] ICacheable if cacheable  
 **ApiResDTO:** [ ] DownstreamDTOs/ ONLY | [ ] *ApiResDTO suffix | [ ] Matches external API structure | [ ] NEVER returned directly | [ ] Properties nullable  
 **Cacheable DTOs:** [ ] ICacheable implemented | [ ] GetCacheKey() returns IDictionary<PropertyInfo, object> | [ ] Cache key includes all relevant properties | [ ] Excludes security props (Username, Password, SessionId)
 
 ## 16. DO'S & DON'TS
 
-**✅ DO:** Implement IRequestSysDTO (ReqDTO) & IDownStreamRequestDTO (HandlerReqDTO) | Validate all required fields | Throw RequestValidationFailureException | Use ReqDTO/ResDTO/HandlerReqDTO/ApiResDTO suffixes | Place ReqDTO/ResDTO in HandlerDTOs/<Feature>/ | Place HandlerReqDTO in AtomicHandlerDTOs/ (FLAT, SIBLING) | Place ApiResDTO in DownstreamDTOs/ | Create static Map() in ResDTO | Map ApiResDTO→ResDTO before returning | Return ResDTO in BaseResponseDTO | Init strings with string.Empty | Init collections with new List<>() | Use null-coalescing (??) in Map() | Collect all errors before throwing | Create Common/ only if shared nested objects | Implement ICacheable for cacheable operations  
-**❌ DON'T:** Place ApiResDTO outside DownstreamDTOs/ | Place AtomicHandlerDTOs/ as subfolder of HandlerDTOs/ | Create subfolders in AtomicHandlerDTOs/ | Return ApiResDTO to client | Use ApiResDTO suffix for non-external DTOs | Forget IRequestSysDTO or IDownStreamRequestDTO | Forget ValidateAPIRequestParameters() or ValidateDownStreamRequestParameters() | Forget Map() in ResDTO | Throw on first error | Use ambiguous DTO names | Init nullable properties with non-null values | Include security props in cache key
+**✅ DO:** Implement IRequestSysDTO (ReqDTO) & IDownStreamRequestDTO (HandlerReqDTO) | Validate all required fields | Throw RequestValidationFailureException | Use ReqDTO/ResDTO/HandlerReqDTO/ApiResDTO suffixes | Place ReqDTO/ResDTO in <Entity>DTO/ directories (directly under DTO/) | Place HandlerReqDTO in AtomicHandlerDTOs/ (FLAT) | Place ApiResDTO in DownstreamDTOs/ | Create static Map() in ResDTO | Map ApiResDTO→ResDTO before returning | Return ResDTO in BaseResponseDTO | Init strings with string.Empty | Init collections with new List<>() | Use null-coalescing (??) in Map() | Collect all errors before throwing | Create Common/ only if shared nested objects | Implement ICacheable for cacheable operations  
+**❌ DON'T:** Place ApiResDTO outside DownstreamDTOs/ | Create HandlerDTOs/ intermediate folder | Create subfolders in AtomicHandlerDTOs/ | Return ApiResDTO to client | Use ApiResDTO suffix for non-external DTOs | Forget IRequestSysDTO or IDownStreamRequestDTO | Forget ValidateAPIRequestParameters() or ValidateDownStreamRequestParameters() | Forget Map() in ResDTO | Throw on first error | Use ambiguous DTO names | Init nullable properties with non-null values | Include security props in cache key
 
 ## 17. KEY INVARIANTS (NEVER VIOLATE)
 
 1. **ALL ReqDTO implement IRequestSysDTO**
 2. **ALL HandlerReqDTO implement IDownStreamRequestDTO**
 3. **ALL ApiResDTO in DownstreamDTOs/ ONLY**
-4. **AtomicHandlerDTOs/ is SIBLING of HandlerDTOs/ (NOT subfolder)**
+4. **Entity DTO directories directly under DTO/** - NO HandlerDTOs/ intermediate folder
 5. **AtomicHandlerDTOs/ is FLAT (NO subfolders)**
 6. **ALL ResDTO have static Map() method**
 7. **NEVER return ApiResDTO to client**
@@ -2117,34 +2482,55 @@ All appsettings files (base and environment-specific) MUST include ONLY these EX
 
 ## 7. ErrorConstants.cs (MANDATORY)
 
-### Error Code Format
+### Error Code Format (SYSTEM LAYER)
+
+**🔴 CRITICAL:** System Layer error constants use THIS format. Process Layer uses different format.
+
 ```
-Format: VENDOR_OPERATION_NUMBER
-├── VENDOR: 3 uppercase chars (SYS, VDA, VDB, VDC)
-├── OPERATION: Max 7 uppercase chars, abbreviated (AUTHENT, TSKCRT, LOCGET)
-└── NUMBER: 4 digits (0001, 0002, 0003)
+Format: AAA_AAAAAA_DDDD
+├── AAA: SOR abbreviation - 3 uppercase characters only (SOR identifier: SYS, VDA, VDB, VDC, or SOR-specific like EMAIL, etc.)
+├── AAAAAA: Operation name abbreviation - 6 uppercase characters only (AUTHEN, TSKCRT, LOCGET, APTCRE)
+└── DDDD: Error series number - 4 digits only (0001, 0002, 0003)
 ```
 
+**⚠️ DIFFERENCE FROM PROCESS LAYER:**
+- **System Layer:** `AAA_AAAAAA_DDDD` (AAA = 3 chars, AAAAAA = 6 chars, DDDD = 4 digits)
+- **Process Layer:** `VENDOR_OPERAT_0001` (OPERAT = 6 chars, less abbreviated)
+- **System Layer AAA:** Uses SOR identifier (3 uppercase characters representing the system)
+
 ### Operation Abbreviation Guide
-| Full Operation | Abbreviated | Full Operation | Abbreviated | Full Operation | Abbreviated |
-|----------------|-------------|----------------|-------------|----------------|-------------|
-| GetEntityDetail | DTLGET | CreateRequest | REQCRT | GetTasks | TSKGET/TSKCHK |
+| Full Operation | Abbreviated (6 chars) | Full Operation | Abbreviated (6 chars) | Full Operation | Abbreviated (6 chars) |
+|----------------|----------------------|----------------|----------------------|----------------|----------------------|
+| GetEntityDetail | ENTDTL | CreateRequest | REQCRT | GetTasks | TSKGET |
 | GetLocation | LOCGET | GetSettings | SETGET | CreateTask | TSKCRT |
-| Authenticate | AUTHENT/AUTH | Logout | LOGOUT | GetCustomer | CUSTGET |
+| Authenticate | AUTHEN | Logout | LOGOUT | GetCustomer | CUSTGET |
 | CreateOrder | ORDCRT | UpdateInventory | INVUPD | DeleteRecord | RECDEL |
+| CheckTaskExists | TSKCHK | GetInstruction | INSTGT | UpdateEntity | ENTUPD |
 
 ### ErrorConstants.cs Template
 ```csharp
-namespace <NS>.Constants { public class ErrorConstants { public static readonly (string ErrorCode, string Message) SYS_AUTHENT_0001 = ("SYS_AUTHENT_0001", "Authentication to external system failed."); public static readonly (string ErrorCode, string Message) SYS_AUTHENT_0002 = ("SYS_AUTHENT_0002", "Authentication succeeded but no SessionId returned."); public static readonly (string ErrorCode, string Message) SYS_LOGOUT_0001 = ("SYS_LOGOUT_0001", "Failed to logout from session."); public static readonly (string ErrorCode, string Message) SYS_TSKCHK_0001 = ("SYS_TSKCHK_0001", "Failed to check existing tasks in external system."); public static readonly (string ErrorCode, string Message) SYS_TSKCRT_0001 = ("SYS_TSKCRT_0001", "Failed to create task in external system."); public static readonly (string ErrorCode, string Message) SYS_TSKCRT_0002 = ("SYS_TSKCRT_0002", "Task already exists in external system."); public static readonly (string ErrorCode, string Message) SYS_LOCGET_0001 = ("SYS_LOCGET_0001", "Failed to get location details from external system."); public static readonly (string ErrorCode, string Message) SYS_LOCGET_0002 = ("SYS_LOCGET_0002", "Location not found for given identifier."); public static readonly (string ErrorCode, string Message) SYS_SETGET_0001 = ("SYS_SETGET_0001", "Failed to get settings from external system."); public static readonly (string ErrorCode, string Message) SYS_SETGET_0002 = ("SYS_SETGET_0002", "Settings not found for given category."); public static readonly (string ErrorCode, string Message) SYS_DTLGET_0001 = ("SYS_DTLGET_0001", "Failure to get entity details from external system."); public static readonly (string ErrorCode, string Message) SYS_DTLGET_0002 = ("SYS_DTLGET_0002", "Entity detail not found for given entity number."); public static readonly (string ErrorCode, string Message) SYS_RECCRT_0001 = ("SYS_RECCRT_0001", "Failed to create record in external system."); public static readonly (string ErrorCode, string Message) SYS_RECUPD_0001 = ("SYS_RECUPD_0001", "Failed to update record in external system."); } }
+namespace <NS>.Constants { 
+    public class ErrorConstants { 
+        // Format: AAA_AAAAAA_DDDD
+        // AAA = SOR abbreviation (3 chars): SYS, VDA, VDB, VDC, EMAIL, etc.
+        // AAAAAA = Operation abbreviation (6 chars): AUTHEN, TSKCRT, LOCGET, APTCRE, etc.
+        // DDDD = Error series number (4 digits): 0001, 0002, 0003, etc.
+        
+        public static readonly (string ErrorCode, string Message) SYS_AUTHEN_0001 = ("SYS_AUTHEN_0001", "Authentication to external system failed."); 
+        public static readonly (string ErrorCode, string Message) SYS_TSKCRT_0001 = ("SYS_TSKCRT_0001", "Failed to create task in external system."); 
+        public static readonly (string ErrorCode, string Message) SYS_LOCGET_0001 = ("SYS_LOCGET_0001", "Failed to get location details from external system."); 
+        public static readonly (string ErrorCode, string Message) SYS_RECUPD_0001 = ("SYS_RECUPD_0001", "Failed to update record in external system."); 
+    } 
+}
 ```
 
 ### Usage Examples
 ```csharp
 // DownStreamApiFailureException
-if (!response.IsSuccessStatusCode) throw new DownStreamApiFailureException(statusCode:(HttpStatusCode)response.StatusCode, error:ErrorConstants.SYS_AUTHENT_0001, errorDetails:[$"Login API returned {response.StatusCode}"], stepName:"AuthenticateAtomicHandler.cs/Handle");
+if (!response.IsSuccessStatusCode) throw new DownStreamApiFailureException(statusCode:(HttpStatusCode)response.StatusCode, error:ErrorConstants.SYS_AUTHEN_0001, errorDetails:[$"Login API returned {response.StatusCode}"], stepName:"AuthenticateAtomicHandler.cs/Handle");
 
 // NoResponseBodyException
-if (apiResponse==null) throw new NoResponseBodyException(error:ErrorConstants.SYS_AUTHENT_0002, errorDetails:["Expected SessionId but received null"], stepName:"AuthenticateAtomicHandler.cs/Handle");
+if (apiResponse==null) throw new NoResponseBodyException(error:ErrorConstants.SYS_AUTHEN_0002, errorDetails:["Expected SessionId but received null"], stepName:"AuthenticateAtomicHandler.cs/Handle");
 
 // NotFoundException
 if (entityData==null||entityData.EntityId==0) throw new NotFoundException(error:ErrorConstants.SYS_ENTGET_0002, errorDetails:[$"No entity found for Code: {request.EntityCode}"], stepName:"GetEntityHandler.cs/HandleAsync");
@@ -2158,7 +2544,14 @@ if (entityData==null||entityData.EntityId==0) throw new NotFoundException(error:
 
 **Template:**
 ```csharp
-namespace <NS>.Constants { public class InfoConstants { public const string SUCCESS = "Operation completed successfully."; public const string OPERATION_SUCCESS = "Operation completed successfully."; public const string LOGIN_SUCCESS = "Login successful."; public const string LOGOUT_SUCCESS = "Logout successful."; public const string SESSION_CREATED = "Session created successfully."; public const string GET_ENTITY_SUCCESS = "Entity details retrieved successfully."; public const string GET_RECORD_SUCCESS = "Record retrieved successfully."; public const string CREATE_RECORD_SUCCESS = "Record created successfully."; public const string UPDATE_RECORD_SUCCESS = "Record updated successfully."; public const string DELETE_RECORD_SUCCESS = "Record deleted successfully."; public const string CREATE_TASK_SUCCESS = "Task created successfully."; public const string GET_TASK_SUCCESS = "Task retrieved successfully."; public const string UPDATE_TASK_SUCCESS = "Task updated successfully."; public const string GET_LOCATION_SUCCESS = "Location details retrieved successfully."; public const string GET_SETTINGS_SUCCESS = "Settings retrieved successfully."; public const string ADD_EMERGENCY_CONTACT_SUCCESS = "Emergency contact added successfully."; public const string GET_EMERGENCY_CONTACTS_SUCCESS = "Emergency contacts retrieved successfully."; public const string SESSION_ID = "SessionId"; public const string CORRELATION_ID = "CorrelationId"; public const string USER_ID = "UserId"; } }
+namespace <NS>.Constants { 
+    public class InfoConstants { 
+        public const string SUCCESS = "Operation completed successfully."; 
+        public const string GET_ENTITY_SUCCESS = "Entity details retrieved successfully."; 
+        public const string CREATE_TASK_SUCCESS = "Task created successfully."; 
+        public const string SESSION_ID = "SessionId"; 
+    } 
+}
 ```
 
 ### Usage Examples
@@ -2184,7 +2577,14 @@ string? sessionId = RequestContext.GetSessionId();
 
 **Template:**
 ```csharp
-namespace <NS>.Constants { public class OperationNames { public const string AUTHENTICATE = "AUTHENTICATE"; public const string LOGOUT = "LOGOUT"; public const string GET_ENTITY = "GET_ENTITY"; public const string GET_ENTITY_DETAIL = "GET_ENTITY_DETAIL"; public const string CREATE_ENTITY = "CREATE_ENTITY"; public const string UPDATE_ENTITY = "UPDATE_ENTITY"; public const string DELETE_ENTITY = "DELETE_ENTITY"; public const string CREATE_TASK = "CREATE_TASK"; public const string GET_TASK = "GET_TASK"; public const string UPDATE_TASK = "UPDATE_TASK"; public const string CHECK_TASK_EXISTS = "CHECK_TASK_EXISTS"; public const string GET_LOCATION = "GET_LOCATION"; public const string GET_LOCATION_DETAIL = "GET_LOCATION_DETAIL"; public const string GET_LOV = "GET_LOV"; public const string GET_COUNTRIES = "GET_COUNTRIES"; } }
+namespace <NS>.Constants { 
+    public class OperationNames { 
+        public const string AUTHENTICATE = "AUTHENTICATE"; 
+        public const string CREATE_TASK = "CREATE_TASK"; 
+        public const string GET_ENTITY_DETAIL = "GET_ENTITY_DETAIL"; 
+        public const string GET_LOCATION = "GET_LOCATION"; 
+    } 
+}
 ```
 
 ### Naming Convention
@@ -2233,7 +2633,7 @@ HttpResponseSnapshot response = await _soapClient.ExecuteCustomSoapRequestAsync(
 | Error Type | Location | Format | Example | Usage |
 |------------|----------|--------|---------|-------|
 | Framework | Core.Constants.ErrorCodes | COR_GENRIC_XXXX | COR_GENRIC_0002 | Generic errors (API failure, validation) |
-| System Layer | <Project>.Constants.ErrorConstants | VENDOR_OPERATION_XXXX | SYS_AUTHENT_0001 | SOR-specific errors |
+| System Layer | <Project>.Constants.ErrorConstants | AAA_AAAAAA_DDDD | SYS_AUTHEN_0001 | SOR-specific errors |
 
 **Framework Error Codes (DO NOT MODIFY - Reference Only):**
 ```
@@ -2289,9 +2689,9 @@ System Layer Error Code (Constants/ErrorConstants.cs):
 | ❌ Empty validate() method | ✅ Implement validation logic with error collection & throw |
 | ❌ Injecting AppConfigs directly | ✅ Inject `IOptions<AppConfigs>` then use `.Value` |
 | ❌ Hardcoded error messages | ✅ Use `ErrorConstants.SYS_XXX_XXXX` |
-| ❌ Wrong error code format | ✅ Follow `VENDOR_OPERATION_NUMBER` (3-7-4 format) |
-| ❌ Lowercase error codes | ✅ All uppercase (SYS_AUTHENT_0001) |
-| ❌ Full operation names | ✅ Abbreviate to max 7 chars (AUTHENT, TSKCRT) |
+| ❌ Wrong error code format | ✅ Follow `AAA_AAAAAA_DDDD` (3-6-4 format) |
+| ❌ Lowercase error codes | ✅ All uppercase (SYS_AUTHEN_0001) |
+| ❌ Full operation names | ✅ Abbreviate to exactly 6 chars (AUTHEN, TSKCRT) |
 | ❌ Secrets in appsettings.json | ✅ Empty in appsettings, retrieve from KeyVault |
 | ❌ Config class without "Configs" suffix | ✅ AppConfigs, KeyVaultConfigs |
 | ❌ Explicitly calling validate() in Program.cs | ✅ Automatic when accessed via IOptions<T>.Value |
@@ -2306,7 +2706,7 @@ System Layer Error Code (Constants/ErrorConstants.cs):
 - [ ] ConfigModels/ folder at root | [ ] AppConfigs.cs implements IConfigValidator | [ ] Static SectionName property | [ ] validate() method with logic (not empty) | [ ] KeyVaultConfigs.cs (if using KeyVault) | [ ] Registered with Configure<T>() in Program.cs | [ ] IOptions<T> injected (NOT direct) | [ ] Properties initialized with defaults
 
 ### Constants
-- [ ] Constants/ folder at root | [ ] ErrorConstants.cs exists | [ ] Error codes follow VENDOR_OPERATION_NUMBER | [ ] Vendor 3 uppercase chars | [ ] Operation max 7 uppercase chars (abbreviated) | [ ] Number 4 digits (0001, 0002) | [ ] Error constants in all exception throws | [ ] InfoConstants.cs exists | [ ] Success messages as const string | [ ] Info constants in BaseResponseDTO | [ ] OperationNames.cs exists | [ ] All operation names are const string | [ ] All names follow <VERB>_<ENTITY> uppercase pattern | [ ] NO string literals for operationName in HTTP client calls
+- [ ] Constants/ folder at root | [ ] ErrorConstants.cs exists | [ ] Error codes follow AAA_AAAAAA_DDDD format | [ ] SOR abbreviation (AAA) = 3 uppercase chars | [ ] Operation abbreviation (AAAAAA) = 6 uppercase chars (abbreviated) | [ ] Error series number (DDDD) = 4 digits (0001, 0002) | [ ] Error constants in all exception throws | [ ] InfoConstants.cs exists | [ ] Success messages as const string | [ ] Info constants in BaseResponseDTO | [ ] OperationNames.cs exists | [ ] All operation names are const string | [ ] All names follow <VERB>_<ENTITY> uppercase pattern | [ ] NO string literals for operationName in HTTP client calls
 
 ### appsettings.json
 - [ ] appsettings.json (placeholder) | [ ] appsettings.dev.json | [ ] appsettings.qa.json | [ ] appsettings.prod.json | [ ] ALL environment files have identical structure (same keys) | [ ] Only values differ between environments | [ ] Secrets empty in placeholder (retrieve from KeyVault) | [ ] Section names match SectionName properties | [ ] Environment-specific values in correct files | [ ] Logging section identical across all files (3 exact lines only)
@@ -2315,7 +2715,7 @@ System Layer Error Code (Constants/ErrorConstants.cs):
 
 ## 14. DO'S & DON'TS
 
-**✅ DO:** Create AppConfigs & KeyVaultConfigs | Implement IConfigValidator | Add static SectionName | Implement validate() with logic | Validate all required fields (URLs, timeouts, ranges) | Register with Configure<T>() | Inject with IOptions<T> | Initialize properties with defaults | Follow VENDOR_OPERATION_NUMBER format | Use 3-char uppercase vendor | Use max 7-char abbreviated operation | Use 4-digit number | Define error constants as readonly (string,string) tuple | Define info constants as const string | Create OperationNames.cs with const string for all operation names | Use OperationNames.* constants in all HTTP client calls | Use constants in all exceptions & responses | Store secrets in KeyVault | Create environment-specific appsettings with IDENTICAL structure | Use consistent structure across ALL environments (same keys, different values) | Ensure CI/CD pipeline replaces appsettings.json with environment-specific file
+**✅ DO:** Create AppConfigs & KeyVaultConfigs | Implement IConfigValidator | Add static SectionName | Implement validate() with logic | Validate all required fields (URLs, timeouts, ranges) | Register with Configure<T>() | Inject with IOptions<T> | Initialize properties with defaults | Follow AAA_AAAAAA_DDDD format | Use 3-char uppercase SOR abbreviation (AAA) | Use 6-char abbreviated operation (AAAAAA) | Use 4-digit error series number (DDDD) | Define error constants as readonly (string,string) tuple | Define info constants as const string | Create OperationNames.cs with const string for all operation names | Use OperationNames.* constants in all HTTP client calls | Use constants in all exceptions & responses | Store secrets in KeyVault | Create environment-specific appsettings with IDENTICAL structure | Use consistent structure across ALL environments (same keys, different values) | Ensure CI/CD pipeline replaces appsettings.json with environment-specific file
 
 **❌ DON'T:** Skip IConfigValidator | Forget static SectionName | Leave validate() empty | Inject AppConfigs directly | Hardcode error messages | Use string literals for operationName parameter | Use incorrect error code format | Store secrets in appsettings.json | Modify Core.Constants.ErrorCodes | Create config classes without "Configs" suffix | Explicitly call validate() in Program.cs | Use lowercase in error codes | Use full operation names | Use vendor prefix != 3 chars | Use number != 4 digits
 
@@ -2329,10 +2729,10 @@ System Layer Error Code (Constants/ErrorConstants.cs):
 4. **validate() called automatically when accessed via IOptions<T>.Value**
 5. **ALL configs registered with Configure<T>() in Program.cs**
 6. **ALWAYS inject IOptions<T> (NEVER config class directly)**
-7. **ALL error codes follow VENDOR_OPERATION_NUMBER format**
-8. **Vendor prefix MUST be 3 uppercase characters**
-9. **Operation name MUST be max 7 uppercase characters (abbreviated)**
-10. **Number MUST be 4 digits (0001, 0002, 0003)**
+7. **ALL error codes follow AAA_AAAAAA_DDDD format**
+8. **SOR abbreviation (AAA) MUST be exactly 3 uppercase characters**
+9. **Operation abbreviation (AAAAAA) MUST be exactly 6 uppercase characters (abbreviated)**
+10. **Error series number (DDDD) MUST be exactly 4 digits (0001, 0002, 0003)**
 11. **ALL secrets in KeyVault (NEVER in appsettings.json)**
 12. **ALL error messages use ErrorConstants (NEVER hardcoded)**
 13. **ALL success messages SHOULD use InfoConstants**
@@ -2352,10 +2752,10 @@ System Layer Error Code (Constants/ErrorConstants.cs):
 **Config Class:** Implements IConfigValidator | Has static SectionName | Has validate() method | Properties initialized  
 **Program.cs:** `builder.Services.Configure<AppConfigs>(builder.Configuration.GetSection(AppConfigs.SectionName));` (NO explicit validate())  
 **Injection:** `public MyHandler(IOptions<AppConfigs> options) { _appConfigs = options.Value; }` (validation automatic on first .Value access)  
-**Error Code:** `public static readonly (string ErrorCode, string Message) SYS_AUTHENT_0001 = ("SYS_AUTHENT_0001", "Authentication to external system failed.");`  
+**Error Code:** `public static readonly (string ErrorCode, string Message) SYS_AUTHEN_0001 = ("SYS_AUTHEN_0001", "Authentication to external system failed.");` (Format: AAA_AAAAAA_DDDD where AAA=SYS, AAAAAA=AUTHEN, DDDD=0001)  
 **Info Constant:** `public const string GET_ENTITY_SUCCESS = "Entity details retrieved successfully.";`  
 **Operation Name:** `public const string CREATE_TASK = "CREATE_TASK";`  
-**Usage:** `throw new DownStreamApiFailureException(error: ErrorConstants.SYS_AUTHENT_0001, ...);` | `return new BaseResponseDTO(message: InfoConstants.SUCCESS, ...);` | `await _restClient.ExecuteCustomRestRequestAsync(operationName: OperationNames.CREATE_TASK, ...);`
+**Usage:** `throw new DownStreamApiFailureException(error: ErrorConstants.SYS_AUTHEN_0001, ...);` | `return new BaseResponseDTO(message: InfoConstants.SUCCESS, ...);` | `await _restClient.ExecuteCustomRestRequestAsync(operationName: OperationNames.CREATE_TASK, ...);`
 
 # Enums, Extensions, Helpers & SoapEnvelopes RULES
 *ALL RULES CRITICAL & MANDATORY - NO EXCEPTIONS*
@@ -2385,7 +2785,7 @@ System Layer Error Code (Constants/ErrorConstants.cs):
 └── RequestStatus.cs     // With enum-specific extension
 ```
 
-🔴 **CRITICAL:** Use PascalCase | Start from 0 or 1 | File name = Enum name | Use `[StringValue("value")]` from Core.Attributes | JsonStringEnumConverter in Program.cs
+🔴 **CRITICAL:** Use PascalCase | Start from 0 or 1 | File name = Enum name | Use `[StringValue("value")]` from Core.Attributes
 
 ### 2.2 Templates
 
@@ -2425,14 +2825,7 @@ public static class RequestCategoryExtensions { public static IList<RequestStatu
 
 **In Mapping:** Group balances by category using enum extension → Filter API response by category balances
 
-### 2.4 JSON Serialization (Program.cs)
-```csharp
-builder.Services.AddControllers().AddJsonOptions(options => {
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-});
-```
-
-### 2.5 Enum-Specific Extensions
+### 2.4 Enum-Specific Extensions
 
 **Rules:** ✅ Define in SAME file as enum | ✅ Naming: `<EnumName>Extension` or `<EnumName>Extensions` | ✅ Only methods specific to that enum | ✅ Use for: mapping to external values, grouping, categorization, validation | ❌ NOT in Extensions/ folder
 
@@ -2463,6 +2856,8 @@ builder.Services.AddControllers().AddJsonOptions(options => {
 ```
 
 🔴 **CRITICAL:** `public static class` | `public static` methods | First param uses `this` | ONLY .NET built-in types | NO vendor names (CAFMExtensions) | NO domain logic (WorkOrderExtensions) | Import `using Core.Extensions;` for GetStringValue()
+
+**🔴 NON-NEGOTIABLE RULE:** All simple conversion or helper functionality MUST first leverage existing Core Framework extension methods (`Core.Extensions`). Only create new extension methods if the Core Framework does not provide a suitable option. This ensures uniform and reusable code across all components (DTOs, Handlers, Atomic Handlers, Services, etc.). **BEFORE creating any extension method, verify Core Framework extensions first.**
 
 ### 3.2 Allowed Extensions
 
@@ -2764,10 +3159,10 @@ public async Task<BaseResponseDTO> HandleAsync(CreateTaskReqDTO request) { HttpR
 ## 7. VERIFICATION CHECKLIST
 
 ### Enums
-- [ ] Enums/ created only if needed | PascalCase names | Start 0/1 | `[StringValue]` from Core.Attributes | JsonStringEnumConverter in Program.cs | Enum-specific extensions in same file | Extension naming: `<EnumName>Extension(s)`
+- [ ] Enums/ created only if needed | PascalCase names | Start 0/1 | `[StringValue]` from Core.Attributes | Enum-specific extensions in same file | Extension naming: `<EnumName>Extension(s)`
 
 ### Extensions
-- [ ] Extensions/ created only if needed | Named `<TypeName>Extensions.cs` | NO vendor/domain names | `public static class` | `this` keyword | Only .NET types | Import `using Core.Extensions;` | Tuple returns for multiple values | Validation: void + `List<string> errors` | Generic methods: `<TEnum> where TEnum : Enum` | Null-safe ops
+- [ ] Extensions/ created only if needed | Named `<TypeName>Extensions.cs` | NO vendor/domain names | `public static class` | `this` keyword | Only .NET types | Import `using Core.Extensions;` | Tuple returns for multiple values | Validation: void + `List<string> errors` | Generic methods: `<TEnum> where TEnum : Enum` | Null-safe ops | **🔴 NON-NEGOTIABLE: Checked Core Framework extensions FIRST** - Only created new extension if Core Framework does not provide suitable option
 
 ### Helpers
 - [ ] Helper/ (singular) | SOAPHelper if SOAP | KeyVaultReader if KeyVault | `public static class` | ServiceLocator for ILogger | Core.Extensions.LoggerExtensions | Specific names (NOT Utils)
@@ -2780,15 +3175,15 @@ public async Task<BaseResponseDTO> HandleAsync(CreateTaskReqDTO request) { HttpR
 ## 8. DO'S & DON'TS
 
 ### ✅ DO
-- **Enums:** Create only if needed | PascalCase | Start 0/1 | [StringValue] attribute | JsonStringEnumConverter | Enum-specific extensions in same file | Use GetStringValue() | Map to external values
-- **Extensions:** Only .NET types | `<TypeName>Extensions.cs` | `public static class` | `this` keyword | Tuple returns | Validation pattern (void + errors) | Generic enum methods | Import Core.Extensions
-- **Helpers:** SOAPHelper if SOAP | KeyVaultReader if KeyVault | `public static class` | ServiceLocator for ILogger | Core.Extensions logging | Specific names
+- **Enums:** Create only if needed | PascalCase | Start 0/1 | [StringValue] attribute | Enum-specific extensions in same file | Use GetStringValue() | Map to external values
+- **Extensions:** Only .NET types | `<TypeName>Extensions.cs` | `public static class` | `this` keyword | Tuple returns | Validation pattern (void + errors) | Generic enum methods | Import Core.Extensions | **🔴 NON-NEGOTIABLE: Check Core Framework extensions FIRST** - Only create new extensions if Core Framework does not provide suitable option
+- **Helpers:** SOAPHelper if SOAP | KeyVaultReader if KeyVault | `public static class` | ServiceLocator for ILogger | Core.Extensions logging | Specific names | **🔴 NON-NEGOTIABLE: Check Core Framework helpers FIRST** - Leverage existing Core Framework functionality before creating new helpers
 - **SoapEnvelopes:** Store all SOAP XML | `{{PlaceholderName}}` | Embedded resources | CustomSoapClient | SOAPHelper to load | Replace placeholders | Handle optional | Log operations
 
 ### ❌ DON'T
-- **Enums:** Empty folder | Magic strings when enum appropriate | Forget JsonStringEnumConverter | Put enum extensions in Extensions/
-- **Extensions:** Vendor names | Domain logic | WorkOrderExtensions | Instance classes | Forget `this` | UtilsExtensions | Return bool for validation | Use enum.ToString()
-- **Helpers:** Mix concerns | Instance classes | Generic names | Direct ILogger injection | Forget Core.Extensions import
+- **Enums:** Empty folder | Magic strings when enum appropriate | Put enum extensions in Extensions/
+- **Extensions:** Vendor names | Domain logic | WorkOrderExtensions | Instance classes | Forget `this` | UtilsExtensions | Return bool for validation | Use enum.ToString() | **🔴 NON-NEGOTIABLE: Create new extensions without checking Core Framework FIRST** - Always verify Core Framework extensions before creating new ones
+- **Helpers:** Mix concerns | Instance classes | Generic names | Direct ILogger injection | Forget Core.Extensions import | **🔴 NON-NEGOTIABLE: Create new helpers without checking Core Framework FIRST** - Always leverage Core Framework functionality before creating new helpers
 - **SoapEnvelopes:** Hardcode SOAP XML | Skip embedded resource | Other placeholder formats | Log sensitive data | Custom HTTP clients | Throw in Atomic Handler
 
 ---
@@ -2799,7 +3194,7 @@ public async Task<BaseResponseDTO> HandleAsync(CreateTaskReqDTO request) { HttpR
 1. Enums/ OPTIONAL (only if domain enums needed) | 2. PascalCase, singular | 3. File name = enum name | 4. [StringValue] from Core.Attributes | 5. Enum-specific extensions in SAME file | 6. Extension naming: `<EnumName>Extension(s)`
 
 ### Extensions
-7. Extensions/ OPTIONAL (only .NET types) | 8. Named `<TypeName>Extensions.cs` | 9. NEVER vendor names | 10. NEVER domain logic | 11. `public static class` | 12. `this` keyword | 13. Import Core.Extensions | 14. Tuple returns for multiple values | 15. Validation: void + List<string> errors | 16. Generic: `<TEnum> where TEnum : Enum`
+7. Extensions/ OPTIONAL (only .NET types) | 8. Named `<TypeName>Extensions.cs` | 9. NEVER vendor names | 10. NEVER domain logic | 11. `public static class` | 12. `this` keyword | 13. Import Core.Extensions | 14. Tuple returns for multiple values | 15. Validation: void + List<string> errors | 16. Generic: `<TEnum> where TEnum : Enum` | 17. **🔴 NON-NEGOTIABLE: Check Core Framework extensions FIRST** - Only create new extensions if Core Framework does not provide suitable option
 
 ### Helpers
 17. Helper/ (singular) | 18. SOAPHelper MANDATORY if SOAP | 19. KeyVaultReader MANDATORY if KeyVault | 20. `public static class` | 21. ServiceLocator for ILogger | 22. Core.Extensions.LoggerExtensions | 23. Specific names (NOT Utils)
@@ -2843,7 +3238,7 @@ builder.Services.AddSingleton<KeyVaultReader>(); builder.Services.AddTransient<Y
 builder.Services.AddScoped<YourOperationHandler>(); builder.Services.AddScoped<AnotherOperationHandler>();
 builder.Services.AddScoped<YourOperationAtomicHandler>(); builder.Services.AddScoped<AnotherOperationAtomicHandler>(); builder.Services.AddScoped<AuthenticateAtomicHandler>(); builder.Services.AddScoped<LogoutAtomicHandler>();
 builder.Services.AddRedisCacheLibrary(builder.Configuration);
-builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(sp => { IConfiguration config = sp.GetRequiredService<IConfiguration>(); IAsyncPolicy<HttpResponseMessage> retryPolicy = Policy.Handle<HttpRequestException>().OrResult<HttpResponseMessage>(r => (int)r.StatusCode >= 500).WaitAndRetryAsync(retryCount: config.GetValue<int>("HttpClientPolicy:RetryCount"), sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(retryAttempt * 5)); IAsyncPolicy<HttpResponseMessage> timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(config.GetValue<int>("HttpClientPolicy:TimeoutSeconds")); return Policy.WrapAsync(retryPolicy, timeoutPolicy); });
+builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(sp => { IConfiguration config = sp.GetRequiredService<IConfiguration>(); IAsyncPolicy<HttpResponseMessage> retryPolicy = Policy.Handle<HttpRequestException>().OrResult<HttpResponseMessage>(r => (int)r.StatusCode >= 500).WaitAndRetryAsync(retryCount: config.GetValue<int>("HttpClientPolicy:RetryCount", 0), sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(retryAttempt * 5)); IAsyncPolicy<HttpResponseMessage> timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(config.GetValue<int>("HttpClientPolicy:TimeoutSeconds", 60)); return Policy.WrapAsync(retryPolicy, timeoutPolicy); });
 builder.UseMiddleware<ExecutionTimingMiddleware>(); builder.UseMiddleware<ExceptionHandlerMiddleware>(); builder.UseMiddleware<CustomAuthenticationMiddleware>();
 ServiceLocator.ServiceProvider = builder.Services.BuildServiceProvider();
 builder.Build().Run();
@@ -2920,12 +3315,14 @@ builder.UseMiddleware<CustomAuthenticationMiddleware>(); // 3. Auth lifecycle (o
 builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(sp => {
     IConfiguration config = sp.GetRequiredService<IConfiguration>();
     IAsyncPolicy<HttpResponseMessage> retryPolicy = Policy.Handle<HttpRequestException>().OrResult<HttpResponseMessage>(r => (int)r.StatusCode >= 500)
-        .WaitAndRetryAsync(config.GetValue<int>("HttpClientPolicy:RetryCount"), retryAttempt => TimeSpan.FromSeconds(retryAttempt * 5));
-    IAsyncPolicy<HttpResponseMessage> timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(config.GetValue<int>("HttpClientPolicy:TimeoutSeconds"));
+        .WaitAndRetryAsync(config.GetValue<int>("HttpClientPolicy:RetryCount", 0), retryAttempt => TimeSpan.FromSeconds(retryAttempt * 5));
+    IAsyncPolicy<HttpResponseMessage> timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(config.GetValue<int>("HttpClientPolicy:TimeoutSeconds", 60));
     return Policy.WrapAsync(retryPolicy, timeoutPolicy);
 });
 ```
-**appsettings.json:** `"HttpClientPolicy": { "RetryCount": 3, "TimeoutSeconds": 60 }`
+**appsettings.json:** `"HttpClientPolicy": { "RetryCount": 0, "TimeoutSeconds": 60 }`
+
+**🔴 CRITICAL RULE:** `HttpClientPolicy.RetryCount` MUST always be set to `0` unless explicitly requested otherwise. This aligns with `AppConfigs.RetryCount` which defaults to `0` (no retries). Only set a non-zero value if the Boomi process or business requirements explicitly specify retry behavior.
 
 ### Cache Library (OPTIONAL)
 ```csharp
@@ -3145,10 +3542,69 @@ builder.UseMiddleware<CustomAuthenticationMiddleware>(); // THIRD
 
 **Purpose:** Azure Functions host runtime configuration | **Location:** `<ProjectRoot>/host.json` (same level as Program.cs) | **Version:** Always `"version": "2.0"` | **Environment:** Same file for ALL environments (NOT env-specific)
 
+## 1.1 🛑 PRE-CREATION VALIDATION (MANDATORY - STOP IF NOT COMPLETE)
+
+**🚨 YOU CANNOT CREATE host.json UNTIL:**
+
+1. ✅ **STOP AND VERIFY:** Am I creating System Layer host.json?
+2. ✅ **STOP AND VERIFY:** Have I read this section completely?
+3. ✅ **STOP AND VERIFY:** Do I know this is System Layer (NOT Process Layer)?
+
+**🛑 IF ANY MISSING → STOP → Complete verification → Then create host.json**
+
+---
+
 ## 2. STANDARD TEMPLATE (MANDATORY - COPY EXACTLY)
 
+**🔴 CRITICAL:** Copy this EXACT template. NO modifications. NO additions. NO deletions.
+
 ```json
-{"version": "2.0", "logging": {"fileLoggingMode": "always", "applicationInsights": {"enableLiveMetricsFilters": true}}}
+{
+  "version": "2.0",
+  "logging": {
+    "fileLoggingMode": "always",
+    "applicationInsights": {
+      "enableLiveMetricsFilters": true
+    }
+  }
+}
+```
+
+**🔴 COPY THIS EXACTLY - Character by character match required**
+
+## 2.1 🛑 POST-CREATION VALIDATION (MANDATORY - VERIFY BEFORE PROCEEDING)
+
+**🚨 AFTER creating host.json, you MUST verify:**
+
+1. ✅ **STOP AND VERIFY:** `"version": "2.0"` exists (exactly this)
+2. ✅ **STOP AND VERIFY:** `"fileLoggingMode": "always"` exists (exactly this)
+3. ✅ **STOP AND VERIFY:** `"enableLiveMetricsFilters": true` exists (exactly this)
+4. ✅ **STOP AND VERIFY:** NO `"extensionBundle"` section
+5. ✅ **STOP AND VERIFY:** NO `"samplingSettings"` section
+6. ✅ **STOP AND VERIFY:** NO `"maxTelemetryItemsPerSecond"` property
+7. ✅ **STOP AND VERIFY:** File is at project root (same level as Program.cs)
+8. ✅ **STOP AND VERIFY:** .csproj has `<None Update="host.json"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></None>`
+
+**🛑 IF ANY VIOLATION → STOP → Fix host.json → Then proceed**
+
+**VALIDATION CHECKLIST:**
+```json
+// ✅ CORRECT (System Layer):
+{
+  "version": "2.0",
+  "logging": {
+    "fileLoggingMode": "always",
+    "applicationInsights": {
+      "enableLiveMetricsFilters": true
+    }
+  }
+}
+
+// ❌ WRONG (NEVER USE):
+// Missing "fileLoggingMode": "always"
+// Has "extensionBundle" section
+// Has "samplingSettings.maxTelemetryItemsPerSecond"
+// Different structure
 ```
 
 ## 3. CONFIGURATION BREAKDOWN
