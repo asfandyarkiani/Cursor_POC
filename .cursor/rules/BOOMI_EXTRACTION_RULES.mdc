@@ -42,6 +42,12 @@ alwaysApply: true
    - **VALIDATION**: All branch classifications involving API calls must be marked as SEQUENTIAL
    - **RULE**: Even if branch paths have no data dependencies, if they contain API calls, they execute sequentially
 
+8. **🚨 CRITICAL: Map field names are AUTHORITATIVE for SOAP envelopes** - Profiles define SOAP schema (technical names), maps show actual usage (simplified names). When profile and map field names differ, ALWAYS use map field names.
+   - **ENFORCEMENT**: You MUST complete Step 1d (Map Analysis) before creating SOAP envelopes
+   - **VALIDATION**: All SOAP envelopes must use field names from maps, not profiles
+   - **EXAMPLE:** Profile says "BDET_FKEY_CAT_SEQ", map uses "CategoryId" → Use "CategoryId"
+   - **RULE**: Profile field names are schema reference only, map field names are actual SOAP field names
+
 ---
 
 ## 📋 MANDATORY EXTRACTION WORKFLOW
@@ -429,6 +435,408 @@ OperationA:
 ```
 
 **IF OPERATION RESPONSE ANALYSIS IS MISSING → Step 1c NOT complete → CANNOT PROCEED TO STEP 7**
+
+### STEP 1d: Map Analysis (MANDATORY - SOAP FIELD NAME VERIFICATION)
+
+**🛑 EXPLICIT ENFORCEMENT - CRITICAL STEP:**
+
+**YOU CANNOT PROCEED TO PHASE 2 (SOAP ENVELOPE CREATION)** until this step is complete and documented.
+
+**🚨 CRITICAL:** This step identifies ACTUAL field names used in SOAP requests, which may differ from profile field names. Profiles define SOAP schema (technical names), maps show actual usage (simplified names).
+
+**REQUIRED OUTPUT**: You MUST create a section in Phase 1 document titled:
+```
+## Map Analysis (Step 1d)
+```
+
+This section MUST be created BEFORE proceeding to Phase 2.
+
+**VALIDATION CHECKPOINT**: 
+- If Phase 1 document does NOT contain section "Map Analysis (Step 1d)" → Step 1d NOT complete → **CANNOT PROCEED TO PHASE 2**
+
+```
+# Step 1: Load all map files
+maps_by_id = {}
+FOR EACH file in process directory:
+  IF file matches pattern: map_*.json:
+    map_json = load_json(file)
+    map_id = map_json.componentId
+    maps_by_id[map_id] = map_json
+
+# Step 2: Identify SOAP request maps
+soap_request_maps = []
+FOR EACH map in maps_by_id.values():
+  to_profile_id = map.Map.toProfile
+  from_profile_id = map.Map.fromProfile
+  
+  # Check if target profile is used as request profile for SOAP operation
+  FOR EACH operation in operations_by_id.values():
+    IF operation.requestProfile == to_profile_id:
+      IF operation.subType in ["http", "soap", "wss"]:
+        soap_request_maps.append({
+          "mapId": map.componentId,
+          "mapName": map.name,
+          "operationId": operation.componentId,
+          "operationName": operation.name,
+          "fromProfile": from_profile_id,
+          "toProfile": to_profile_id,
+          "mapJson": map
+        })
+        BREAK
+
+# Step 3: Extract field mappings from each SOAP request map
+FOR EACH soap_map in soap_request_maps:
+  map_json = soap_map.mapJson
+  field_mappings = []
+  
+  FOR EACH mapping in map_json.Map.Mappings.Mapping[]:
+    # Extract target field name (SOAP request field - AUTHORITATIVE)
+    target_path = mapping.toNamePath
+    # Example: "Envelope/Body/CreateBreakdownTask/breakdownTaskDto/CategoryId"
+    target_parts = target_path.split("/")
+    target_field_name = target_parts[-1]  # "CategoryId" - THIS IS THE ACTUAL SOAP FIELD NAME
+    target_element = target_parts[-2] if len(target_parts) > 1 else None  # "breakdownTaskDto"
+    
+    # Extract source information
+    source_info = extract_source_info(mapping, map_json)
+    
+    field_mappings.append({
+      "sourceField": source_info.field_name,
+      "sourceType": source_info.type,
+      "targetField": target_field_name,
+      "targetElement": target_element,
+      "targetPath": target_path,
+      "mapLineReference": f"Map {soap_map.mapId}, mapping entry"
+    })
+  
+  soap_map.field_mappings = field_mappings
+
+# Step 4: Compare profile field names vs map field names (CRITICAL)
+FOR EACH soap_map in soap_request_maps:
+  profile_id = soap_map.toProfile
+  profile_json = profiles_by_id[profile_id]
+  
+  discrepancies = []
+  
+  FOR EACH field_mapping in soap_map.field_mappings:
+    target_field = field_mapping.targetField
+    
+    # Search profile for this field name
+    profile_field_name = find_field_in_profile_by_path(profile_json, field_mapping.targetPath)
+    
+    IF profile_field_name != target_field:
+      # Profile uses different name than map
+      discrepancies.append({
+        "mapFieldName": target_field,
+        "profileFieldName": profile_field_name,
+        "authority": "MAP (use map field name)",
+        "issue": "Profile uses technical name, map uses actual SOAP field name"
+      })
+  
+  soap_map.discrepancies = discrepancies
+
+# Step 5: Analyze scripting functions (date formatting, concatenation, etc.)
+FOR EACH soap_map in soap_request_maps:
+  map_json = soap_map.mapJson
+  
+  IF map_json.Map.Functions exists:
+    scripting_functions = []
+    
+    FOR EACH function_step in map_json.Map.Functions.FunctionStep[]:
+      IF function_step.type == "Scripting":
+        scripting_functions.append({
+          "functionKey": function_step.key,
+          "functionName": function_step.name,
+          "inputs": extract_function_inputs(function_step),
+          "outputs": extract_function_outputs(function_step),
+          "script": function_step.Configuration.Scripting.ScriptToExecute._,
+          "language": function_step.Configuration.Scripting.language
+        })
+      ELIF function_step.type == "PropertyGet":
+        # Process property mapping
+        property_name = function_step.Inputs.Input[0].default
+        scripting_functions.append({
+          "functionKey": function_step.key,
+          "functionName": function_step.name,
+          "type": "ProcessProperty",
+          "propertyName": property_name
+        })
+      ELIF function_step.type == "DefinedProcessPropertyGet":
+        # Defined process property
+        property_name = function_step.Configuration.DefinedProcessProperty.propertyName
+        scripting_functions.append({
+          "functionKey": function_step.key,
+          "functionName": function_step.name,
+          "type": "DefinedProperty",
+          "propertyName": property_name
+        })
+    
+    soap_map.functions = scripting_functions
+
+# Step 6: Extract element names (dto, breakdownTaskDto, locationDto, etc.)
+FOR EACH soap_map in soap_request_maps:
+  # Extract from first field mapping target path
+  IF soap_map.field_mappings:
+    first_path = soap_map.field_mappings[0].targetPath
+    path_parts = first_path.split("/")
+    # Structure: Envelope/Body/{OperationName}/{ElementName}/{FieldName}
+    IF len(path_parts) >= 4:
+      soap_map.operationElement = path_parts[2]  # "CreateBreakdownTask"
+      soap_map.dtoElement = path_parts[3]  # "breakdownTaskDto" or "dto" or "locationDto"
+
+# Step 7: Extract namespace prefixes from Boomi message shapes
+FOR EACH soap_map in soap_request_maps:
+  operation_id = soap_map.operationId
+  
+  # Find message shape that builds SOAP request for this operation
+  FOR EACH shape in shapes_by_id.values():
+    IF shape.shapetype == "message":
+      # Check if this message shape is followed by connectoraction with this operation
+      next_shape_id = get_next_shape(shape.shapeId, control_flow)
+      IF next_shape_id:
+        next_shape = shapes_by_id[next_shape_id]
+        IF next_shape.shapetype == "connectoraction":
+          IF next_shape.connectoraction.operationId == operation_id:
+            # This message shape builds SOAP for this operation
+            soap_envelope = shape.message.msgTxt._
+            
+            # Extract namespace declarations
+            namespaces = extract_namespace_declarations(soap_envelope)
+            soap_map.namespaces = namespaces
+            soap_map.soapEnvelopeExample = soap_envelope
+            BREAK
+
+FUNCTION extract_source_info(mapping, map_json):
+  """
+  Extract source field information from mapping
+  """
+  IF mapping.fromType == "profile":
+    # Direct field mapping from input profile
+    source_path = mapping.fromNamePath
+    source_parts = source_path.split("/")
+    field_name = source_parts[-1]
+    RETURN {
+      "field_name": field_name,
+      "type": "profile",
+      "path": source_path
+    }
+  
+  ELIF mapping.fromType == "function":
+    # Mapping from function result (process property, scripting, etc.)
+    function_key = mapping.fromFunction
+    function_step = find_function_step(map_json, function_key)
+    
+    IF function_step.type == "PropertyGet":
+      # Process property
+      property_name = function_step.Inputs.Input[0].default
+      RETURN {
+        "field_name": property_name,
+        "type": "process_property",
+        "property": property_name
+      }
+    
+    ELIF function_step.type == "DefinedProcessPropertyGet":
+      # Defined process property
+      property_name = function_step.Configuration.DefinedProcessProperty.propertyName
+      RETURN {
+        "field_name": property_name,
+        "type": "defined_property",
+        "property": property_name
+      }
+    
+    ELIF function_step.type == "Scripting":
+      # Scripting function
+      output_name = function_step.Outputs.Output.name
+      RETURN {
+        "field_name": output_name,
+        "type": "scripting",
+        "script": function_step.Configuration.Scripting.ScriptToExecute._
+      }
+    
+    ELSE:
+      RETURN {
+        "field_name": "FUNCTION_RESULT",
+        "type": function_step.type
+      }
+  
+  ELIF mapping.fromType == "static":
+    # Static value
+    RETURN {
+      "field_name": "STATIC_VALUE",
+      "type": "static",
+      "value": mapping.staticValue if exists else "UNKNOWN"
+    }
+  
+  ELSE:
+    RETURN {
+      "field_name": "UNKNOWN",
+      "type": mapping.fromType
+    }
+
+FUNCTION find_function_step(map_json, function_key):
+  """
+  Find function step by key in map Functions section
+  """
+  IF map_json.Map.Functions exists:
+    FOR EACH function_step in map_json.Map.Functions.FunctionStep[]:
+      IF function_step.key == function_key:
+        RETURN function_step
+  RETURN None
+
+FUNCTION extract_namespace_declarations(soap_envelope):
+  """
+  Extract xmlns declarations from SOAP envelope string
+  """
+  namespaces = {}
+  # Pattern: xmlns:prefix="namespace-uri"
+  # Example: xmlns:fsi1="http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel"
+  import re
+  pattern = r'xmlns:(\w+)="([^"]+)"'
+  matches = re.findall(pattern, soap_envelope)
+  FOR EACH (prefix, uri) in matches:
+    namespaces[prefix] = uri
+  RETURN namespaces
+
+OUTPUT: Complete map analysis with field mappings, discrepancies, scripting functions, element names, and namespaces
+```
+
+**REQUIRED DOCUMENTATION IN PHASE 1:**
+
+You MUST document in Phase 1 section "Map Analysis (Step 1d)":
+
+1. **Map Inventory:**
+   - For each map: Map ID, name, source profile, target profile
+   - Identify which maps are SOAP request maps (target operation request profiles)
+
+2. **SOAP Request Field Mappings (CRITICAL):**
+   - For each SOAP request map: Complete list of field mappings
+   - Source field (input) → Target field (SOAP request)
+   - **CRITICAL:** Target field name is the ACTUAL field name used in SOAP request
+   - **PROOF:** Show map JSON line references for each mapping
+
+3. **Profile vs Map Comparison (MANDATORY):**
+   - For each operation: Compare profile field names vs map field names
+   - **PROOF:** Show where profile says "BDET_FKEY_CAT_SEQ" but map uses "CategoryId"
+   - Document ALL discrepancies in a table
+
+4. **Field Name Authority (CRITICAL RULE):**
+   - **RULE:** Map field names are AUTHORITATIVE for SOAP envelopes
+   - **RULE:** Profile field names are for schema reference only
+   - **CRITICAL:** ALWAYS use map field names when creating SOAP envelopes
+   - **NEVER use profile field names without verifying against map**
+
+5. **Scripting Functions:**
+   - For each scripting function: Inputs, outputs, script logic
+   - Document data transformations (date formatting, concatenation, etc.)
+   - Replicate transformation logic in Azure implementation
+
+6. **Element Names:**
+   - For each SOAP operation: Element name used (dto, breakdownTaskDto, locationDto, etc.)
+   - **CRITICAL:** Element names MUST match exactly in SOAP envelopes
+
+7. **Namespace Declarations:**
+   - For each SOAP operation: Namespace prefixes and URIs
+   - Extract from Boomi message shapes (not profiles)
+
+**IF MAP ANALYSIS IS MISSING → Step 1d NOT complete → CANNOT PROCEED TO PHASE 2**
+
+**EXAMPLE DOCUMENTATION:**
+
+```markdown
+## Map Analysis (Step 1d)
+
+### SOAP Request Maps Inventory
+
+| Map ID | Map Name | From Profile | To Profile | Operation | Type |
+|---|---|---|---|---|---|
+| 390614fd | CreateBreakdownTask EQ+_to_CAFM_Create | af096014 | 362c3ec8 | CreateBreakdownTask | SOAP Request |
+
+### Map: CreateBreakdownTask (390614fd-ae1d-496d-8a79-f320c8663049)
+
+**Field Mappings:**
+
+| Source Field | Source Type | Target Field (SOAP) | Map Line Ref | Notes |
+|---|---|---|---|---|
+| reporterName | profile | ReporterName | 30-41 | Direct mapping |
+| reporterEmail | profile | BDET_EMAIL | 43-53 | Direct mapping |
+| reporterPhoneNumber | profile | Phone | 55-65 | Direct mapping |
+| serviceRequestNumber | profile | CallId | 67-77 | Direct mapping |
+| description | profile | LongDescription | 145-155 | Direct mapping |
+| DPP_SessionId | process property | sessionId | 263-289 | From process property |
+| DPP_CategoryId | process property | CategoryId | 291-330 | From process property |
+| DDP_DisciplineId | process property | DisciplineId | 332-373 | From process property |
+| DPP_PriorityId | process property | PriorityId | 375-413 | From process property |
+| DPP_InstructionId | process property | InstructionId | 415-454 | From process property |
+| DPP_BuildingID | process property | BuildingId | 456-494 | From process property |
+| DPP_LocationID | process property | LocationId | 495-533 | From process property |
+| scheduledDate + scheduledTimeStart | scripting | ScheduledDateUtc | 535-607 | Date formatting script |
+| raisedDateUtc | scripting | RaisedDateUtc | 608-664 | Date formatting script |
+| ContractId | defined property | ContractId | 665-696 | From defined property |
+| BDET_CALLER_SOURCE_ID | defined property | BDET_CALLER_SOURCE_ID | 697-728 | From defined property |
+
+**Profile vs Map Discrepancies (CRITICAL):**
+
+| Profile Field Name | Map Field Name (ACTUAL) | Authority | Use in SOAP Envelope |
+|---|---|---|---|
+| BDET_FKEY_CAT_SEQ | CategoryId | ✅ MAP | CategoryId |
+| BDET_FKEY_LAB_SEQ | DisciplineId | ✅ MAP | DisciplineId |
+| BDET_FKEY_PRI_SEQ | PriorityId | ✅ MAP | PriorityId |
+| BDET_FKEY_BLD_SEQ | BuildingId | ✅ MAP | BuildingId |
+| BDET_FKEY_LOC_SEQ | LocationId | ✅ MAP | LocationId |
+| BDET_CONTACT_NAME | ReporterName | ✅ MAP | ReporterName |
+| BDET_CONTACT_EMAIL | BDET_EMAIL | ✅ MAP | BDET_EMAIL |
+| BDET_CONTACT_PHONE | Phone | ✅ MAP | Phone |
+| BDET_COMMENTS | LongDescription | ✅ MAP | LongDescription |
+| BDET_RAISED_DATE | RaisedDateUtc | ✅ MAP | RaisedDateUtc |
+| BDET_SCHEDULED_DATE | ScheduledDateUtc | ✅ MAP | ScheduledDateUtc |
+
+**CRITICAL FINDING:**
+- Profile 362c3ec8 defines field "BDET_FKEY_CAT_SEQ" (technical schema name)
+- Map 390614fd uses field "CategoryId" (actual SOAP field name)
+- **AUTHORITATIVE:** Use "CategoryId" in SOAP envelope (from map, NOT profile)
+
+**Scripting Functions:**
+
+| Function Key | Type | Inputs | Outputs | Logic |
+|---|---|---|---|---|
+| 11 | Scripting | scheduledDate, scheduledTimeStart | ScheduledDateUtc | Combine date+time, format to ISO with .0208713Z suffix |
+| 13 | Scripting | raisedDateUtc | RaisedDateUtc | Format to ISO with .0208713Z suffix |
+| 1 | PropertyGet | - | DPP_SessionId | Get process property |
+| 2 | PropertyGet | - | DPP_CategoryId | Get process property |
+
+**Element Name:**
+- **Element:** breakdownTaskDto (NOT generic "dto")
+- **Path Example:** Envelope/Body/CreateBreakdownTask/breakdownTaskDto/CategoryId
+- **CRITICAL:** Must use "breakdownTaskDto" in SOAP envelope
+
+**Namespace Declarations (from Boomi message shape):**
+- xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+- xmlns:ns="http://www.fsi.co.uk/services/evolution/04/09"
+- xmlns:fsi="http://schemas.datacontract.org/2004/07/Fsi.Platform.Contracts.ServiceModel"
+- xmlns:fsi1="http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel"
+
+**Field Namespace Prefixes:**
+- All fields in breakdownTaskDto use prefix: fsi1:
+- sessionId uses prefix: ns:
+
+**RULE:** Map field names are AUTHORITATIVE. Use map field names in SOAP envelopes, NOT profile field names.
+```
+
+**VALIDATION CHECKLIST FOR STEP 1d:**
+- [ ] All map files loaded and indexed
+- [ ] SOAP request maps identified (maps targeting operation request profiles)
+- [ ] Field mappings extracted from each SOAP request map
+- [ ] Target field names extracted (ACTUAL SOAP field names)
+- [ ] Source field information extracted (profile, process property, scripting, etc.)
+- [ ] Profile vs map field name comparison completed
+- [ ] ALL discrepancies documented in table
+- [ ] Map field names marked as AUTHORITATIVE
+- [ ] Scripting functions analyzed (if present)
+- [ ] Element names extracted (dto vs breakdownTaskDto vs locationDto)
+- [ ] Namespace declarations extracted (from Boomi message shapes)
+- [ ] Field namespace prefixes documented
+
+**IF ANY CHECKLIST ITEM NOT COMPLETE → Step 1d NOT complete → CANNOT PROCEED TO PHASE 2**
 
 ### STEP 2: Extract Property WRITES (MANDATORY)
 
@@ -1850,7 +2258,92 @@ Main Process:
 - [ ] ALL response fields extracted
 - [ ] Response field mapping table generated
 - [ ] Document processing behavior determined (splitting vs batch)
-- [ ] Input/Output structure documented in Phase 1 document (Section 13 & 14)
+- [ ] Input/Output structure documented in Phase 1 document (Section 14 & 15)
+
+### Map Analysis (NEW - MANDATORY)
+- [ ] ALL map files identified and loaded
+- [ ] SOAP request maps identified (maps targeting operation request profiles)
+- [ ] Field mappings extracted from each SOAP request map
+- [ ] Target field names extracted (ACTUAL SOAP field names from maps)
+- [ ] Profile vs map field name discrepancies documented
+- [ ] Map field names marked as AUTHORITATIVE for SOAP envelopes
+- [ ] Scripting functions analyzed (date formatting, concatenation, etc.)
+- [ ] Element names extracted and documented (dto vs breakdownTaskDto)
+- [ ] Namespace declarations extracted from Boomi message shapes
+- [ ] Map analysis documented in Phase 1 document (Section 3)
+
+---
+
+## 🛑 PRE-PHASE 2 VALIDATION GATE (MANDATORY)
+
+**🚨 YOU CANNOT PROCEED TO PHASE 2 (CODE GENERATION)** until ALL of the following are complete:
+
+### Phase 1 Completion Checklist
+
+**Input/Output Contract Analysis:**
+- [ ] Step 1a (Input Structure Analysis) - COMPLETE and DOCUMENTED
+- [ ] Step 1b (Response Structure Analysis) - COMPLETE and DOCUMENTED
+- [ ] Step 1c (Operation Response Analysis) - COMPLETE and DOCUMENTED
+- [ ] **Step 1d (Map Analysis) - COMPLETE and DOCUMENTED** ⚠️ **NEW MANDATORY - CRITICAL**
+
+**Process Flow Analysis:**
+- [ ] Step 2 (Property Writes) - COMPLETE and DOCUMENTED
+- [ ] Step 3 (Property Reads) - COMPLETE and DOCUMENTED
+- [ ] Step 4 (Data Dependency Graph) - COMPLETE and DOCUMENTED
+- [ ] Step 5 (Control Flow Graph) - COMPLETE and DOCUMENTED
+- [ ] Step 6 (Reverse Flow Mapping) - COMPLETE and DOCUMENTED
+- [ ] Step 7 (Decision Analysis) - COMPLETE and DOCUMENTED
+- [ ] Step 8 (Branch Analysis) - COMPLETE and DOCUMENTED
+- [ ] Step 9 (Execution Order) - COMPLETE and DOCUMENTED
+- [ ] Step 10 (Sequence Diagram) - COMPLETE and DOCUMENTED
+
+**Contract Verification Sections:**
+- [ ] Section 3 (Map Analysis) - COMPLETE ⚠️ **NEW MANDATORY**
+- [ ] Section 14 (Input Structure Analysis) - COMPLETE
+- [ ] Section 15 (Field Mapping Analysis) - COMPLETE
+
+**Self-Check Questions (MANDATORY):**
+
+1. ❓ Did I analyze ALL map files? (Answer: YES/NO)
+   - **REQUIRED:** YES
+   - If NO → **STOP** → Analyze all maps → Document in Phase 1 Section 3
+
+2. ❓ Did I identify SOAP request maps? (Answer: YES/NO)
+   - **REQUIRED:** YES
+   - If NO → **STOP** → Identify SOAP request maps → Document in Phase 1 Section 3
+
+3. ❓ Did I extract actual field names from maps? (Answer: YES/NO)
+   - **REQUIRED:** YES
+   - If NO → **STOP** → Extract field names from maps → Document in Phase 1 Section 3
+
+4. ❓ Did I compare profile field names vs map field names? (Answer: YES/NO)
+   - **REQUIRED:** YES
+   - If NO → **STOP** → Compare and document discrepancies → Document in Phase 1 Section 3
+
+5. ❓ Did I mark map field names as AUTHORITATIVE? (Answer: YES/NO)
+   - **REQUIRED:** YES
+   - If NO → **STOP** → Mark map field names as authoritative → Document in Phase 1 Section 3
+
+6. ❓ Did I analyze scripting functions in maps? (Answer: YES/NO)
+   - **REQUIRED:** YES (if maps contain scripting functions)
+   - If NO and scripting exists → **STOP** → Analyze scripting functions → Document in Phase 1 Section 3
+
+7. ❓ Did I extract element names from map paths? (Answer: YES/NO)
+   - **REQUIRED:** YES
+   - If NO → **STOP** → Extract element names → Document in Phase 1 Section 3
+
+8. ❓ Did I verify namespace declarations from Boomi message shapes? (Answer: YES/NO)
+   - **REQUIRED:** YES
+   - If NO → **STOP** → Extract namespace declarations → Document in Phase 1 Section 3
+
+**IF ANY ANSWER IS NO → STOP → COMPLETE THAT STEP → DOCUMENT IN PHASE 1 → THEN PROCEED TO PHASE 2**
+
+**VALIDATION:** Phase 1 document MUST contain Section 3 (Map Analysis) with complete field mapping analysis, profile vs map comparison table, and scripting function analysis before proceeding to Phase 2.
+
+**🚨 CRITICAL ENFORCEMENT:**
+- Without Step 1d (Map Analysis) → SOAP envelopes will use WRONG field names
+- Profile field names (BDET_FKEY_CAT_SEQ) ≠ Map field names (CategoryId)
+- Map field names are AUTHORITATIVE - ALWAYS use map field names in SOAP envelopes
 
 ---
 
@@ -1909,6 +2402,27 @@ Main Process:
     
 17. **NEVER assume document processing** - Analyze inputType to determine splitting behavior
     - **SELF-CHECK:** Did I analyze inputType? (Answer: YES/NO)
+
+18. **NEVER use profile field names for SOAP envelopes without checking maps** - Profiles define schema, maps show actual usage
+    - **SELF-CHECK:** Did I analyze maps to verify field names? (Answer: YES/NO)
+    - **CRITICAL:** Map field names are AUTHORITATIVE, profile field names are reference only
+    - **EXAMPLE:** Profile says "BDET_FKEY_CAT_SEQ", map uses "CategoryId" → Use "CategoryId"
+
+19. **NEVER skip map analysis** - Maps reveal actual field names, data transformations, and scripting logic
+    - **SELF-CHECK:** Did I check ALL maps for SOAP request operations? (Answer: YES/NO)
+    - **CRITICAL:** Step 1d (Map Analysis) is MANDATORY before Phase 2
+
+20. **NEVER assume profile field names match SOAP request field names** - They often differ significantly
+    - **SELF-CHECK:** Did I compare profile vs map field names? (Answer: YES/NO)
+    - **CRITICAL:** Always document discrepancies in Profile vs Map comparison table
+
+21. **NEVER assume element names** - Different operations use different element names (dto, breakdownTaskDto, locationDto)
+    - **SELF-CHECK:** Did I extract element names from map paths? (Answer: YES/NO)
+    - **CRITICAL:** Element names must match exactly in SOAP envelopes
+
+22. **NEVER skip scripting function analysis** - Maps contain data transformation logic (date formatting, concatenation)
+    - **SELF-CHECK:** Did I analyze scripting functions in maps? (Answer: YES/NO)
+    - **CRITICAL:** Replicate transformation logic in Azure implementation
 
 **🛑 FINAL GATE:** If ANY self-check answer is NO → STOP, complete that step correctly before proceeding
 
@@ -2200,29 +2714,33 @@ FOR EACH subprocess:
 
 1. **Operations Inventory** - All operations listed
 2. **Process Properties Analysis** - All properties WRITTEN and READ
-3. **Decision Shape Analysis (Step 7)** - All decisions with TRUE/FALSE paths
+3. **Map Analysis (Step 1d)** - ⚠️ **NEW MANDATORY SECTION** - SOAP request field mappings
+   - **🛑 CRITICAL**: This section MUST exist before Phase 2 (SOAP envelope creation)
+   - **🛑 CRITICAL**: Must show profile vs map field name discrepancies
+   - **🛑 CRITICAL**: Must mark map field names as AUTHORITATIVE
+4. **Decision Shape Analysis (Step 7)** - All decisions with TRUE/FALSE paths
    - **🛑 CRITICAL**: This section MUST exist before creating Sequence Diagram
    - **🛑 CRITICAL**: Must show all self-check answers from Step 7
-4. **Data Dependency Graph (Step 4)** - Dependency chains documented
+5. **Data Dependency Graph (Step 4)** - Dependency chains documented
    - **🛑 CRITICAL**: This section MUST exist before creating Sequence Diagram
-5. **Control Flow Graph (Step 5)** - Dragpoint connections mapped
-6. **Branch Shape Analysis (Step 8)** - All branches classified
+6. **Control Flow Graph (Step 5)** - Dragpoint connections mapped
+7. **Branch Shape Analysis (Step 8)** - All branches classified
    - **🛑 CRITICAL**: This section MUST exist before creating Sequence Diagram
    - **🛑 CRITICAL**: Must show all self-check answers from Step 8
    - **🛑 CRITICAL**: Must show dependency graph, classification, topological sort
-7. **Execution Order (Step 9)** - True execution sequence
+8. **Execution Order (Step 9)** - True execution sequence
    - **🛑 CRITICAL**: This section MUST exist before creating Sequence Diagram
    - **🛑 CRITICAL**: Must show all self-check answers from Step 9
    - **🛑 CRITICAL**: Must reference Step 4 (dependency graph) and Step 8 (branch analysis)
-8. **Sequence Diagram (Step 10)** - Visual flow representation
-   - **🛑 CRITICAL**: CANNOT CREATE until sections 3, 4, 5, 6, 7 are complete
-   - **🛑 CRITICAL**: Must reference sections 3, 4, 5, 6, 7 in the diagram
-9. **Subprocess Analysis** - Internal flows traced
-10. **Critical Patterns Identified** - Check-before-create, etc.
-11. **Validation Checklist** - All items checked
-12. **System Layer Identification** - Third-party systems identified
-13. **Input Structure Analysis** - ⚠️ **NEW MANDATORY SECTION**
-14. **Field Mapping Analysis** - ⚠️ **NEW MANDATORY SECTION**
+9. **Sequence Diagram (Step 10)** - Visual flow representation
+   - **🛑 CRITICAL**: CANNOT CREATE until sections 3, 4, 5, 6, 7, 8 are complete
+   - **🛑 CRITICAL**: Must reference sections 4, 5, 7, 8, 9 in the diagram
+10. **Subprocess Analysis** - Internal flows traced
+11. **Critical Patterns Identified** - Check-before-create, etc.
+12. **Validation Checklist** - All items checked
+13. **System Layer Identification** - Third-party systems identified
+14. **Input Structure Analysis** - ⚠️ **MANDATORY SECTION**
+15. **Field Mapping Analysis** - ⚠️ **MANDATORY SECTION**
 
 **🚨 ENFORCEMENT CHECKPOINT BEFORE SECTION 8 (Sequence Diagram):**
 
@@ -2236,7 +2754,7 @@ Before creating section 8 (Sequence Diagram), you MUST verify:
 
 **IF ANY MISSING OR INCOMPLETE → STOP → Complete missing sections → Then create Sequence Diagram**
 
-### Section 13: Input Structure Analysis (MANDATORY)
+### Section 14: Input Structure Analysis (MANDATORY)
 
 **Must Include:**
 - Request profile ID and name
@@ -2250,7 +2768,7 @@ Before creating section 8 (Sequence Diagram), you MUST verify:
 
 **Example Format:**
 ```markdown
-## 13. Input Structure Analysis
+## 14. Input Structure Analysis
 
 ### Request Profile Structure
 - **Profile ID:** [profile-guid]
@@ -2272,7 +2790,7 @@ Before creating section 8 (Sequence Diagram), you MUST verify:
 - **Implementation Pattern:** Loop through array, process each work order, aggregate results
 ```
 
-### Section 14: Field Mapping Analysis (MANDATORY)
+### Section 15: Field Mapping Analysis (MANDATORY)
 
 **Must Include:**
 - Complete field mapping table (Boomi → Azure DTO)
@@ -2283,7 +2801,7 @@ Before creating section 8 (Sequence Diagram), you MUST verify:
 
 **Example Format:**
 ```markdown
-## 14. Field Mapping Analysis
+## 15. Field Mapping Analysis
 
 ### Request Field Mapping
 
@@ -2301,17 +2819,30 @@ Before creating section 8 (Sequence Diagram), you MUST verify:
 ```
 
 **Validation:**
-- [ ] Section 13 (Input Structure Analysis) present
-- [ ] Section 14 (Field Mapping Analysis) present
+- [ ] Section 3 (Map Analysis) present ⚠️ **NEW MANDATORY**
+- [ ] Section 14 (Input Structure Analysis) present
+- [ ] Section 15 (Field Mapping Analysis) present
 - [ ] All request fields mapped
 - [ ] All response fields mapped
+- [ ] All SOAP request maps analyzed
+- [ ] Profile vs map discrepancies documented
+- [ ] Map field names marked as authoritative
+- [ ] Scripting functions analyzed
+- [ ] Element names documented
+- [ ] Namespace declarations documented
 - [ ] Array structures documented
 - [ ] Nested structures documented
 
 ---
 
-**Document Version:** 2.1  
+**Document Version:** 2.2  
 **Purpose:** Prescriptive guide for extracting execution sequence from ANY Boomi process  
 **Key Changes:** 
 - Version 2.0: Made rules explicit, mandatory, and non-negotiable
 - Version 2.1: Added mandatory Input/Output Structure Analysis (Contract Verification)
+- Version 2.2: Added Step 1d (Map Analysis) - CRITICAL for SOAP field name accuracy
+  * Maps show ACTUAL field names used in SOAP requests
+  * Profiles show SCHEMA field names (technical names)
+  * Map field names are AUTHORITATIVE (use in SOAP envelopes)
+  * Prevents field name mismatches (CategoryId vs BDET_FKEY_CAT_SEQ)
+  * Mandatory before Phase 2 (SOAP envelope creation)
