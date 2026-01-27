@@ -1796,8 +1796,13 @@ For EACH branch shape, you MUST document in Phase 1 section "Branch Shape Analys
 ```
 ## Execution Order (Step 9)
 ```
-
+ 
+🔴 CRITICAL: Step 9 = WHY (analysis), Step 10 = WHAT (diagram)
+Do NOT duplicate content - Step 10 should reference Step 9 for reasoning
 This section MUST be created BEFORE proceeding to Step 10.
+Document the REASONING for execution order
+Show dependency chains
+Explain WHY operations must execute in specific order
 
 **🚨 NEW REQUIREMENT: Business Logic Verification (Step 0 - MUST DO FIRST)**
 
@@ -2093,6 +2098,11 @@ You MUST document in Phase 1 section "Execution Order (Step 9)":
 ```
 
 ### STEP 10: Create Sequence Diagram (MANDATORY FORMAT)
+- Create VISUAL diagram based on Step 9 analysis
+- Use ASCII format
+- Include technical details: READS, WRITES, HTTP codes
+- Reference Step 9 for reasoning
+- This is the DIAGRAM section
 
 **🛑 EXPLICIT ENFORCEMENT - PRE-CREATION VALIDATION (MANDATORY):**
 
