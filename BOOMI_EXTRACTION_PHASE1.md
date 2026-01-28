@@ -224,7 +224,13 @@
 - **BuildingId** - Extracted by shape25, written to `process.DPP_BuildingID`
 - **Consumers:** CreateBreakdownTask map uses these IDs
 
-**Business Logic:** GetLocationsByDto MUST execute BEFORE CreateBreakdownTask (provides LocationId and BuildingId)
+**Business Logic:** GetLocationsByDto executes BEFORE CreateBreakdownTask (provides LocationId and BuildingId)
+
+**Error Handling:** 
+- **NO decision shapes check status code after this operation**
+- **If operation fails (404/500):** Properties are set to empty, path continues to convergence
+- **Best-effort lookup:** Missing location data doesn't stop work order creation
+- **Validation:** CreateBreakdownTask will fail if CAFM requires these fields
 
 ### Operation: GetInstructionSetsByDto_CAFM (dc3b6b85-848d-471d-8c76-ed3b7dea0fbd)
 
@@ -236,7 +242,13 @@
 - **InstructionId** - Extracted by shape28, written to `process.DPP_InstructionId`
 - **Consumers:** CreateBreakdownTask map uses InstructionId
 
-**Business Logic:** GetInstructionSetsByDto MUST execute BEFORE CreateBreakdownTask (provides InstructionId)
+**Business Logic:** GetInstructionSetsByDto executes BEFORE CreateBreakdownTask (provides InstructionId)
+
+**Error Handling:** 
+- **NO decision shapes check status code after this operation**
+- **If operation fails (404/500):** Properties are set to empty, path continues to convergence
+- **Best-effort lookup:** Missing instruction data doesn't stop work order creation
+- **Validation:** CreateBreakdownTask will fail if CAFM requires this field
 
 ### Operation: CreateBreakdownTask (33dac20f-ea09-471c-91c3-91b39bc3b172)
 
@@ -453,13 +465,30 @@ RaisedDateUtc = formattedDate.replace(/(\.\d{3})Z$/, ".0208713Z");
 
 | Operation Name | Expected Success Codes | Error Codes | Error Handling |
 |---|---|---|---|
-| Login | 200 | 401, 500 | Throw exception on error, return error response |
+| Login | 200 | 401, 500 | Throw exception on error (auth required for all operations) |
 | GetBreakdownTasksByDto | 200 | 404, 500 | Check CallId empty (not found = OK), throw on 500 |
-| GetLocationsByDto | 200 | 404, 500 | Throw exception on error |
-| GetInstructionSetsByDto | 200 | 404, 500 | Throw exception on error |
-| CreateBreakdownTask | 200 | 400, 500 | Throw exception on error |
-| CreateEvent | 200 | 400, 500 | Throw exception on error |
-| Logout | 200 | 500 | Log error but don't fail process |
+| GetLocationsByDto | 200 | 404, 500 | **Continue on error** (best-effort lookup, set empty values) |
+| GetInstructionSetsByDto | 200 | 404, 500 | **Continue on error** (best-effort lookup, set empty values) |
+| Lookup Subprocess (Category/Discipline/Priority) | 200 | 404, 500 | **Continue on error** (best-effort lookup, set empty values) |
+| CreateBreakdownTask | 200 | 400, 500 | Throw exception on error (main operation) |
+| CreateEvent | 200 | 400, 500 | Log warning but continue (non-critical, task already created) |
+| Logout | 200 | 500 | Log error but don't fail process (cleanup only) |
+
+**🚨 CRITICAL: Lookup Operations Error Handling**
+
+**Lookup operations are BEST-EFFORT:**
+- GetLocationsByDto, GetInstructionSetsByDto, Lookup Subprocess
+- **If these fail:** Log warning, set properties to empty, **continue to CreateBreakdownTask**
+- **Rationale:** Branch convergence pattern (shape6) - all paths converge regardless of individual results
+- **Validation:** CreateBreakdownTask validates required fields, CAFM rejects if missing
+
+**Main operations MUST succeed:**
+- Login: Required for all operations (throw on failure)
+- CreateBreakdownTask: Main operation (throw on failure)
+
+**Non-critical operations:**
+- CreateEvent: Task already created, event linking is optional (log warning, continue)
+- Logout: Cleanup only (log error, continue)
 
 ---
 
@@ -1168,6 +1197,33 @@ END - Return Documents (shape15 or shape18)
 
 **Note:** Detailed request/response JSON examples for all operations and return paths are documented in Section 6 (HTTP Status Codes and Return Path Responses).
 
+**🚨 CRITICAL ERROR HANDLING BEHAVIOR FOR LOOKUP OPERATIONS:**
+
+**Lookup Operations (Paths 2, 3, 4) Error Handling:**
+- **NO decision shapes check status codes after lookup operations**
+- **Path flow:** message → connectoraction → documentproperties → stop (continue=true)
+- **Behavior:** If lookup SOAP call returns 404/500 error:
+  - Boomi does NOT throw exception
+  - Response is processed (empty/null if error)
+  - Properties are extracted (empty if response is empty)
+  - Path continues to convergence (shape6)
+- **Convergence:** ALL lookup paths converge at shape6 regardless of success/failure
+- **Continuation:** Process continues to CreateBreakdownTask with whatever property values are available (empty if lookups failed)
+- **Validation:** If CreateBreakdownTask requires these fields, CAFM API will reject the request (CreateBreakdownTask fails, not lookups)
+
+**Azure Implementation:**
+- Lookup operations should **continue even if they fail** (not throw exceptions)
+- Use `_logger.Warn()` for lookup failures
+- Set properties to empty string if lookup fails
+- Continue to CreateBreakdownTask
+- Let CreateBreakdownTask fail if CAFM requires missing fields
+
+**Rationale:**
+- Lookups are **best-effort** enrichment operations
+- Missing lookup data doesn't prevent work order creation attempt
+- CAFM system validates required fields and returns appropriate error
+- This matches Boomi's resilient behavior (branch convergence pattern)
+
 ---
 
 ## 14. SUBPROCESS ANALYSIS
@@ -1287,7 +1343,7 @@ GetBreakdownTasksByDto: Check if work order exists (Downstream - SOAP)
  |              └─→ Response: { "status": "Success", "message": "Work order already exists" }
 ```
 
-### Pattern 2: Sequential Lookup Operations (Branch with Dependencies)
+### Pattern 2: Sequential Lookup Operations (Branch with Dependencies + Best-Effort)
 
 **Identification:**
 - Branch shape4 with 6 paths
@@ -1295,20 +1351,53 @@ GetBreakdownTasksByDto: Check if work order exists (Downstream - SOAP)
 - ALL paths contain SOAP API calls
 - Path 1 produces SessionId, Paths 2-4 consume SessionId
 - Paths 2-4 produce IDs consumed by CreateBreakdownTask
+- **NO decision shapes check status codes after lookup operations**
+- **Branch convergence at shape6** - all paths converge regardless of individual results
 
 **Execution Rule:**
 - ALL paths MUST execute sequentially (API calls present)
 - Path 1 MUST execute FIRST (produces SessionId)
 - Paths 2-4 MUST execute AFTER Path 1 (consume SessionId)
-- CreateBreakdownTask MUST execute AFTER ALL lookups (consumes all IDs)
+- **Paths 2-4 continue even if they fail** (best-effort lookups)
+- CreateBreakdownTask MUST execute AFTER ALL lookups (consumes all IDs, or empty if lookups failed)
+
+**Error Handling for Lookups (Paths 2, 3, 4):**
+- **If lookup fails (404/500):** 
+  - Response is empty/null
+  - Properties are set to empty string
+  - Path continues to convergence (shape6)
+  - Process continues to CreateBreakdownTask
+- **If lookup succeeds (200):**
+  - Response is parsed
+  - Properties are extracted and set
+  - Path continues to convergence (shape6)
+- **Result:** CreateBreakdownTask proceeds with whatever data is available (populated or empty)
 
 **Topological Sort:**
 ```
-1. Path 1 (FsiLogin) → Produces: SessionId
-2. Path 2 (Lookup subprocess) → Consumes: SessionId, Produces: CategoryId, DisciplineId, PriorityId
-3. Path 3 (GetLocationsByDto) → Consumes: SessionId, Produces: LocationID, BuildingID
-4. Path 4 (GetInstructionSetsByDto) → Consumes: SessionId, Produces: InstructionId
-5. Convergence → Continue to CreateBreakdownTask
+1. Path 1 (FsiLogin) → Produces: SessionId (MUST succeed - auth required)
+2. Path 2 (Lookup subprocess) → Consumes: SessionId, Produces: CategoryId, DisciplineId, PriorityId (best-effort)
+3. Path 3 (GetLocationsByDto) → Consumes: SessionId, Produces: LocationID, BuildingID (best-effort)
+4. Path 4 (GetInstructionSetsByDto) → Consumes: SessionId, Produces: InstructionId (best-effort)
+5. Convergence → Continue to CreateBreakdownTask (with populated or empty lookup values)
+```
+
+**Azure Implementation Pattern:**
+```csharp
+// Lookup operation
+HttpResponseSnapshot response = await GetLocationsByDto(...);
+
+if (!response.IsSuccessStatusCode) {
+    _logger.Warn("GetLocationsByDto failed - Continuing with empty values");
+    locationId = string.Empty;
+    buildingId = string.Empty;
+} else {
+    // Extract values
+    locationId = apiResponse.LocationId ?? string.Empty;
+    buildingId = apiResponse.BuildingId ?? string.Empty;
+}
+
+// Continue to next operation (don't throw exception)
 ```
 
 ### Pattern 3: Conditional Event Linking (Optional Processing)
