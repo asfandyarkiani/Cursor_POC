@@ -62,114 +62,102 @@ namespace CAFMManagementSystem.Implementations.FSIConcept.Handlers
                     stepName: "CreateBreakdownTaskHandler.cs / HandleAsync"
                 );
             }
-            else
+            
+            GetLocationsByDtoApiResDTO? locationData = SOAPHelper.DeserializeSoapResponse<GetLocationsByDtoApiResDTO>(locationResponse.Content!);
+            
+            if (locationData == null)
             {
-                GetLocationsByDtoApiResDTO? locationData = SOAPHelper.DeserializeSoapResponse<GetLocationsByDtoApiResDTO>(locationResponse.Content!);
+                throw new NoResponseBodyException(
+                    error: ErrorConstants.CAF_GETLOC_0002,
+                    errorDetails: ["CAFM GetLocationsByDto returned empty response"],
+                    stepName: "CreateBreakdownTaskHandler.cs / HandleAsync"
+                );
+            }
+            
+            // Step 2: Get Instruction Set ID
+            HttpResponseSnapshot instructionResponse = await GetInstructionSetsByDtoFromDownstream(request, sessionId);
+            
+            if (!instructionResponse.IsSuccessStatusCode)
+            {
+                _logger.Error($"GetInstructionSetsByDto failed: {instructionResponse.StatusCode}");
+                throw new DownStreamApiFailureException(
+                    statusCode: (HttpStatusCode)instructionResponse.StatusCode,
+                    error: ErrorConstants.CAF_GETINS_0001,
+                    errorDetails: [$"CAFM GetInstructionSetsByDto API failed. Status: {instructionResponse.StatusCode}. Response: {instructionResponse.Content}"],
+                    stepName: "CreateBreakdownTaskHandler.cs / HandleAsync"
+                );
+            }
+            
+            GetInstructionSetsByDtoApiResDTO? instructionData = SOAPHelper.DeserializeSoapResponse<GetInstructionSetsByDtoApiResDTO>(instructionResponse.Content!);
+            
+            if (instructionData == null)
+            {
+                throw new NoResponseBodyException(
+                    error: ErrorConstants.CAF_GETINS_0002,
+                    errorDetails: ["CAFM GetInstructionSetsByDto returned empty response"],
+                    stepName: "CreateBreakdownTaskHandler.cs / HandleAsync"
+                );
+            }
+            
+            // Step 3: Create Breakdown Task
+            HttpResponseSnapshot createResponse = await CreateBreakdownTaskInDownstream(
+                request, 
+                sessionId, 
+                locationData.LocationId ?? string.Empty,
+                locationData.BuildingId ?? string.Empty,
+                instructionData.InstructionId ?? string.Empty
+            );
+            
+            if (!createResponse.IsSuccessStatusCode)
+            {
+                _logger.Error($"CreateBreakdownTask failed: {createResponse.StatusCode}");
+                throw new DownStreamApiFailureException(
+                    statusCode: (HttpStatusCode)createResponse.StatusCode,
+                    error: ErrorConstants.CAF_CRTTSK_0001,
+                    errorDetails: [$"CAFM CreateBreakdownTask API failed. Status: {createResponse.StatusCode}. Response: {createResponse.Content}"],
+                    stepName: "CreateBreakdownTaskHandler.cs / HandleAsync"
+                );
+            }
+            
+            CreateBreakdownTaskApiResDTO? createData = SOAPHelper.DeserializeSoapResponse<CreateBreakdownTaskApiResDTO>(createResponse.Content!);
+            
+            if (createData == null)
+            {
+                throw new NoResponseBodyException(
+                    error: ErrorConstants.CAF_CRTTSK_0002,
+                    errorDetails: ["CAFM CreateBreakdownTask returned empty response"],
+                    stepName: "CreateBreakdownTaskHandler.cs / HandleAsync"
+                );
+            }
+            
+            // Step 4: Conditional Event Linking (only if recurrence == "Y")
+            if (request.TicketDetails != null && request.TicketDetails.Recurrence == "Y")
+            {
+                HttpResponseSnapshot eventResponse = await CreateEventInDownstream(
+                    sessionId,
+                    createData.BreakdownTaskId ?? string.Empty
+                );
                 
-                if (locationData == null)
+                if (!eventResponse.IsSuccessStatusCode)
                 {
-                    throw new NoResponseBodyException(
-                        error: ErrorConstants.CAF_GETLOC_0002,
-                        errorDetails: ["CAFM GetLocationsByDto returned empty response"],
-                        stepName: "CreateBreakdownTaskHandler.cs / HandleAsync"
-                    );
+                    _logger.Warn($"CreateEvent failed: {eventResponse.StatusCode} - Continuing with task creation");
                 }
                 else
                 {
-                    // Step 2: Get Instruction Set ID
-                    HttpResponseSnapshot instructionResponse = await GetInstructionSetsByDtoFromDownstream(request, sessionId);
-                    
-                    if (!instructionResponse.IsSuccessStatusCode)
-                    {
-                        _logger.Error($"GetInstructionSetsByDto failed: {instructionResponse.StatusCode}");
-                        throw new DownStreamApiFailureException(
-                            statusCode: (HttpStatusCode)instructionResponse.StatusCode,
-                            error: ErrorConstants.CAF_GETINS_0001,
-                            errorDetails: [$"CAFM GetInstructionSetsByDto API failed. Status: {instructionResponse.StatusCode}. Response: {instructionResponse.Content}"],
-                            stepName: "CreateBreakdownTaskHandler.cs / HandleAsync"
-                        );
-                    }
-                    else
-                    {
-                        GetInstructionSetsByDtoApiResDTO? instructionData = SOAPHelper.DeserializeSoapResponse<GetInstructionSetsByDtoApiResDTO>(instructionResponse.Content!);
-                        
-                        if (instructionData == null)
-                        {
-                            throw new NoResponseBodyException(
-                                error: ErrorConstants.CAF_GETINS_0002,
-                                errorDetails: ["CAFM GetInstructionSetsByDto returned empty response"],
-                                stepName: "CreateBreakdownTaskHandler.cs / HandleAsync"
-                            );
-                        }
-                        else
-                        {
-                            // Step 3: Create Breakdown Task
-                            HttpResponseSnapshot createResponse = await CreateBreakdownTaskInDownstream(
-                                request, 
-                                sessionId, 
-                                locationData.LocationId ?? string.Empty,
-                                locationData.BuildingId ?? string.Empty,
-                                instructionData.InstructionId ?? string.Empty
-                            );
-                            
-                            if (!createResponse.IsSuccessStatusCode)
-                            {
-                                _logger.Error($"CreateBreakdownTask failed: {createResponse.StatusCode}");
-                                throw new DownStreamApiFailureException(
-                                    statusCode: (HttpStatusCode)createResponse.StatusCode,
-                                    error: ErrorConstants.CAF_CRTTSK_0001,
-                                    errorDetails: [$"CAFM CreateBreakdownTask API failed. Status: {createResponse.StatusCode}. Response: {createResponse.Content}"],
-                                    stepName: "CreateBreakdownTaskHandler.cs / HandleAsync"
-                                );
-                            }
-                            else
-                            {
-                                CreateBreakdownTaskApiResDTO? createData = SOAPHelper.DeserializeSoapResponse<CreateBreakdownTaskApiResDTO>(createResponse.Content!);
-                                
-                                if (createData == null)
-                                {
-                                    throw new NoResponseBodyException(
-                                        error: ErrorConstants.CAF_CRTTSK_0002,
-                                        errorDetails: ["CAFM CreateBreakdownTask returned empty response"],
-                                        stepName: "CreateBreakdownTaskHandler.cs / HandleAsync"
-                                    );
-                                }
-                                else
-                                {
-                                    // Step 4: Conditional Event Linking (only if recurrence == "Y")
-                                    if (request.TicketDetails != null && request.TicketDetails.Recurrence == "Y")
-                                    {
-                                        HttpResponseSnapshot eventResponse = await CreateEventInDownstream(
-                                            sessionId,
-                                            createData.BreakdownTaskId ?? string.Empty
-                                        );
-                                        
-                                        if (!eventResponse.IsSuccessStatusCode)
-                                        {
-                                            _logger.Warn($"CreateEvent failed: {eventResponse.StatusCode} - Continuing with task creation");
-                                        }
-                                        else
-                                        {
-                                            _logger.Info("Event created and linked successfully");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        _logger.Info("Skipping event creation (recurrence != Y)");
-                                    }
-                                    
-                                    _logger.Info("[System Layer]-Completed Create Breakdown Task");
-                                    return new BaseResponseDTO(
-                                        message: InfoConstants.CREATE_BREAKDOWN_TASK_SUCCESS,
-                                        data: CreateBreakdownTaskResDTO.Map(createData),
-                                        errorCode: null
-                                    );
-                                }
-                            }
-                        }
-                    }
+                    _logger.Info("Event created and linked successfully");
                 }
             }
+            else
+            {
+                _logger.Info("Skipping event creation (recurrence != Y)");
+            }
+            
+            _logger.Info("[System Layer]-Completed Create Breakdown Task");
+            return new BaseResponseDTO(
+                message: InfoConstants.CREATE_BREAKDOWN_TASK_SUCCESS,
+                data: CreateBreakdownTaskResDTO.Map(createData),
+                errorCode: null
+            );
         }
         
         private async Task<HttpResponseSnapshot> GetLocationsByDtoFromDownstream(CreateBreakdownTaskReqDTO request, string sessionId)
