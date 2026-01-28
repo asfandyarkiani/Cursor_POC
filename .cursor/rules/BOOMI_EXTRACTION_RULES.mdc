@@ -992,6 +992,793 @@ You MUST document in Phase 1 section "HTTP Status Codes and Return Path Response
 **CRITICAL RULE:** Map field names are AUTHORITATIVE. Use map field names in SOAP envelopes, NOT profile field names.
 ```
 
+### STEP 1f: Complete Property Extraction Analysis (MANDATORY - NEW)
+
+**🛑 EXPLICIT ENFORCEMENT - CRITICAL STEP:**
+
+**YOU CANNOT PROCEED TO STEP 7 (Decision Analysis)** until this step is complete and documented.
+
+**🚨 CRITICAL:** This step ensures ALL properties read/written by EACH operation are documented with complete response field analysis. Prevents missing critical data flows like CategoryId, DisciplineId, PriorityId from operation responses.
+
+**PROBLEM THIS SOLVES:**
+- Missing property mappings (e.g., GetInstructionSetsByDto returns 4 IDs, not just 1)
+- Incomplete operation understanding (thinking operation returns less data than it actually does)
+- "TODO" placeholders in code (don't know where data comes from)
+- Incorrect assumptions (assuming separate lookups needed when one operation returns multiple IDs)
+
+**REQUIRED OUTPUT**: You MUST create a section in Phase 1 document titled:
+```
+## Operation Property Mapping (Step 1f)
+```
+
+This section MUST be created BEFORE proceeding to Step 7.
+
+**VALIDATION CHECKPOINT**: 
+- If Phase 1 document does NOT contain section "Operation Property Mapping (Step 1f)" → Step 1f NOT complete → **CANNOT PROCEED TO STEP 7**
+
+---
+
+### ALGORITHM: Extract Complete Property Mappings for Each Operation
+
+```
+operation_property_analysis = []
+
+FOR EACH operation in operations_by_id.values():
+    
+    analysis = {
+        "operation_id": operation.componentId,
+        "operation_name": operation.name,
+        "operation_type": operation.subType,
+        "request_profile": operation.requestProfile,
+        "response_profile": operation.responseProfile,
+        "shapes_involved": [],
+        "properties_read": [],
+        "properties_written": [],
+        "response_fields_all": [],
+        "response_fields_extracted": [],
+        "response_fields_not_extracted": []
+    }
+    
+    # STEP 1: Find ALL shapes that use this operation
+    FOR EACH shape in shapes_by_id.values():
+        IF shape.shapetype == "connectoraction":
+            IF shape.connectoraction.operationId == operation.componentId:
+                analysis.shapes_involved.append({
+                    "shape_id": shape.shapeId,
+                    "shape_type": "connectoraction",
+                    "role": "Executes SOAP/REST call"
+                })
+                
+                connector_shape_id = shape.shapeId
+                
+                # Find message shape BEFORE connector (builds request)
+                message_shape = find_shape_before(connector_shape_id, "message")
+                IF message_shape:
+                    analysis.shapes_involved.append({
+                        "shape_id": message_shape.shapeId,
+                        "shape_type": "message",
+                        "role": "Builds SOAP/REST request"
+                    })
+                
+                # Find documentproperties shape AFTER connector (extracts response)
+                docprops_shape = find_shape_after(connector_shape_id, "documentproperties")
+                IF docprops_shape:
+                    analysis.shapes_involved.append({
+                        "shape_id": docprops_shape.shapeId,
+                        "shape_type": "documentproperties",
+                        "role": "Extracts response to properties"
+                    })
+    
+    # STEP 2: Analyze Properties READ (from message shapes)
+    FOR EACH shape in analysis.shapes_involved:
+        IF shape.shape_type == "message":
+            message_shape_data = shapes_by_id[shape.shape_id]
+            
+            # Extract message template
+            msg_template = message_shape_data.configuration.message.msgTxt._
+            
+            # Extract parameters
+            IF message_shape_data.configuration.message.msgParameters exists:
+                msg_params = message_shape_data.configuration.message.msgParameters
+                
+                IF msg_params.parametervalue exists:
+                    param_values = msg_params.parametervalue
+                    IF not isinstance(param_values, list):
+                        param_values = [param_values]
+                    
+                    FOR EACH param in param_values:
+                        param_key = param.$.key
+                        value_type = param.$.valueType
+                        
+                        # Find placeholder in template
+                        placeholder = f"{{{param_key}}}"
+                        template_location = find_placeholder_location_in_template(msg_template, placeholder)
+                        
+                        IF value_type == "process":
+                            # READS process property
+                            property_name = param.processparameter.$.processproperty
+                            
+                            analysis.properties_read.append({
+                                "property_name": property_name,
+                                "property_type": "Process Property",
+                                "source": find_property_writer(property_name),
+                                "boomi_shape": shape.shape_id,
+                                "parameter_key": param_key,
+                                "usage_in_soap": template_location
+                            })
+                        
+                        ELIF value_type == "profile":
+                            # READS from input profile
+                            profile_elem = param.profileelement.$
+                            
+                            analysis.properties_read.append({
+                                "property_name": f"INPUT: {profile_elem.elementName}",
+                                "property_type": "Input Profile",
+                                "source": "Calling API Request",
+                                "boomi_shape": shape.shape_id,
+                                "parameter_key": param_key,
+                                "usage_in_soap": template_location,
+                                "profile_id": profile_elem.profileId
+                            })
+                        
+                        ELIF value_type == "definedparameter":
+                            # READS from defined parameter (configuration)
+                            defined_param = param.definedprocessparameter.$
+                            
+                            analysis.properties_read.append({
+                                "property_name": f"CONFIG: {defined_param.propertyLabel}",
+                                "property_type": "Defined Parameter",
+                                "source": "Configuration/AppConfigs",
+                                "boomi_shape": shape.shape_id,
+                                "parameter_key": param_key,
+                                "usage_in_soap": template_location
+                            })
+    
+    # STEP 3: Analyze Properties WRITTEN (from documentproperties shapes)
+    FOR EACH shape in analysis.shapes_involved:
+        IF shape.shape_type == "documentproperties" AND shape.role == "Extracts response to properties":
+            docprops_shape_data = shapes_by_id[shape.shape_id]
+            
+            IF docprops_shape_data.configuration.documentproperties exists:
+                doc_props = docprops_shape_data.configuration.documentproperties
+                
+                IF doc_props.documentproperty exists:
+                    properties = doc_props.documentproperty
+                    IF not isinstance(properties, list):
+                        properties = [properties]
+                    
+                    FOR EACH prop in properties:
+                        property_id = prop.$.propertyId
+                        
+                        # Check source
+                        IF prop.sourcevalues.parametervalue exists:
+                            source_param = prop.sourcevalues.parametervalue
+                            
+                            IF source_param.$.valueType == "profile":
+                                # Extracted from operation response
+                                profile_elem = source_param.profileelement.$
+                                
+                                # Verify this is from operation response profile
+                                IF profile_elem.profileId == operation.responseProfile:
+                                    
+                                    # Extract field name from element name
+                                    response_field_name = extract_field_name_from_element(profile_elem.elementName)
+                                    
+                                    analysis.properties_written.append({
+                                        "property_name": property_id,
+                                        "property_type": "Process Property",
+                                        "soap_response_field": response_field_name,
+                                        "soap_response_path": profile_elem.elementName,
+                                        "boomi_shape": shape.shape_id,
+                                        "consumers": find_consumers(property_id)
+                                    })
+                                    
+                                    # Track extracted field
+                                    analysis.response_fields_extracted.append(response_field_name)
+    
+    # STEP 4: Analyze Response Profile Structure (Find ALL fields)
+    IF operation.responseProfile exists:
+        response_profile = profiles_by_id[operation.responseProfile]
+        
+        # Extract ALL fields from response profile
+        all_fields = extract_all_fields_from_profile_recursive(response_profile)
+        
+        analysis.response_fields_all = all_fields
+        
+        # STEP 5: Compare extracted vs all fields (Find missing extractions)
+        FOR EACH field in all_fields:
+            IF field.name NOT in analysis.response_fields_extracted:
+                # This field exists in response but NOT extracted to property
+                analysis.response_fields_not_extracted.append({
+                    "field_name": field.name,
+                    "field_path": field.path,
+                    "field_type": field.dataType,
+                    "warning": "⚠️ Field exists in SOAP response but NOT extracted to process property"
+                })
+    
+    operation_property_analysis.append(analysis)
+
+OUTPUT: Complete property analysis for ALL operations
+
+FUNCTION extract_all_fields_from_profile_recursive(profile):
+    """
+    Recursively extract ALL field names from profile structure (XML or JSON)
+    """
+    fields = []
+    
+    profile_type = profile['{...}Component']['$']['type']
+    
+    IF profile_type == "profile.xml":
+        # Parse XML profile
+        root = profile['{...}Component']['{...}object']['XMLProfile']['DataElements']['XMLRootValue']
+        fields = traverse_xml_structure_for_fields(root, path="Envelope/Body")
+    
+    ELIF profile_type == "profile.json":
+        # Parse JSON profile
+        root = profile['{...}Component']['{...}object']['JSONProfile']['DataElements']['JSONRootValue']
+        fields = traverse_json_structure_for_fields(root, path="Root/Object")
+    
+    RETURN fields
+
+FUNCTION traverse_xml_structure_for_fields(element, path):
+    """
+    Recursively traverse XML profile elements to extract all field names
+    """
+    fields = []
+    
+    # Check for XMLElement children
+    IF 'XMLElement' in element:
+        xml_elements = element['XMLElement']
+        IF not isinstance(xml_elements, list):
+            xml_elements = [xml_elements]
+        
+        FOR EACH child in xml_elements:
+            field_name = child['$']['name']
+            field_path = f"{path}/{field_name}"
+            
+            # Add this field
+            fields.append({
+                "name": field_name,
+                "path": field_path,
+                "dataType": child['$'].get('dataType', 'unknown'),
+                "technical_name": child['$'].get('technicalName', field_name),
+                "is_mappable": child['$'].get('isMappable', 'false')
+            })
+            
+            # Recursively process children
+            fields.extend(traverse_xml_structure_for_fields(child, field_path))
+    
+    RETURN fields
+
+FUNCTION extract_field_name_from_element(element_name):
+    """
+    Extract field name from element name string
+    Example: "IN_FKEY_CAT_SEQ (Envelope/Body/.../IN_FKEY_CAT_SEQ)" → "IN_FKEY_CAT_SEQ"
+    """
+    IF "(" in element_name:
+        field_name = element_name.split("(")[0].strip()
+    ELSE:
+        field_name = element_name
+    
+    RETURN field_name
+
+FUNCTION find_property_writer(property_name):
+    """
+    Find which shape/operation writes this property
+    """
+    FOR EACH shape in shapes_by_id.values():
+        IF shape.shapetype == "documentproperties":
+            IF shape.configuration.documentproperties.documentproperty exists:
+                properties = shape.configuration.documentproperties.documentproperty
+                IF not isinstance(properties, list):
+                    properties = [properties]
+                
+                FOR EACH prop in properties:
+                    IF prop.$.propertyId == property_name:
+                        # Find operation before this shape
+                        operation_before = find_operation_before_shape(shape.shapeId)
+                        RETURN f"{operation_before} (shape {shape.shapeId})"
+    
+    RETURN "Input/Configuration"
+
+FUNCTION find_consumers(property_name):
+    """
+    Find all shapes/operations that READ this property
+    """
+    consumers = []
+    
+    # Check message shapes (SOAP request parameters)
+    FOR EACH shape in shapes_by_id.values():
+        IF shape.shapetype == "message":
+            IF shape.configuration.message.msgParameters exists:
+                params = shape.configuration.message.msgParameters.parametervalue
+                IF not isinstance(params, list):
+                    params = [params]
+                
+                FOR EACH param in params:
+                    IF param.$.valueType == "process":
+                        IF param.processparameter.$.processproperty == property_name:
+                            operation_after = find_operation_after_shape(shape.shapeId)
+                            consumers.append(f"{operation_after} (shape {shape.shapeId})")
+    
+    # Check maps (function inputs)
+    FOR EACH map_data in maps_by_id.values():
+        IF map_data.Map.Functions exists:
+            FOR EACH function in map_data.Map.Functions.FunctionStep:
+                IF function.$.type == "PropertyGet":
+                    IF function.Inputs.Input exists:
+                        inputs = function.Inputs.Input
+                        IF not isinstance(inputs, list):
+                            inputs = [inputs]
+                        
+                        FOR EACH input_param in inputs:
+                            IF input_param.$.get("default") == property_name:
+                                consumers.append(f"{map_data.name} (map function {function.$.key})")
+    
+    RETURN consumers
+
+FUNCTION find_placeholder_location_in_template(template, placeholder):
+    """
+    Find where placeholder is used in SOAP template
+    Returns the XML element containing the placeholder
+    """
+    lines = template.split("\n")
+    
+    FOR EACH line in lines:
+        IF placeholder in line:
+            # Extract XML element name from line
+            # Example: "    <ns:sessionId>{1}</ns:sessionId>" → "ns:sessionId"
+            import re
+            match = re.search(r'<([^>]+)>' + re.escape(placeholder), line)
+            IF match:
+                RETURN f"<{match.group(1)}>{placeholder}</{match.group(1)}>"
+    
+    RETURN f"Template placeholder {placeholder}"
+```
+
+---
+
+### REQUIRED DOCUMENTATION IN PHASE 1
+
+You MUST document in Phase 1 section "Operation Property Mapping (Step 1f)":
+
+#### For EACH Operation (Complete Template):
+
+```markdown
+### Operation [N]: [Operation Name]
+
+**Operation ID:** [operation_guid]
+**Operation Type:** [SOAP/REST/HTTP]
+**Request Profile:** [request_profile_id]
+**Response Profile:** [response_profile_id]
+**Boomi Shapes:** 
+- shape[N] (message) - Builds SOAP request
+- shape[N] (connectoraction) - Executes SOAP call
+- shape[N] (documentproperties) - Extracts response
+
+---
+
+#### Properties READ (Input to Operation)
+
+| Property Name | Type | Source | Value Example | Boomi Shape | Parameter Key | Usage in SOAP Request |
+|---|---|---|---|---|---|---|
+| [property_name] | Process Property | [source_operation] | "[example]" | shape[N] | {key} | `<ns:element>{key}</ns:element>` |
+| [property_name] | Input Profile | Calling API | "[example]" | shape[N] | {key} | `<ns:element>{key}</ns:element>` |
+
+**Total Properties READ:** [count]
+
+---
+
+#### Properties WRITTEN (Output from Operation)
+
+| Property Name | Type | SOAP Response Field | SOAP Response Path | Value Example | Boomi Shape | Consumers |
+|---|---|---|---|---|---|---|
+| [property_name] | Process Property | [field_name] | [full_xpath] | "[example]" | shape[N] | [consumer_list] |
+
+**Total Properties WRITTEN:** [count]
+
+---
+
+#### Response Profile Analysis
+
+**Response Profile ID:** [profile_guid]
+**Response Profile Name:** [profile_name]
+
+**ALL Response Fields (Complete List):**
+
+| # | Field Name | Field Path | Data Type | Extracted? | Extracted To | Consumer |
+|---|---|---|---|---|---|---|
+| 1 | [field_name] | [xpath] | [type] | ✅ YES | process.[property] | [consumer] |
+| 2 | [field_name] | [xpath] | [type] | ❌ NO | N/A | N/A |
+
+**Extraction Summary:**
+- Total fields in response: [count]
+- Fields extracted to properties: [count]
+- Fields NOT extracted: [count]
+
+**⚠️ Fields Not Extracted (if any):**
+- [field_name]: [reason or "Not used in process flow"]
+
+**Verification:** ✅ All response fields accounted for
+
+---
+
+#### Consumer Analysis
+
+**Properties Consumed By:**
+
+| Property Written | Consumer Shape | Consumer Operation | Usage |
+|---|---|---|---|
+| [property_name] | shape[N] | [operation_name] | [how_used] |
+| [property_name] | map_[guid] | [map_name] | Map function [key] |
+
+**Verification:**
+- ✅ All written properties have consumers: YES/NO
+- ⚠️ Unused properties (if any): [list]
+
+---
+
+#### Data Flow Summary
+
+```
+INPUT (Properties READ):
+  - [property_1] (from [source])
+  - [property_2] (from [source])
+
+OPERATION:
+  - SOAP/REST Call: [operation_name]
+  - Request: [summary]
+
+OUTPUT (Properties WRITTEN):
+  - [property_1] → Used by [consumer]
+  - [property_2] → Used by [consumer]
+```
+
+**Key Insight:** [Important finding, e.g., "Returns 4 IDs not just 1", "Returns multiple related values", etc.]
+
+---
+```
+
+---
+
+### MANDATORY VALIDATION RULES
+
+#### Validation Rule 1: All Operations Must Be Analyzed
+
+**Check:**
+```
+operations_in_section_1 = Extract from Section 1 (Operations Inventory)
+operations_in_section_1f = Extract from Section "Operation Property Mapping (Step 1f)"
+
+IF operations_in_section_1 != operations_in_section_1f:
+    ERROR: "Step 1f missing operation analysis"
+    missing_operations = operations_in_section_1 - operations_in_section_1f
+    ACTION: Analyze missing operations: {missing_operations}
+    STOP: Cannot proceed to Step 7
+```
+
+#### Validation Rule 2: All Response Fields Must Be Documented
+
+**Check:**
+```
+FOR EACH operation in Step 1f:
+    IF operation.responseProfile exists:
+        response_fields_all = operation.response_fields_all
+        response_fields_documented = operation.response_fields_extracted + operation.response_fields_not_extracted
+        
+        IF len(response_fields_all) != len(response_fields_documented):
+            ERROR: f"Operation {operation.name} has undocumented response fields"
+            missing_count = len(response_fields_all) - len(response_fields_documented)
+            ACTION: Document all {missing_count} missing response fields
+            STOP: Cannot proceed to Step 7
+```
+
+#### Validation Rule 3: All Written Properties Must Have Consumers
+
+**Check:**
+```
+FOR EACH operation in Step 1f:
+    FOR EACH written_property in operation.properties_written:
+        IF written_property.consumers is empty OR written_property.consumers is None:
+            WARNING: f"Property {written_property.property_name} written by {operation.name} has no consumers"
+            ACTION: Investigate why this property is written but not used
+            # This is a WARNING, not ERROR - property might be for error handling or future use
+```
+
+#### Validation Rule 4: All Read Properties Must Have Sources
+
+**Check:**
+```
+FOR EACH operation in Step 1f:
+    FOR EACH read_property in operation.properties_read:
+        IF read_property.property_type == "Process Property":
+            IF read_property.source == "Unknown" OR read_property.source is None:
+                ERROR: f"Property {read_property.property_name} read by {operation.name} has unknown source"
+                ACTION: Find which operation/shape writes this property
+                STOP: Cannot proceed to Step 7
+```
+
+---
+
+### SELF-CHECK QUESTIONS (MANDATORY)
+
+**Before proceeding to Step 7, answer these questions:**
+
+1. ❓ Did I analyze ALL operations from Section 1? (Answer: YES/NO)
+   - **REQUIRED OUTPUT:** "✅ All operations analyzed: YES"
+   - **PROOF:** Show count: "Analyzed [N] operations, Section 1 has [N] operations"
+   - If NO → **STOP** → Analyze missing operations → Document in Step 1f
+
+2. ❓ Did I extract ALL fields from EACH response profile? (Answer: YES/NO)
+   - **REQUIRED OUTPUT:** "✅ All response fields extracted: YES"
+   - **PROOF:** For each operation, show: "Response has [N] fields, documented [N] fields"
+   - If NO → **STOP** → Extract all fields → Document in Step 1f
+
+3. ❓ Did I document properties READ for each operation? (Answer: YES/NO)
+   - **REQUIRED OUTPUT:** "✅ Properties READ documented: YES"
+   - **PROOF:** Show table with all properties READ for each operation
+   - If NO → **STOP** → Document property reads → Document in Step 1f
+
+4. ❓ Did I document properties WRITTEN for each operation? (Answer: YES/NO)
+   - **REQUIRED OUTPUT:** "✅ Properties WRITTEN documented: YES"
+   - **PROOF:** Show table with all properties WRITTEN for each operation
+   - If NO → **STOP** → Document property writes → Document in Step 1f
+
+5. ❓ Did I verify ALL response fields are accounted for? (Answer: YES/NO)
+   - **REQUIRED OUTPUT:** "✅ Response field verification complete: YES"
+   - **PROOF:** For each operation, show: "✅ All [N] response fields accounted for"
+   - If NO → **STOP** → Verify all response fields → Document in Step 1f
+
+6. ❓ Did I identify consumers for ALL written properties? (Answer: YES/NO)
+   - **REQUIRED OUTPUT:** "✅ Property consumers identified: YES"
+   - **PROOF:** Show consumer list for each written property
+   - If NO → **STOP** → Identify consumers → Document in Step 1f
+
+7. ❓ Did I identify sources for ALL read properties? (Answer: YES/NO)
+   - **REQUIRED OUTPUT:** "✅ Property sources identified: YES"
+   - **PROOF:** Show source for each read property
+   - If NO → **STOP** → Identify sources → Document in Step 1f
+
+8. ❓ Did I document key insights for operations with multiple outputs? (Answer: YES/NO)
+   - **REQUIRED OUTPUT:** "✅ Key insights documented: YES"
+   - **PROOF:** Show insights like "GetInstructionSetsByDto returns 4 IDs, not just 1"
+   - If NO → **STOP** → Add key insights → Document in Step 1f
+
+**🛑 IF ANY ANSWER IS NO → Step 1f NOT complete → CANNOT PROCEED TO STEP 7**
+
+---
+
+### EXAMPLE OUTPUT (What Step 1f Should Produce)
+
+```markdown
+## Operation Property Mapping (Step 1f)
+
+### Operation 4: GetInstructionSetsByDto
+
+**Operation ID:** dc3b6b85-848d-471d-8c76-ed3b7dea0fbd
+**Operation Type:** SOAP/HTTP
+**Request Profile:** 589e623c-b91f-4d3c-a5aa-3c767033abc5
+**Response Profile:** 5c2f13dd-3e51-4a7c-867b-c801aaa35562
+**Boomi Shapes:** 
+- shape26 (message) - Builds SOAP request
+- shape27 (connectoraction) - Executes SOAP call
+- shape28 (documentproperties) - Extracts response
+
+---
+
+#### Properties READ (Input to Operation)
+
+| Property Name | Type | Source | Value Example | Boomi Shape | Parameter Key | Usage in SOAP Request |
+|---|---|---|---|---|---|---|
+| process.DPP_SessionId | Process Property | FsiLogin (shape8) | "session-xyz789" | shape26 | {1} | `<ns:sessionId>{1}</ns:sessionId>` |
+| subCategory | Input Profile | Calling API Request | "Air Conditioning" | shape26 | {2} | `<fsi2:IN_DESCRIPTION>{2}</fsi2:IN_DESCRIPTION>` |
+
+**Total Properties READ:** 2
+
+---
+
+#### Properties WRITTEN (Output from Operation)
+
+| Property Name | Type | SOAP Response Field | SOAP Response Path | Value Example | Boomi Shape | Consumers |
+|---|---|---|---|---|---|---|
+| process.DPP_CategoryId | Process Property | IN_FKEY_CAT_SEQ | Envelope/Body/.../FINFILEDto/IN_FKEY_CAT_SEQ | "CAT-123" | shape28 | CreateBreakdownTask (map function 2) |
+| process.DDP_DisciplineId | Process Property | IN_FKEY_LAB_SEQ | Envelope/Body/.../FINFILEDto/IN_FKEY_LAB_SEQ | "DISC-456" | shape28 | CreateBreakdownTask (map function 3) |
+| process.DPP_PriorityId | Process Property | IN_FKEY_PRI_SEQ | Envelope/Body/.../FINFILEDto/IN_FKEY_PRI_SEQ | "PRI-789" | shape28 | CreateBreakdownTask (map function 4) |
+| process.DPP_InstructionId | Process Property | IN_SEQ | Envelope/Body/.../FINFILEDto/IN_SEQ | "INST-98765" | shape28 | CreateBreakdownTask (map function 5) |
+
+**Total Properties WRITTEN:** 4
+
+---
+
+#### Response Profile Analysis
+
+**Response Profile ID:** 5c2f13dd-3e51-4a7c-867b-c801aaa35562
+**Response Profile Name:** GetInstructionSetsByDto Response
+
+**ALL Response Fields (Complete List):**
+
+| # | Field Name | Field Path | Data Type | Extracted? | Extracted To | Consumer |
+|---|---|---|---|---|---|---|
+| 1 | IN_FKEY_CAT_SEQ | .../FINFILEDto/IN_FKEY_CAT_SEQ | character | ✅ YES | process.DPP_CategoryId | CreateBreakdownTask |
+| 2 | IN_FKEY_LAB_SEQ | .../FINFILEDto/IN_FKEY_LAB_SEQ | character | ✅ YES | process.DDP_DisciplineId | CreateBreakdownTask |
+| 3 | IN_FKEY_PRI_SEQ | .../FINFILEDto/IN_FKEY_PRI_SEQ | character | ✅ YES | process.DPP_PriorityId | CreateBreakdownTask |
+| 4 | IN_SEQ | .../FINFILEDto/IN_SEQ | character | ✅ YES | process.DPP_InstructionId | CreateBreakdownTask |
+
+**Extraction Summary:**
+- Total fields in response: 4
+- Fields extracted to properties: 4
+- Fields NOT extracted: 0
+
+**Verification:** ✅ All response fields extracted to properties
+
+---
+
+#### Consumer Analysis
+
+**Properties Consumed By:**
+
+| Property Written | Consumer Shape | Consumer Operation | Usage |
+|---|---|---|---|
+| process.DPP_CategoryId | map_390614fd | CreateBreakdownTask | Map function 2 → CategoryId field in SOAP request |
+| process.DDP_DisciplineId | map_390614fd | CreateBreakdownTask | Map function 3 → DisciplineId field in SOAP request |
+| process.DPP_PriorityId | map_390614fd | CreateBreakdownTask | Map function 4 → PriorityId field in SOAP request |
+| process.DPP_InstructionId | map_390614fd | CreateBreakdownTask | Map function 5 → InstructionId field in SOAP request |
+
+**Verification:** ✅ All written properties have consumers
+
+---
+
+#### Data Flow Summary
+
+```
+INPUT (Properties READ):
+  - process.DPP_SessionId (from FsiLogin subprocess)
+  - subCategory (from calling API request)
+
+OPERATION:
+  - SOAP Call: GetInstructionSetsByDto
+  - Request: { sessionId, dto: { IN_DESCRIPTION: subCategory } }
+
+OUTPUT (Properties WRITTEN):
+  - process.DPP_CategoryId → Used by CreateBreakdownTask
+  - process.DDP_DisciplineId → Used by CreateBreakdownTask
+  - process.DPP_PriorityId → Used by CreateBreakdownTask
+  - process.DPP_InstructionId → Used by CreateBreakdownTask
+```
+
+**Key Insight:** ⚠️ **CRITICAL** - GetInstructionSetsByDto returns 4 IDs (CategoryId, DisciplineId, PriorityId, InstructionId), not just InstructionId. This single API call provides all category/discipline/priority identifiers needed for CreateBreakdownTask. No separate lookup operations needed for these IDs.
+
+---
+```
+
+---
+
+### INTEGRATION WITH EXISTING STEPS
+
+**Updated Workflow Order:**
+
+```
+STEP 1: Load JSON Files
+STEP 1a: Input Structure Analysis
+STEP 1b: Response Structure Analysis
+STEP 1c: Operation Response Analysis
+STEP 1d: Map Analysis
+STEP 1e: HTTP Status Codes and Return Paths
+STEP 1f: Complete Property Extraction Analysis (NEW)  ← Add here
+STEP 2: Extract Property WRITES (aggregated view)
+STEP 3: Extract Property READS (aggregated view)
+STEP 4: Build Data Dependency Graph
+STEP 5: Build Control Flow Graph
+STEP 6: Build Reverse Flow Mapping
+STEP 7: Decision Shape Inventory
+...
+```
+
+**Why This Order:**
+- Step 1f comes AFTER response structure analysis (Steps 1b, 1c, 1d, 1e)
+- Step 1f comes BEFORE general property analysis (Steps 2-3)
+- Step 1f provides **operation-level** detailed view
+- Steps 2-3 provide **process-level** aggregated view
+- Step 1f feeds into Steps 2-3 (more complete data)
+- Step 1f prevents missing properties in dependency graph (Step 4)
+
+---
+
+### BENEFITS OF STEP 1f
+
+**Problems It Solves:**
+
+1. ❌ **Missing Property Mappings**
+   - Example: CategoryId, DisciplineId, PriorityId from GetInstructionSetsByDto
+   - Solution: ✅ All response fields documented
+
+2. ❌ **Incomplete Operation Understanding**
+   - Example: Thinking GetInstructionSetsByDto only returns InstructionId
+   - Solution: ✅ All response fields analyzed, key insights documented
+
+3. ❌ **"TODO" Placeholders in Code**
+   - Example: "TODO: Map from categoryName"
+   - Solution: ✅ Know that CategoryId comes from GetInstructionSetsByDto
+
+4. ❌ **Incorrect Assumptions**
+   - Example: Assuming separate lookup needed for each ID
+   - Solution: ✅ Know that one operation returns multiple IDs
+
+5. ❌ **Missing Data Flows**
+   - Example: Not knowing where CategoryId comes from
+   - Solution: ✅ Complete data flow documented for each operation
+
+**What It Provides:**
+
+1. ✅ **Complete property mapping** for EACH operation
+2. ✅ **All response fields documented** (extracted and not extracted)
+3. ✅ **Consumer analysis** (who uses these properties)
+4. ✅ **Source analysis** (where read properties come from)
+5. ✅ **Verification** that all response fields are accounted for
+6. ✅ **Key insights** (operations that return multiple related values)
+7. ✅ **No missing data flows** (complete picture)
+
+**Impact on Code Generation:**
+
+1. ✅ **Accurate DTO structures** (all response fields included)
+2. ✅ **Complete Handler implementation** (all properties extracted)
+3. ✅ **No "TODO" placeholders** (all mappings known)
+4. ✅ **Correct deserialization logic** (all fields parsed)
+5. ✅ **Accurate API documentation** (know what each operation returns)
+
+---
+
+### UPDATE TO PHASE 1 DOCUMENT STRUCTURE
+
+**Add Step 1f to the mandatory sections list:**
+
+```markdown
+**Updated Phase 1 Document Structure:**
+
+1. Operations Inventory
+2. Input Structure Analysis (Step 1a)
+3. Response Structure Analysis (Step 1b)
+4. Operation Response Analysis (Step 1c)
+5. Map Analysis (Step 1d)
+6. HTTP Status Codes and Return Path Responses (Step 1e)
+6.5. **Operation Property Mapping (Step 1f)** ⚠️ **NEW MANDATORY SECTION**
+7. Process Properties Analysis (Steps 2-3)
+8. Data Dependency Graph (Step 4)
+9. Control Flow Graph (Step 5)
+10. Decision Shape Analysis (Step 7)
+11. Branch Shape Analysis (Step 8)
+12. Execution Order (Step 9)
+13. Sequence Diagram (Step 10)
+14. Subprocess Analysis
+15. Critical Patterns Identified
+16. System Layer Identification
+17. Request/Response JSON Examples
+18. Function Exposure Decision Table
+19. Validation Checklist
+20. Process Layer ↔ System Layer Orchestration Diagram
+```
+
+---
+
+### ENFORCEMENT CHECKPOINT
+
+**Before proceeding to Step 7 (Decision Analysis), verify:**
+
+- [ ] Step 1f section exists in Phase 1 document
+- [ ] ALL operations from Section 1 analyzed in Step 1f
+- [ ] For EACH operation: Properties READ table complete
+- [ ] For EACH operation: Properties WRITTEN table complete
+- [ ] For EACH operation: Response profile analysis complete (ALL fields documented)
+- [ ] For EACH operation: Consumer analysis complete
+- [ ] For EACH operation: Data flow summary present
+- [ ] For EACH operation: Key insights documented (if applicable)
+- [ ] All 8 self-check questions answered YES
+- [ ] All 4 validation rules passed
+
+**IF ANY MISSING → Step 1f NOT complete → CANNOT PROCEED TO STEP 7**
+
+---
+
 ### STEP 2: Extract Property WRITES (MANDATORY)
 
 **🛑 EXPLICIT ENFORCEMENT:**
@@ -6069,7 +6856,7 @@ ELSE:
 
 ---
 
-**Document Version:** 2.6  
+**Document Version:** 2.7  
 **Purpose:** Prescriptive guide for extracting execution sequence from ANY Boomi process  
 **Key Changes:** 
 - Version 2.0: Made rules explicit, mandatory, and non-negotiable
@@ -6079,3 +6866,4 @@ ELSE:
 - Version 2.4: Added README.md Generation rules (Post-Phase 2) - Critical for documenting error handling behavior with operation classification system
 - Version 2.5: **MAJOR CHANGE** - Moved ALL technical details to Phase 1 Section 13. README.md is now a simple user guide (150-250 lines). Sequence diagrams with operation classification, error handling, and Boomi references are ONLY in Phase 1. README references Phase 1 for technical details. This eliminates duplication and makes Phase 1 the single source of truth for code generation.
 - Version 2.6: **MANDATORY ORCHESTRATION DIAGRAM** - Added Section 20 (Process Layer ↔ System Layer Orchestration Diagram) as mandatory section in Phase 1. Shows how Process Layer orchestrates System Layer APIs, documents decision ownership, clarifies layer responsibilities. Includes 12 mandatory subsections with complete orchestration flows, operation-level diagrams, authentication flow, error handling scenarios, data flow diagram, decision ownership matrix, and reference mapping. Phase 1 is NOT complete without Section 20.
+- Version 2.7: **COMPLETE PROPERTY EXTRACTION ANALYSIS** - Added Step 1f (Operation Property Mapping) as mandatory step before Step 7. Analyzes ALL properties read/written by EACH operation with complete response field analysis. Prevents missing property mappings (e.g., GetInstructionSetsByDto returns 4 IDs not just 1). Documents all response fields (extracted and not extracted), identifies consumers for all written properties, identifies sources for all read properties. Includes 8 self-check questions and 4 validation rules. Solves problem of "TODO" placeholders and missing data flows in code generation.
