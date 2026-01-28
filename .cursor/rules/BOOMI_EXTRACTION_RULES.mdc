@@ -3321,10 +3321,571 @@ Before proceeding to Phase 2.
 
 ---
 
-**Document Version:** 2.3  
+---
+
+## 🛑 POST-PHASE 2: README.md GENERATION (MANDATORY - FINAL STEP)
+
+**🚨 CRITICAL:** README.md MUST be generated as the FINAL step of Phase 2, AFTER all code is complete and committed.
+
+**Purpose:** Document the implemented System Layer for Process Layer consumers and operations teams.
+
+**Source of Truth:** BOOMI_EXTRACTION_PHASE1.md Section 13 (Sequence Diagram)
+
+**When:** After all code files are implemented, tested, and committed.
+
+---
+
+### README.md STRUCTURE (19 MANDATORY SECTIONS)
+
+**Section Order (NON-NEGOTIABLE):**
+
+1. **Title & Metadata** - SOR, Integration Type, Authentication, Framework
+2. **Overview** - Brief description, key operations list
+3. **Architecture** - API-Led layers diagram (Process → System → SOR)
+4. **Sequence Diagrams** - ONE per Azure Function (CRITICAL - see below)
+5. **Folder Structure** - Tree view with comments
+6. **Azure Functions Exposed** - Detailed API docs per function
+7. **Authentication** - Flow, benefits (if applicable)
+8. **Configuration** - AppConfigs, KeyVault
+9. **Deployment** - Environment files, CI/CD, Azure resources
+10. **Process Layer Integration** - Key patterns, workflows
+11. **Error Handling Strategy** - Operation classification (CRITICAL - see below)
+12. **Error Handling** - Exception types, error codes
+13. **Performance** - Timing tracking, example breakdown
+14. **Development** - Prerequisites, build, run, test
+15. **Dependencies** - Framework projects, NuGet packages
+16. **Monitoring** - Application Insights, Live Metrics
+17. **Future Enhancements** - Based on TODO placeholders
+18. **Support** - Documentation links
+19. **Version & Status** - Version, date, status
+
+---
+
+### SECTION 4: SEQUENCE DIAGRAMS (CRITICAL - MOST IMPORTANT)
+
+**🚨 MANDATORY REQUIREMENTS:**
+
+**Create ONE sequence diagram per Azure Function showing:**
+
+1. **Complete Component Flow:**
+```
+Process Layer
+  ↓
+[Function]API
+  ↓
+[Middleware] (if auth)
+  ↓
+I[Domain]Mgmt (Service Interface)
+  ↓
+[Domain]MgmtService
+  ↓
+[Operation]Handler
+  ↓
+[ALL Atomic Handlers with details]
+  ↓
+Response to Process Layer
+```
+
+2. **Operation Classification (MANDATORY for EACH atomic handler):**
+
+**Classification Values:**
+- `(AUTHENTICATION)` - Auth operations (throw on failure)
+- `(BEST-EFFORT LOOKUP)` - Enrichment operations (continue on failure)
+- `(MAIN OPERATION)` - Primary operations (throw on failure)
+- `(CONDITIONAL)` - Optional operations (continue on failure)
+- `(CLEANUP)` - Cleanup operations (continue on failure)
+
+3. **Error Handling Specification (MANDATORY for EACH atomic handler):**
+
+**Format:**
+```
+├─→ STEP N: [AtomicHandlerName] (OPERATION_CLASSIFICATION)
+|    └─→ [Protocol]: [Operation] ([parameters])
+|    └─→ Response: [fields]
+|    └─→ Error Handling: If fails → [Log warning/Throw exception], [set empty/stop], [CONTINUE/STOP]
+|    └─→ Result: [variables] (populated or empty / throws exception)
+```
+
+**Example (BEST-EFFORT):**
+```
+├─→ STEP 1: GetLocationsByDtoAtomicHandler (BEST-EFFORT LOOKUP)
+|    └─→ SOAP: GetLocationsByDto (sessionId + propertyName + unitCode)
+|    └─→ Response: LocationId, BuildingId
+|    └─→ Error Handling: If fails → Log warning, set empty values, CONTINUE
+|    └─→ Result: locationId, buildingId (populated or empty)
+```
+
+**Example (MAIN OPERATION):**
+```
+├─→ STEP 3: CreateBreakdownTaskAtomicHandler (MAIN OPERATION)
+|    └─→ SOAP: CreateBreakdownTask (sessionId + all fields + lookup IDs)
+|    └─→ Uses: locationId, buildingId (may be empty if lookups failed)
+|    └─→ Response: BreakdownTaskId, Status
+|    └─→ Error Handling: If fails → Throw exception (main operation must succeed)
+|    └─→ Result: breakdownTaskId (throws exception on failure)
+```
+
+4. **Boomi Pattern Reference (MANDATORY):**
+
+**At top of each sequence diagram:**
+```markdown
+**📋 BASED ON:** BOOMI_EXTRACTION_PHASE1.md Section 13 (Sequence Diagram)  
+**Error Handling:** Derived from Boomi [pattern_name] ([shape_references])
+```
+
+**Examples:**
+- "Derived from Boomi branch convergence pattern (shape6)"
+- "Derived from Boomi check-before-create pattern (decision shape55)"
+
+---
+
+### SECTION 11: ERROR HANDLING STRATEGY (CRITICAL)
+
+**🚨 MANDATORY SECTION - MUST ACCURATELY REFLECT BOOMI BEHAVIOR**
+
+**Format:**
+```markdown
+## ERROR HANDLING STRATEGY
+
+### Operation Classification
+
+**MUST-SUCCEED Operations (Throw on Failure):**
+
+| Operation | Reason | Action on Failure |
+|---|---|---|
+| [Op1] | [Why must succeed] | Throw exception ([where]) |
+
+**BEST-EFFORT Operations (Continue on Failure):**
+
+| Operation | Reason | Action on Failure |
+|---|---|---|
+| [Op1] | [Why best-effort] | Log warning, set empty, continue |
+
+### Rationale: [Boomi Pattern Name]
+
+**From Boomi Analysis:**
+- [Reference to Phase 1 section]
+- [Key finding with shape numbers]
+- [Convergence/decision behavior]
+
+**Azure Implementation:**
+```csharp
+// [Pattern description]
+[Code example - 10-15 lines showing the pattern]
+```
+
+**Benefits:**
+- ✅ [Benefit 1]
+- ✅ [Benefit 2]
+```
+
+---
+
+### ALGORITHM: DETERMINE ERROR HANDLING FROM BOOMI (MANDATORY)
+
+**Use this algorithm to classify operations:**
+
+```
+FOR EACH atomic handler operation:
+    
+    Step 1: Check for Decision Shapes After Operation
+    ────────────────────────────────────────────────
+    Search Phase 1 Section 10 (Decision Analysis)
+    
+    IF decision shape exists after this operation:
+        IF decision checks status code (meta.base.applicationstatuscode):
+            └─→ Operation has explicit error handling
+            └─→ Trace TRUE path (success) and FALSE path (error)
+            └─→ Determine classification from path behavior
+        ELSE:
+            └─→ Go to Step 2
+    ELSE:
+        └─→ No decision shape found
+        └─→ Go to Step 2
+    
+    Step 2: Check Branch Convergence
+    ────────────────────────────────
+    Search Phase 1 Section 11 (Branch Analysis)
+    
+    IF operation is in branch path:
+        IF branch paths converge at stop shape (continue=true):
+            └─→ Operation continues to convergence regardless of result
+            └─→ Classification: BEST-EFFORT LOOKUP
+            └─→ Error Handling: Log warning, set empty, CONTINUE
+            └─→ Document: "Derived from Boomi branch convergence pattern (shape[N])"
+        ELSE:
+            └─→ Go to Step 3
+    ELSE:
+        └─→ Not in branch path
+        └─→ Go to Step 3
+    
+    Step 3: Check Operation Type
+    ────────────────────────────
+    Based on operation purpose and Phase 1 analysis:
+    
+    IF operation is authentication (Login, GetToken):
+        └─→ Classification: AUTHENTICATION
+        └─→ Error Handling: Throw exception (required for all operations)
+        └─→ Reason: "Required for all downstream operations"
+    
+    ELIF operation is main business operation (Create, Update, Delete):
+        └─→ Classification: MAIN OPERATION
+        └─→ Error Handling: Throw exception (operation must succeed)
+        └─→ Reason: "Primary business operation"
+    
+    ELIF operation is cleanup (Logout, CloseConnection):
+        └─→ Classification: CLEANUP
+        └─→ Error Handling: Log error, CONTINUE (non-critical)
+        └─→ Reason: "Cleanup only, non-critical"
+    
+    ELIF operation is conditional/optional:
+        └─→ Classification: CONDITIONAL
+        └─→ Error Handling: Log warning, CONTINUE (non-critical)
+        └─→ Reason: "Optional operation, main operation already succeeded"
+    
+    ELSE (lookup, enrichment, query):
+        └─→ Classification: BEST-EFFORT LOOKUP
+        └─→ Error Handling: Log warning, set empty, CONTINUE
+        └─→ Reason: "Enrichment operation, not required for main operation"
+```
+
+**Output for Each Operation:**
+- Classification: [AUTHENTICATION / BEST-EFFORT LOOKUP / MAIN OPERATION / CONDITIONAL / CLEANUP]
+- Error Handling: [Throw exception / Log warning, set empty, continue / Log error, continue]
+- Reason: [Why this classification]
+- Boomi Reference: [Shape numbers, pattern name]
+
+---
+
+### VALIDATION CHECKLIST FOR README.md (MANDATORY)
+
+**Before finalizing README.md, verify:**
+
+**Phase 1 Verification:**
+- [ ] BOOMI_EXTRACTION_PHASE1.md Section 13 (Sequence Diagram) complete
+- [ ] Section 10 (Decision Analysis) complete
+- [ ] Section 11 (Branch Analysis) complete
+- [ ] Section 6 (HTTP Status Codes) complete
+- [ ] Error handling behavior verified from Boomi JSON
+
+**Sequence Diagram Completeness:**
+- [ ] ALL Azure Functions have sequence diagrams
+- [ ] ALL atomic handlers shown (not skipped)
+- [ ] EACH atomic handler has operation classification
+- [ ] EACH atomic handler has error handling specification
+- [ ] EACH atomic handler has result specification
+- [ ] Conditional logic shown with IF/ELSE
+- [ ] Boomi pattern references included
+
+**Error Handling Strategy:**
+- [ ] Operation classification table complete
+- [ ] ALL operations classified (MUST-SUCCEED vs BEST-EFFORT)
+- [ ] Rationale references Boomi analysis (shape numbers)
+- [ ] Code example shows actual implementation
+- [ ] Classification verified from Boomi JSON (not assumed)
+
+**Content Accuracy:**
+- [ ] Request/response examples use actual field names (from Phase 1)
+- [ ] Folder structure matches actual project structure
+- [ ] Configuration examples show actual config keys
+- [ ] Error codes match ErrorConstants.cs
+- [ ] All 19 sections present
+
+**Cross-Validation:**
+- [ ] Sequence diagrams match Phase 1 Section 13
+- [ ] Error handling matches code implementation
+- [ ] Operation classification matches Boomi behavior
+- [ ] No assumptions made (all verified from JSON)
+
+---
+
+### COMMON MISTAKES TO AVOID
+
+**Mistake 1: Creating README Before Code**
+- ❌ README created during code generation
+- ✅ README created AFTER code is complete and committed
+
+**Mistake 2: Generic Sequence Diagrams**
+- ❌ Missing atomic handlers, no error handling, no classification
+- ✅ Complete flow with classification and error handling for EACH step
+
+**Mistake 3: Assuming Error Handling**
+- ❌ Assume all operations throw exceptions on failure
+- ✅ Verify from Boomi JSON (check for decision shapes, convergence)
+
+**Mistake 4: Missing Operation Classification**
+- ❌ No classification specified for atomic handlers
+- ✅ BEST-EFFORT LOOKUP / MAIN OPERATION / etc. for EACH handler
+
+**Mistake 5: Not Referencing Boomi Analysis**
+- ❌ Generic error handling explanation
+- ✅ Reference shape numbers, patterns, convergence points from Phase 1
+
+---
+
+### EXAMPLE: CORRECT SEQUENCE DIAGRAM WITH ERROR HANDLING
+
+```markdown
+### CreateBreakdownTask Operation
+
+**📋 BASED ON:** BOOMI_EXTRACTION_PHASE1.md Section 13 (Sequence Diagram)  
+**Error Handling:** Derived from Boomi branch convergence pattern (shape6) and conditional execution pattern (shape31)
+
+```
+Process Layer
+     |
+     | POST /cafm/breakdown-tasks/create
+     | { "serviceRequestNumber": "EQ-2025-001", ... }
+     ↓
+CreateBreakdownTaskAPI (Function)
+     |
+     | [CustomAuthentication] attribute triggers middleware
+     ↓
+CustomAuthenticationMiddleware
+     |
+     ├─→ AuthenticateAtomicHandler (AUTHENTICATION)
+     |    └─→ SOAP: Authenticate (username/password from KeyVault)
+     |    └─→ Response: SessionId
+     |    └─→ Error Handling: If fails → Throw exception (required for all operations)
+     |    └─→ Result: sessionId (throws exception on failure)
+     |    └─→ Store in RequestContext (AsyncLocal)
+     |
+     ↓ Continue to function
+     |
+IBreakdownTaskMgmt (Service Interface)
+     ↓
+BreakdownTaskMgmtService
+     ↓
+CreateBreakdownTaskHandler
+     |
+     ├─→ Read SessionId from RequestContext
+     |
+     ├─→ STEP 1: GetLocationsByDtoAtomicHandler (BEST-EFFORT LOOKUP)
+     |    └─→ SOAP: GetLocationsByDto (sessionId + propertyName + unitCode)
+     |    └─→ Response: LocationId, BuildingId
+     |    └─→ Error Handling: If fails → Log warning, set empty values, CONTINUE
+     |    └─→ Result: locationId, buildingId (populated or empty)
+     |    └─→ Boomi: Branch path 3 (shape23-24-25) converges at shape6 (no decision checks)
+     |
+     ├─→ STEP 2: GetInstructionSetsByDtoAtomicHandler (BEST-EFFORT LOOKUP)
+     |    └─→ SOAP: GetInstructionSetsByDto (sessionId + categoryName + subCategory)
+     |    └─→ Response: InstructionId
+     |    └─→ Error Handling: If fails → Log warning, set empty value, CONTINUE
+     |    └─→ Result: instructionId (populated or empty)
+     |    └─→ Boomi: Branch path 4 (shape26-27-28) converges at shape6 (no decision checks)
+     |
+     ├─→ STEP 3: CreateBreakdownTaskAtomicHandler (MAIN OPERATION)
+     |    └─→ Format dates (ScheduledDateUtc, RaisedDateUtc)
+     |    └─→ SOAP: CreateBreakdownTask (sessionId + all fields + lookup IDs)
+     |    └─→ Uses: locationId, buildingId, instructionId (may be empty if lookups failed)
+     |    └─→ Response: BreakdownTaskId, Status
+     |    └─→ Error Handling: If fails → Throw exception (main operation must succeed)
+     |    └─→ Result: breakdownTaskId (throws exception on failure)
+     |    └─→ Boomi: Main operation (shape11) with decision shape12 checking status
+     |
+     ├─→ STEP 4: Conditional Event Linking
+     |    └─→ IF ticketDetails.recurrence == "Y":
+     |         └─→ CreateEventAtomicHandler (CONDITIONAL)
+     |              └─→ SOAP: CreateEvent (sessionId + breakdownTaskId)
+     |              └─→ Response: EventId
+     |              └─→ Error Handling: If fails → Log warning, CONTINUE (task already created)
+     |              └─→ Result: eventId (may be empty if failed)
+     |              └─→ Boomi: Conditional execution (decision shape31)
+     |    └─→ ELSE:
+     |         └─→ Skip event creation
+     |         └─→ Boomi: Early exit path (shape31 TRUE path)
+     |
+     ├─→ Map ApiResDTO → CreateBreakdownTaskResDTO
+     └─→ Return BaseResponseDTO
+     |
+     ↓ After function completes
+     |
+CustomAuthenticationMiddleware (finally block)
+     |
+     └─→ LogoutAtomicHandler (CLEANUP)
+          └─→ SOAP: Logout (sessionId)
+          └─→ Error Handling: If fails → Log error, CONTINUE (cleanup only)
+          └─→ Clear RequestContext
+     |
+     ↓
+Response to Process Layer
+{ "breakdownTaskId": "CAFM-2025-12345", "status": "Success" }
+```
+```
+
+**Key Elements:**
+- ✅ Shows ALL atomic handlers (not skipped)
+- ✅ Each handler has classification (BEST-EFFORT / MAIN OPERATION / etc.)
+- ✅ Each handler has error handling (throw vs continue)
+- ✅ Each handler has result (populated or empty / throws)
+- ✅ Conditional logic with IF/ELSE
+- ✅ Boomi references (shape numbers, patterns)
+
+---
+
+### SECTION 11: ERROR HANDLING STRATEGY (CRITICAL)
+
+**MANDATORY TABLE:**
+
+```markdown
+## ERROR HANDLING STRATEGY
+
+### Operation Classification
+
+**MUST-SUCCEED Operations (Throw on Failure):**
+
+| Operation | Reason | Action on Failure |
+|---|---|---|
+| Login/Authenticate | Required for all operations | Throw exception (middleware) |
+| [MainOperation] | Primary business operation | Throw exception (handler) |
+
+**BEST-EFFORT Operations (Continue on Failure):**
+
+| Operation | Reason | Action on Failure |
+|---|---|---|
+| [LookupOp1] | Enrichment lookup | Log warning, set empty, continue |
+| [LookupOp2] | Enrichment lookup | Log warning, set empty, continue |
+| [ConditionalOp] | Optional operation | Log warning, continue |
+| Logout | Cleanup only | Log error, continue |
+
+### Rationale: [Boomi Pattern Name]
+
+**From Boomi Analysis:**
+- [Reference Phase 1 section and shape numbers]
+- [Key finding about convergence or decision shapes]
+- [Explanation of why operations continue on failure]
+
+**Azure Implementation:**
+```csharp
+// [Pattern description]
+HttpResponseSnapshot response = await GetLookupData(...);
+
+if (!response.IsSuccessStatusCode) {
+    _logger.Warn("Lookup failed - Continuing with empty values");
+    lookupId = string.Empty; // Continue with empty
+} else {
+    lookupId = ExtractFromResponse(...); // Extract if success
+}
+
+// Continue to next operation (don't throw)
+await MainOperation(..., lookupId, ...); // May be empty
+```
+
+**Benefits:**
+- ✅ Resilient: Lookup failures don't stop main operation
+- ✅ Validation at right place: [SOR] validates required fields
+- ✅ Accurate errors: Error from [SOR] (not generic lookup error)
+- ✅ Matches Boomi: Same behavior as original process
+```
+
+---
+
+### ALGORITHM: DETERMINE OPERATION CLASSIFICATION
+
+**Step 1: Check Decision Shapes (from Phase 1 Section 10)**
+
+```
+FOR operation in atomic_handlers:
+    decision_shapes = Find decision shapes after operation in Phase 1
+    
+    IF decision_shapes found AND checks status code:
+        └─→ Has explicit error handling
+        └─→ Trace TRUE/FALSE paths
+        └─→ Classify based on path behavior
+    ELSE:
+        └─→ No explicit error handling
+        └─→ Go to Step 2
+```
+
+**Step 2: Check Branch Convergence (from Phase 1 Section 11)**
+
+```
+    IF operation is in branch path:
+        convergence_point = Find convergence point in Phase 1
+        
+        IF convergence_point is stop with continue=true:
+            └─→ Branch paths converge regardless of results
+            └─→ Classification: BEST-EFFORT LOOKUP
+            └─→ Error Handling: Log warning, set empty, CONTINUE
+            └─→ Reason: "Branch convergence pattern (shape[N])"
+        ELSE:
+            └─→ Go to Step 3
+    ELSE:
+        └─→ Not in branch path
+        └─→ Go to Step 3
+```
+
+**Step 3: Check Operation Type**
+
+```
+    IF operation is authentication (Login, GetToken):
+        └─→ Classification: AUTHENTICATION
+        └─→ Error Handling: Throw exception
+        └─→ Reason: "Required for all downstream operations"
+    
+    ELIF operation is main business operation (Create, Update, Delete):
+        └─→ Classification: MAIN OPERATION
+        └─→ Error Handling: Throw exception
+        └─→ Reason: "Primary business operation"
+    
+    ELIF operation is cleanup (Logout, CloseConnection):
+        └─→ Classification: CLEANUP
+        └─→ Error Handling: Log error, CONTINUE
+        └─→ Reason: "Cleanup only, non-critical"
+    
+    ELIF operation is conditional/optional:
+        └─→ Classification: CONDITIONAL
+        └─→ Error Handling: Log warning, CONTINUE
+        └─→ Reason: "Optional operation, main operation already succeeded"
+    
+    ELSE (lookup, enrichment, query):
+        └─→ Classification: BEST-EFFORT LOOKUP
+        └─→ Error Handling: Log warning, set empty, CONTINUE
+        └─→ Reason: "Enrichment operation, not required for main operation"
+```
+
+**Output:**
+- Classification for EACH operation
+- Error handling strategy for EACH operation
+- Reason/rationale for EACH classification
+- Boomi reference (shape numbers, patterns)
+
+---
+
+### README.md GENERATION CHECKLIST
+
+**Before generating README.md:**
+
+- [ ] Phase 1 document complete and verified
+- [ ] All code files implemented and committed
+- [ ] Error handling verified from Boomi JSON
+- [ ] Operation classification determined for ALL operations
+- [ ] Algorithm applied to classify each operation
+
+**During README.md generation:**
+
+- [ ] Use Phase 1 Section 13 as blueprint for sequence diagrams
+- [ ] Apply operation classification to EACH atomic handler
+- [ ] Show error handling for EACH atomic handler
+- [ ] Reference Boomi patterns (shape numbers, convergence, decisions)
+- [ ] Include ALL 19 sections
+- [ ] Use realistic examples (actual field names from Phase 1)
+
+**After README.md generation:**
+
+- [ ] Validate sequence diagrams match Phase 1
+- [ ] Validate error handling matches code implementation
+- [ ] Validate operation classification verified from Boomi
+- [ ] All validation checklist items complete
+- [ ] Commit README.md with descriptive message
+
+---
+
+**Document Version:** 2.4  
 **Purpose:** Prescriptive guide for extracting execution sequence from ANY Boomi process  
 **Key Changes:** 
 - Version 2.0: Made rules explicit, mandatory, and non-negotiable
 - Version 2.1: Added mandatory Input/Output Structure Analysis (Contract Verification)
 - Version 2.2: Added mandatory Map Analysis (Step 1d) - Critical for SOAP envelope field name verification
 - Version 2.3: Added mandatory HTTP Status Codes and Return Path Responses (Step 1e) - Critical for error handling and response mapping; Added Request/Response JSON Examples section
+- Version 2.4: Added README.md Generation rules (Post-Phase 2) - Critical for documenting error handling behavior with operation classification system
