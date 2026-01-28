@@ -126,18 +126,24 @@ CreateBreakdownTaskHandler
      |
      ├─→ Read SessionId from RequestContext
      |
-     ├─→ STEP 1: GetLocationsByDtoAtomicHandler
+     ├─→ STEP 1: GetLocationsByDtoAtomicHandler (BEST-EFFORT LOOKUP)
      |    └─→ SOAP: GetLocationsByDto (sessionId + propertyName + unitCode)
      |    └─→ Response: LocationId, BuildingId
+     |    └─→ Error Handling: If fails → Log warning, set empty values, CONTINUE
+     |    └─→ Result: locationId, buildingId (populated or empty)
      |
-     ├─→ STEP 2: GetInstructionSetsByDtoAtomicHandler
+     ├─→ STEP 2: GetInstructionSetsByDtoAtomicHandler (BEST-EFFORT LOOKUP)
      |    └─→ SOAP: GetInstructionSetsByDto (sessionId + categoryName + subCategory)
      |    └─→ Response: InstructionId
+     |    └─→ Error Handling: If fails → Log warning, set empty value, CONTINUE
+     |    └─→ Result: instructionId (populated or empty)
      |
-     ├─→ STEP 3: CreateBreakdownTaskAtomicHandler
+     ├─→ STEP 3: CreateBreakdownTaskAtomicHandler (MAIN OPERATION)
      |    └─→ Format dates (ScheduledDateUtc, RaisedDateUtc)
      |    └─→ SOAP: CreateBreakdownTask (sessionId + all fields + lookup IDs)
+     |    └─→ Uses: locationId, buildingId, instructionId (may be empty if lookups failed)
      |    └─→ Response: BreakdownTaskId, Status
+     |    └─→ Error Handling: If fails → Throw exception (main operation must succeed)
      |
      ├─→ STEP 4: Conditional Event Linking
      |    └─→ IF ticketDetails.recurrence == "Y":
@@ -332,10 +338,10 @@ CAFMManagementSystem/
 **Authentication:** Session-based (handled by middleware)
 
 **Internal Operations:**
-1. GetLocationsByDto (lookup LocationId/BuildingId)
-2. GetInstructionSetsByDto (lookup InstructionId)
-3. CreateBreakdownTask (create work order)
-4. CreateEvent (conditional - only if recurrence == "Y")
+1. GetLocationsByDto (best-effort lookup for LocationId/BuildingId - continues on failure)
+2. GetInstructionSetsByDto (best-effort lookup for InstructionId - continues on failure)
+3. CreateBreakdownTask (main operation - throws on failure)
+4. CreateEvent (conditional - only if recurrence == "Y", non-critical)
 
 ---
 
@@ -455,6 +461,59 @@ CAFMManagementSystem/
 - ✅ Prevents duplicate work orders in CAFM
 - ✅ Process Layer controls business decision (create or skip)
 - ✅ System Layer exposes atomic operations (check, create)
+
+---
+
+## ERROR HANDLING STRATEGY
+
+### Operation Classification
+
+**MUST-SUCCEED Operations (Throw on Failure):**
+
+| Operation | Reason | Action on Failure |
+|---|---|---|
+| Login | Required for all operations | Throw exception (middleware) |
+| CreateBreakdownTask | Main operation | Throw exception |
+
+**BEST-EFFORT Operations (Continue on Failure):**
+
+| Operation | Reason | Action on Failure |
+|---|---|---|
+| GetLocationsByDto | Enrichment lookup | Log warning, set empty, continue |
+| GetInstructionSetsByDto | Enrichment lookup | Log warning, set empty, continue |
+| Lookup Subprocess | Enrichment lookup | Log warning, set empty, continue |
+| CreateEvent | Optional linking | Log warning, continue (task created) |
+| Logout | Cleanup only | Log error, continue (non-critical) |
+
+### Rationale: Branch Convergence Pattern
+
+**From Boomi Analysis:**
+- Lookup operations are in branch paths that converge (shape6)
+- NO decision shapes check status codes after lookups
+- Branch convergence means: ALL paths complete and converge regardless of individual results
+- Process continues with whatever data is available (populated or empty)
+
+**Azure Implementation:**
+```csharp
+// Best-effort lookup
+HttpResponseSnapshot response = await GetLocationsByDto(...);
+
+if (!response.IsSuccessStatusCode) {
+    _logger.Warn("Lookup failed - Continuing with empty values");
+    locationId = string.Empty; // Continue with empty
+} else {
+    locationId = ExtractFromResponse(...); // Extract if success
+}
+
+// Continue to next operation (don't throw)
+await CreateBreakdownTask(..., locationId, ...); // May be empty
+```
+
+**Benefits:**
+- ✅ Resilient: Lookup failures don't stop work order creation
+- ✅ Validation at right place: CAFM validates required fields in CreateBreakdownTask
+- ✅ Accurate errors: Error from CAFM (not generic lookup error)
+- ✅ Matches Boomi: Same behavior as original process
 
 ---
 
