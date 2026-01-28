@@ -1093,9 +1093,11 @@ CreateEvent → READS: BreakdownTaskId (MUST execute after CreateBreakdownTask)
 
 ---
 
-## 13. SEQUENCE DIAGRAM (Step 10) - MANDATORY
+## 13. SEQUENCE DIAGRAM (Step 10) - COMPLETE TECHNICAL SPECIFICATION FOR CODE GENERATION
 
-**📋 NOTE:** This diagram shows the VISUAL execution flow. Detailed request/response JSON examples are documented in Section 6 (HTTP Status Codes and Return Path Responses).
+**🚨 CRITICAL:** This sequence diagram is the PRIMARY BLUEPRINT for code generation. Developers MUST be able to generate code directly from this diagram WITHOUT making assumptions.
+
+**📋 NOTE:** Detailed request/response JSON examples are documented in Section 6 (HTTP Status Codes and Return Path Responses).
 
 **Based on:**
 - Dependency graph in Step 4
@@ -1103,6 +1105,34 @@ CreateEvent → READS: BreakdownTaskId (MUST execute after CreateBreakdownTask)
 - Control flow graph in Step 5
 - Branch analysis in Step 8
 - Execution order in Step 9
+
+---
+
+### 13.1 OPERATION CLASSIFICATION ANALYSIS (MANDATORY - EXECUTE FIRST)
+
+**Before creating sequence diagram, classify EACH operation:**
+
+| Operation | Shape(s) | Decision After? | Branch Convergence? | Operation Type | Classification | Error Handling | Reason | Boomi Reference |
+|---|---|---|---|---|---|---|---|---|
+| FsiLogin | shape5 (subprocess) | Yes (shape4 checks 20*) | No | Authentication | **(AUTHENTICATION)** | Throw exception | Required for all operations | Subprocess FsiLogin with decision shape4 checking status "20*" |
+| Lookup Subprocess | shape50 (subprocess) | No | Yes (shape6) | Lookup | **(BEST-EFFORT LOOKUP)** | Log warning, set empty, continue | Branch convergence, no decision checks | Branch path 2 converges at shape6 |
+| GetLocationsByDto | shape23-24-25 | No | Yes (shape6) | Lookup | **(BEST-EFFORT LOOKUP)** | Log warning, set empty, continue | Branch convergence, no decision checks | Branch path 3 (shape23-24-25) converges at shape6 |
+| GetInstructionSetsByDto | shape26-27-28 | No | Yes (shape6) | Lookup | **(BEST-EFFORT LOOKUP)** | Log warning, set empty, continue | Branch convergence, no decision checks | Branch path 4 (shape26-27-28) converges at shape6 |
+| GetBreakdownTasksByDto | shape54 | No | No | Query | **(MAIN OPERATION)** | Throw exception | Check operation for check-before-create | Query operation (shape54) used in decision shape55 |
+| CreateBreakdownTask | shape11 | Yes (shape12 checks 20*) | No | Main operation | **(MAIN OPERATION)** | Throw exception | Primary business operation | Main operation (shape11) with decision shape12 checking status "20*" |
+| CreateEvent | shape34+ | No | No | Conditional | **(CONDITIONAL)** | Log warning, continue | Optional, task already created | Conditional execution (decision shape31, FALSE path) |
+| FsiLogout | shape13 (subprocess) | No | No | Cleanup | **(CLEANUP)** | Log error, continue | Cleanup only, non-critical | Cleanup operation (subprocess FsiLogout) |
+
+**Classification Legend:**
+- **(AUTHENTICATION):** Auth operations - Throw exception (required for all operations)
+- **(BEST-EFFORT LOOKUP):** Enrichment operations - Log warning, set empty, continue
+- **(MAIN OPERATION):** Primary business operations - Throw exception (operation must succeed)
+- **(CONDITIONAL):** Optional operations - Log warning, continue (non-critical)
+- **(CLEANUP):** Cleanup operations - Log error, continue (non-critical)
+
+---
+
+### 13.2 ENHANCED SEQUENCE DIAGRAM (WITH OPERATION CLASSIFICATION)
 
 ```
 START (shape1)
@@ -1117,27 +1147,46 @@ START (shape1)
  |
  ├─→ BRANCH (shape4) - 6 paths - SEQUENTIAL EXECUTION (API calls present)
  |    |
- |    ├─→ Path 1: FsiLogin (subprocess shape5) (Downstream - SOAP)
+ |    ├─→ Path 1: FsiLogin (subprocess shape5) (Downstream - SOAP) - **(AUTHENTICATION)**
+ |    |    └─→ READS: []
  |    |    └─→ WRITES: [process.DPP_SessionId]
  |    |    └─→ HTTP: [Expected: 200, Error: 401/500]
+ |    |    └─→ ERROR HANDLING: If fails → Throw exception (required for all operations)
+ |    |    └─→ RESULT: sessionId (throws exception on failure)
+ |    |    └─→ BOOMI: Subprocess FsiLogin with decision shape4 checking status "20*"
+ |    |    └─→ CODE: Middleware calls AuthenticateAtomicHandler, throws DownStreamApiFailureException if fails
  |    |    └─→ MUST EXECUTE FIRST (all operations depend on SessionId)
  |    |
- |    ├─→ Path 2: Lookup Subprocess (shape50) (Downstream - SOAP)
+ |    ├─→ Path 2: Lookup Subprocess (shape50) (Downstream - SOAP) - **(BEST-EFFORT LOOKUP)**
  |    |    └─→ READS: [process.DPP_SessionId]
  |    |    └─→ WRITES: [process.DPP_CategoryId, process.DPP_DisciplineId, process.DPP_PriorityId]
  |    |    └─→ HTTP: [Expected: 200, Error: 404/500]
+ |    |    └─→ ERROR HANDLING: If fails → Log warning, set empty values, CONTINUE
+ |    |    └─→ RESULT: categoryId, disciplineId, priorityId (populated or empty)
+ |    |    └─→ BOOMI: Branch path 2 converges at shape6 (no decision checks)
+ |    |    └─→ CODE: if (!response.IsSuccessStatusCode) { _logger.Warn(...); categoryId = string.Empty; } else { extract(...); }
  |    |
- |    ├─→ Path 3: GetLocationsByDto (shape23-24-25) (Downstream - SOAP)
- |    |    └─→ READS: [process.DPP_SessionId]
+ |    ├─→ Path 3: GetLocationsByDto (shape23-24-25) (Downstream - SOAP) - **(BEST-EFFORT LOOKUP)**
+ |    |    └─→ READS: [process.DPP_SessionId, propertyName, unitCode from input]
  |    |    └─→ WRITES: [process.DPP_LocationID, process.DPP_BuildingID]
  |    |    └─→ HTTP: [Expected: 200, Error: 404/500]
+ |    |    └─→ ERROR HANDLING: If fails → Log warning, set empty values, CONTINUE
+ |    |    └─→ RESULT: locationId, buildingId (populated or empty)
+ |    |    └─→ BOOMI: Branch path 3 (shape23-24-25) converges at shape6 (no decision checks)
+ |    |    └─→ CODE: if (!response.IsSuccessStatusCode) { _logger.Warn(...); locationId = string.Empty; } else { extract(...); }
  |    |
- |    └─→ Path 4: GetInstructionSetsByDto (shape26-27-28) (Downstream - SOAP)
- |         └─→ READS: [process.DPP_SessionId]
+ |    └─→ Path 4: GetInstructionSetsByDto (shape26-27-28) (Downstream - SOAP) - **(BEST-EFFORT LOOKUP)**
+ |         └─→ READS: [process.DPP_SessionId, categoryName, subCategory from input]
  |         └─→ WRITES: [process.DPP_InstructionId]
  |         └─→ HTTP: [Expected: 200, Error: 404/500]
+ |         └─→ ERROR HANDLING: If fails → Log warning, set empty value, CONTINUE
+ |         └─→ RESULT: instructionId (populated or empty)
+ |         └─→ BOOMI: Branch path 4 (shape26-27-28) converges at shape6 (no decision checks)
+ |         └─→ CODE: if (!response.IsSuccessStatusCode) { _logger.Warn(...); instructionId = string.Empty; } else { extract(...); }
  |
  ├─→ CONVERGENCE (shape6 - stop with continue=true)
+ |    └─→ ALL lookup paths converge here regardless of success/failure
+ |    └─→ Process continues with whatever property values are available (populated or empty)
  |
  ├─→ Map CreateBreakdownTask Request (shape7)
  |
@@ -1145,21 +1194,31 @@ START (shape1)
  |
  ├─→ Notify Current Data (shape9)
  |
- ├─→ GetBreakdownTasksByDto (shape54) (Downstream - SOAP)
- |    └─→ READS: [process.DPP_SessionId]
+ ├─→ GetBreakdownTasksByDto (shape54) (Downstream - SOAP) - **(MAIN OPERATION)**
+ |    └─→ READS: [process.DPP_SessionId, serviceRequestNumber from input]
  |    └─→ WRITES: [CallId to response]
  |    └─→ HTTP: [Expected: 200, Error: 404/500]
+ |    └─→ ERROR HANDLING: If fails → Throw exception (check operation must succeed)
+ |    └─→ RESULT: callId, breakdownTaskId (throws exception on failure)
+ |    └─→ BOOMI: Query operation (shape54) used in decision shape55 (check-before-create)
+ |    └─→ CODE: if (!response.IsSuccessStatusCode) throw new DownStreamApiFailureException(...)
  |    └─→ PURPOSE: Check if work order already exists
  |
  ├─→ DECISION (shape55): CallId equals "" (empty)?
  |    |
  |    ├─→ IF TRUE (work order NOT exists):
  |    |    |
- |    |    ├─→ CreateBreakdownTask (shape11) (Downstream - SOAP)
+ |    |    ├─→ CreateBreakdownTask (shape11) (Downstream - SOAP) - **(MAIN OPERATION)**
  |    |    |    └─→ READS: [process.DPP_SessionId, DPP_CategoryId, DPP_DisciplineId, 
- |    |    |                DPP_PriorityId, DPP_BuildingID, DPP_LocationID, DPP_InstructionId]
+ |    |    |                DPP_PriorityId, DPP_BuildingID, DPP_LocationID, DPP_InstructionId,
+ |    |    |                reporterName, reporterEmail, description, etc. from input]
  |    |    |    └─→ WRITES: [BreakdownTaskId to response]
  |    |    |    └─→ HTTP: [Expected: 200, Error: 400/500]
+ |    |    |    └─→ ERROR HANDLING: If fails → Throw exception (main operation must succeed)
+ |    |    |    └─→ RESULT: breakdownTaskId (throws exception on failure)
+ |    |    |    └─→ BOOMI: Main operation (shape11) with decision shape12 checking status "20*"
+ |    |    |    └─→ CODE: if (!response.IsSuccessStatusCode) throw new DownStreamApiFailureException(...)
+ |    |    |    └─→ USES: Lookup IDs from paths 2-4 (may be empty if lookups failed, CAFM validates)
  |    |    |
  |    |    ├─→ DECISION (shape12): Status Code "20*"?
  |    |    |    |
@@ -1170,9 +1229,14 @@ START (shape1)
  |    |    |    |         |    └─→ Map Success (shape16) → Return Documents (shape15) [HTTP: 200] [SUCCESS]
  |    |    |    |         |
  |    |    |    |         └─→ IF FALSE (Recurring):
- |    |    |    |              └─→ BRANCH (shape32) → CreateEvent (shape34+) (Downstream - SOAP)
+ |    |    |    |              └─→ BRANCH (shape32) → CreateEvent (shape34+) (Downstream - SOAP) - **(CONDITIONAL)**
  |    |    |    |                   └─→ READS: [process.DPP_SessionId, process.DPP_BreakdownTaskId]
+ |    |    |    |                   └─→ WRITES: [process.DPP_EventId]
  |    |    |    |                   └─→ HTTP: [Expected: 200, Error: 400/500]
+ |    |    |    |                   └─→ ERROR HANDLING: If fails → Log warning, CONTINUE (task already created)
+ |    |    |    |                   └─→ RESULT: eventId (may be empty if failed)
+ |    |    |    |                   └─→ BOOMI: Conditional execution (decision shape31, FALSE path)
+ |    |    |    |                   └─→ CODE: if (!response.IsSuccessStatusCode) { _logger.Warn(...); } else { process(...); }
  |    |    |    |                   └─→ Converge to shape7 → Return Documents (shape15) [HTTP: 200] [SUCCESS]
  |    |    |    |
  |    |    |    └─→ IF FALSE (Error):
@@ -1183,9 +1247,14 @@ START (shape1)
  |    └─→ IF FALSE (work order EXISTS):
  |         └─→ BRANCH (shape58) → Map Exists (shape59) → Return Documents (shape15) [HTTP: 200] [EARLY EXIT]
  |
- └─→ FsiLogout (subprocess shape13) - Executed at END (cleanup)
+ └─→ FsiLogout (subprocess shape13) - Executed at END (cleanup) - **(CLEANUP)**
       └─→ READS: [process.DPP_SessionId]
+      └─→ WRITES: []
       └─→ HTTP: [Expected: 200, Error: 500]
+      └─→ ERROR HANDLING: If fails → Log error, CONTINUE (cleanup only, non-critical)
+      └─→ RESULT: (no variables set)
+      └─→ BOOMI: Cleanup operation (subprocess FsiLogout)
+      └─→ CODE: try { logout(...); } catch (ex) { _logger.Error(ex, ...); } (in middleware finally block)
 
 CATCH Block (shape3 error path):
  |
@@ -1193,6 +1262,23 @@ CATCH Block (shape3 error path):
       └─→ Set Error Message (shape21) → Return Failure (shape18) [HTTP: 400] [ERROR]
 
 END - Return Documents (shape15 or shape18)
+```
+
+**🎯 CODE GENERATION INSTRUCTIONS:**
+
+This diagram contains EVERYTHING needed for code generation:
+- ✅ Operation classification (AUTHENTICATION, BEST-EFFORT LOOKUP, MAIN OPERATION, CONDITIONAL, CLEANUP)
+- ✅ Error handling for EACH operation (throw vs continue)
+- ✅ Result for EACH operation (variables set, populated or empty)
+- ✅ Boomi references (shape numbers, patterns)
+- ✅ Code hints (if/else structure, exception types)
+
+**Developers can generate Handler code directly from this diagram:**
+- For **(BEST-EFFORT LOOKUP):** Use if/else, log warning, set empty, continue
+- For **(MAIN OPERATION):** Check status, throw DownStreamApiFailureException
+- For **(CONDITIONAL):** Use if condition, log warning if fails, continue
+- For **(CLEANUP):** Use try/catch, log error, continue
+- For **(AUTHENTICATION):** Check status, throw exception (in middleware)
 ```
 
 **Note:** Detailed request/response JSON examples for all operations and return paths are documented in Section 6 (HTTP Status Codes and Return Path Responses).
