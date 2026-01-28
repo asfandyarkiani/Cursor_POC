@@ -49,63 +49,63 @@ namespace CAFMManagementSystem.Implementations.FSIConcept.Handlers
                 throw new BaseException(ErrorConstants.CAF_SESSIO_0001);
             }
             
-            // Step 1: Get Location IDs
+            // Step 1: Get Location IDs (continue even if fails)
             HttpResponseSnapshot locationResponse = await GetLocationsByDtoFromDownstream(request, sessionId);
+            
+            string locationId = string.Empty;
+            string buildingId = string.Empty;
             
             if (!locationResponse.IsSuccessStatusCode)
             {
-                _logger.Error($"GetLocationsByDto failed: {locationResponse.StatusCode}");
-                throw new DownStreamApiFailureException(
-                    statusCode: (HttpStatusCode)locationResponse.StatusCode,
-                    error: ErrorConstants.CAF_GETLOC_0001,
-                    errorDetails: [$"CAFM GetLocationsByDto API failed. Status: {locationResponse.StatusCode}. Response: {locationResponse.Content}"],
-                    stepName: "CreateBreakdownTaskHandler.cs / HandleAsync"
-                );
+                _logger.Warn($"GetLocationsByDto failed: {locationResponse.StatusCode} - Continuing with empty location IDs");
             }
-            
-            GetLocationsByDtoApiResDTO? locationData = SOAPHelper.DeserializeSoapResponse<GetLocationsByDtoApiResDTO>(locationResponse.Content!);
-            
-            if (locationData == null)
+            else
             {
-                throw new NoResponseBodyException(
-                    error: ErrorConstants.CAF_GETLOC_0002,
-                    errorDetails: ["CAFM GetLocationsByDto returned empty response"],
-                    stepName: "CreateBreakdownTaskHandler.cs / HandleAsync"
-                );
+                GetLocationsByDtoApiResDTO? locationData = SOAPHelper.DeserializeSoapResponse<GetLocationsByDtoApiResDTO>(locationResponse.Content!);
+                
+                if (locationData == null)
+                {
+                    _logger.Warn("GetLocationsByDto returned empty response - Continuing with empty location IDs");
+                }
+                else
+                {
+                    locationId = locationData.LocationId ?? string.Empty;
+                    buildingId = locationData.BuildingId ?? string.Empty;
+                    _logger.Info($"Location IDs retrieved: LocationId={locationId}, BuildingId={buildingId}");
+                }
             }
             
-            // Step 2: Get Instruction Set ID
+            // Step 2: Get Instruction Set ID (continue even if fails)
             HttpResponseSnapshot instructionResponse = await GetInstructionSetsByDtoFromDownstream(request, sessionId);
+            
+            string instructionId = string.Empty;
             
             if (!instructionResponse.IsSuccessStatusCode)
             {
-                _logger.Error($"GetInstructionSetsByDto failed: {instructionResponse.StatusCode}");
-                throw new DownStreamApiFailureException(
-                    statusCode: (HttpStatusCode)instructionResponse.StatusCode,
-                    error: ErrorConstants.CAF_GETINS_0001,
-                    errorDetails: [$"CAFM GetInstructionSetsByDto API failed. Status: {instructionResponse.StatusCode}. Response: {instructionResponse.Content}"],
-                    stepName: "CreateBreakdownTaskHandler.cs / HandleAsync"
-                );
+                _logger.Warn($"GetInstructionSetsByDto failed: {instructionResponse.StatusCode} - Continuing with empty instruction ID");
             }
-            
-            GetInstructionSetsByDtoApiResDTO? instructionData = SOAPHelper.DeserializeSoapResponse<GetInstructionSetsByDtoApiResDTO>(instructionResponse.Content!);
-            
-            if (instructionData == null)
+            else
             {
-                throw new NoResponseBodyException(
-                    error: ErrorConstants.CAF_GETINS_0002,
-                    errorDetails: ["CAFM GetInstructionSetsByDto returned empty response"],
-                    stepName: "CreateBreakdownTaskHandler.cs / HandleAsync"
-                );
+                GetInstructionSetsByDtoApiResDTO? instructionData = SOAPHelper.DeserializeSoapResponse<GetInstructionSetsByDtoApiResDTO>(instructionResponse.Content!);
+                
+                if (instructionData == null)
+                {
+                    _logger.Warn("GetInstructionSetsByDto returned empty response - Continuing with empty instruction ID");
+                }
+                else
+                {
+                    instructionId = instructionData.InstructionId ?? string.Empty;
+                    _logger.Info($"Instruction ID retrieved: InstructionId={instructionId}");
+                }
             }
             
-            // Step 3: Create Breakdown Task
+            // Step 3: Create Breakdown Task (with whatever lookup data we have)
             HttpResponseSnapshot createResponse = await CreateBreakdownTaskInDownstream(
                 request, 
                 sessionId, 
-                locationData.LocationId ?? string.Empty,
-                locationData.BuildingId ?? string.Empty,
-                instructionData.InstructionId ?? string.Empty
+                locationId,
+                buildingId,
+                instructionId
             );
             
             if (!createResponse.IsSuccessStatusCode)
