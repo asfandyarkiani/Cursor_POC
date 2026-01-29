@@ -2029,6 +2029,8 @@ public void ValidateDownStreamRequestParameters() {
 11. **OPERATION NAMES:** ALWAYS use OperationNames.* constants for operationName parameter (NEVER string literals)
 12. **MAPPING/TRANSFORMATION:** If mapping/transformation occurs, it MUST be in a separate private method within the same Atomic Handler class (NOT directly in Handle() method)
 13. **CONFIGURATION & CONTEXT READING:** ALL reading from RequestContext, KeyVault, and AppConfigs MUST be done in Atomic Handlers (NOT in Handlers or Functions) - Atomic Handlers make SOR calls and need these values for authentication, URLs, and configuration
+14. **🔴 DON'T CHECK MIDDLEWARE-SET VALUES:** If CustomAuthenticationMiddleware sets SessionId in RequestContext, Atomic Handlers should NOT check if SessionId is null (middleware guarantees it's set). Trust middleware contract. Only check values that come from request parameters or business logic, NOT values guaranteed by framework/middleware.
+15. **🔴 USE FRAMEWORK EXCEPTIONS ONLY:** NEVER throw generic C# exceptions (InvalidOperationException, ArgumentException) in business logic. ONLY use framework exceptions (DownStreamApiFailureException, RequestValidationFailureException, NoRequestBodyException, NoResponseBodyException, NotFoundException, BusinessCaseFailureException). Exception: ArgumentException is acceptable ONLY for DTO type cast validation in Handle() first line.
 
 
 
