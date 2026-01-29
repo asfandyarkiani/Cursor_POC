@@ -1,0 +1,12 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.fsi.co.uk/services/evolution/04/09" xmlns:fsi="http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ns:CreateEvent>
+         <ns:sessionId>{{SessionId}}</ns:sessionId>
+         <ns:eventDto>
+            <fsi:BreakdownTaskId>{{BreakdownTaskId}}</fsi:BreakdownTaskId>
+            <fsi:EventDescription>{{EventDescription}}</fsi:EventDescription>
+         </ns:eventDto>
+      </ns:CreateEvent>
+   </soapenv:Body>
+</soapenv:Envelope>
