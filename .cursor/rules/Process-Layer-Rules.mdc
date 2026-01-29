@@ -1654,6 +1654,10 @@ public class CacheSettings {
 - `appsettings.prod.json` - Production
 - `appsettings.dr.json` - Disaster Recovery (optional)
 
+**🔴 CRITICAL RULE: NO Hardcoded Values in Downstream Requests**
+
+**MANDATORY:** ALL properties sent in downstream requests (System Layer or Process Layer calls) MUST be configured in AppConfigs/appsettings.json - NEVER hardcode values in code. If a value is found hardcoded (e.g., ContractId = "1"), first check Boomi JSON files (operation/map/profile) to extract the actual value, then add it to AppConfigs with the extracted value. If value doesn't exist in Boomi files, add placeholder in AppConfigs (e.g., ContractId = "") for environment-specific configuration. This ensures environment-specific values can be configured without code changes.
+
 ---
 
 ## 13. CONSTANTS RULES
