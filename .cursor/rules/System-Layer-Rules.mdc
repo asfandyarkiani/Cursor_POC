@@ -2368,6 +2368,10 @@ public class GetEntityDetailAtomicHandler : IAtomicHandler<HttpResponseSnapshot>
 
 **Injection Locations:** Atomic Handlers (✅ Yes - API URLs, timeouts, credentials) | Handlers (⚠️ Rarely) | Services (❌ No) | Middleware (✅ Yes if needed) | Functions (❌ No)
 
+**🔴 CRITICAL RULE: NO Hardcoded Values in Downstream Requests**
+
+**MANDATORY:** ALL properties sent in downstream requests (SOAP or REST) MUST be configured in AppConfigs/appsettings.json - NEVER hardcode values in code. If a value is found hardcoded (e.g., ContractId = "1"), first check Boomi JSON files (operation/map/profile) to extract the actual value, then add it to AppConfigs with the extracted value. If value doesn't exist in Boomi files, add placeholder in AppConfigs (e.g., ContractId = "") for environment-specific configuration. This ensures environment-specific values can be configured without code changes.
+
 ---
 
 ## 6. appsettings.json STRUCTURE
