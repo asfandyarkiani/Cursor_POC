@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "HFcnUexVAlNpgMZh13iv3zC6bKG+9YI9PXQTkYEGHfc=",
+  "Source": "SystemLayer.Api",
+  "BasePath": "_content/SystemLayer.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

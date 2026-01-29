@@ -1,0 +1,12 @@
+/workspace/src/SystemLayer.Application/bin/Debug/net8.0/SystemLayer.Application.deps.json
+/workspace/src/SystemLayer.Application/bin/Debug/net8.0/SystemLayer.Application.dll
+/workspace/src/SystemLayer.Application/bin/Debug/net8.0/SystemLayer.Application.pdb
+/workspace/src/SystemLayer.Application/obj/Debug/net8.0/SystemLayer.Application.GeneratedMSBuildEditorConfig.editorconfig
+/workspace/src/SystemLayer.Application/obj/Debug/net8.0/SystemLayer.Application.AssemblyInfoInputs.cache
+/workspace/src/SystemLayer.Application/obj/Debug/net8.0/SystemLayer.Application.AssemblyInfo.cs
+/workspace/src/SystemLayer.Application/obj/Debug/net8.0/SystemLayer.Application.csproj.CoreCompileInputs.cache
+/workspace/src/SystemLayer.Application/obj/Debug/net8.0/SystemLayer.Application.sourcelink.json
+/workspace/src/SystemLayer.Application/obj/Debug/net8.0/SystemLayer.Application.dll
+/workspace/src/SystemLayer.Application/obj/Debug/net8.0/refint/SystemLayer.Application.dll
+/workspace/src/SystemLayer.Application/obj/Debug/net8.0/SystemLayer.Application.pdb
+/workspace/src/SystemLayer.Application/obj/Debug/net8.0/ref/SystemLayer.Application.dll
