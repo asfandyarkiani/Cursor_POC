@@ -296,9 +296,11 @@ OUTPUT: Complete input structure analysis with field mapping table
 - [ ] Array cardinality documented (minOccurs, maxOccurs)
 - [ ] ALL fields extracted (including nested)
 - [ ] Field paths documented (full Boomi paths)
-- [ ] Field mapping table generated (Boomi → Azure DTO)
+- [ ] **Request field mapping table generated (Boomi → Azure DTO) - MANDATORY TABLE FORMAT**
 - [ ] Document processing behavior determined
 - [ ] Input structure documented in Phase 1 document
+
+**🔴 CRITICAL RULE:** Section 2 (Input Structure Analysis) MUST include a **Request Field Mapping table** with columns: Boomi Field Path | Boomi Field Name | Data Type | Required | Azure DTO Property | Notes. This table is MANDATORY (not optional) and must list ALL request fields with their mappings, just like Section 3 has Response Field Mapping table. Missing this table = incomplete Phase 1.
 
 ### STEP 1b: Response Structure Analysis (MANDATORY - CONTRACT VERIFICATION)
 
