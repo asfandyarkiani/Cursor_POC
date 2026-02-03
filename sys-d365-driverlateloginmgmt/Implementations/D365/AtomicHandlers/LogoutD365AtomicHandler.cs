@@ -1,4 +1,4 @@
-using AGI.ApiEcoSys.Core.Extensions;
+using Core.Extensions;
 using AGI.SysD365DriverLateLoginMgmt.Helper;
 using Microsoft.Extensions.Logging;
 

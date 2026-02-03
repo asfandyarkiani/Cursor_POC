@@ -1,9 +1,9 @@
-using AGI.ApiEcoSys.Core.Exceptions;
-using AGI.ApiEcoSys.Core.Extensions;
-using AGI.ApiEcoSys.Core.Middlewares;
-using AGI.ApiEcoSys.Core.SystemLayer.DTOs;
-using AGI.ApiEcoSys.Core.SystemLayer.Handlers;
-using AGI.ApiEcoSys.Core.SystemLayer.Middlewares;
+using Core.Exceptions;
+using Core.Extensions;
+using Core.Middlewares;
+using Core.SystemLayer.DTOs;
+using Core.SystemLayer.Handlers;
+using Core.SystemLayer.Middlewares;
 using AGI.SysD365DriverLateLoginMgmt.ConfigModels;
 using AGI.SysD365DriverLateLoginMgmt.Constants;
 using AGI.SysD365DriverLateLoginMgmt.DTO.AtomicHandlerDTOs;

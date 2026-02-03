@@ -1,4 +1,4 @@
-using AGI.ApiEcoSys.Core.SystemLayer.DTOs;
+using Core.SystemLayer.DTOs;
 using System.ComponentModel.DataAnnotations;
 
 namespace AGI.SysD365DriverLateLoginMgmt.DTO.SubmitDriverLateLoginDTO;

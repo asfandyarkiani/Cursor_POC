@@ -1,5 +1,5 @@
-using AGI.ApiEcoSys.Core.DTOs;
-using AGI.ApiEcoSys.Core.Extensions;
+using Core.DTOs;
+using Core.Extensions;
 using AGI.SysD365DriverLateLoginMgmt.Abstractions;
 using AGI.SysD365DriverLateLoginMgmt.DTO.SubmitDriverLateLoginDTO;
 using AGI.SysD365DriverLateLoginMgmt.Implementations.D365.Handlers;

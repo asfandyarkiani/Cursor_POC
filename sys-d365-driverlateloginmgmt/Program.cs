@@ -1,6 +1,6 @@
-using AGI.ApiEcoSys.Core.DI;
-using AGI.ApiEcoSys.Core.Middlewares;
-using AGI.ApiEcoSys.Core.SystemLayer.Middlewares;
+using Core.DI;
+using Core.Middlewares;
+using Core.SystemLayer.Middlewares;
 using AGI.SysD365DriverLateLoginMgmt.Abstractions;
 using AGI.SysD365DriverLateLoginMgmt.ConfigModels;
 using AGI.SysD365DriverLateLoginMgmt.Helper;

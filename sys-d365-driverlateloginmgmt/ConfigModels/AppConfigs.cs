@@ -1,4 +1,4 @@
-using AGI.ApiEcoSys.Core.Validators;
+using Core.Validators;
 
 namespace AGI.SysD365DriverLateLoginMgmt.ConfigModels;
 

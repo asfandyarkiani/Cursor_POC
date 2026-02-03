@@ -1,7 +1,7 @@
-using AGI.ApiEcoSys.Core.Constants;
-using AGI.ApiEcoSys.Core.DTOs;
-using AGI.ApiEcoSys.Core.Exceptions;
-using AGI.ApiEcoSys.Core.Extensions;
+using Core.Constants;
+using Core.DTOs;
+using Core.Exceptions;
+using Core.Extensions;
 using AGI.SysD365DriverLateLoginMgmt.Abstractions;
 using AGI.SysD365DriverLateLoginMgmt.Attributes;
 using AGI.SysD365DriverLateLoginMgmt.DTO.SubmitDriverLateLoginDTO;

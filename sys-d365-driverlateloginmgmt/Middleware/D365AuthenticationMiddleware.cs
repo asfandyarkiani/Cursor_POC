@@ -1,4 +1,4 @@
-using AGI.ApiEcoSys.Core.Extensions;
+using Core.Extensions;
 using AGI.SysD365DriverLateLoginMgmt.Attributes;
 using AGI.SysD365DriverLateLoginMgmt.Helper;
 using AGI.SysD365DriverLateLoginMgmt.Implementations.D365.AtomicHandlers;
