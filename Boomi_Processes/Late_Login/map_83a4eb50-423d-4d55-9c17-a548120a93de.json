@@ -1,0 +1,66 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Automotive/Buddy APP 2.0/LateLogin",
+      "componentId": "83a4eb50-423d-4d55-9c17-a548120a93de",
+      "version": "1",
+      "name": "Late Login Response",
+      "type": "transform.map",
+      "createdDate": "2022-10-06T06:24:43Z",
+      "createdBy": "Rajesh.Muppala@al-ghurair.com",
+      "modifiedDate": "2022-10-06T06:24:43Z",
+      "modifiedBy": "Rajesh.Muppala@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "LateLogin",
+      "folderId": "Rjo1MTk3ODg5",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "Map": {
+        "$": {
+          "fromProfile": "a30116a0-e900-4e68-9a74-7bd1dca4e7fb",
+          "toProfile": "bc9f24e9-854f-45cb-9871-2abe44b8963d"
+        },
+        "Mappings": {
+          "Mapping": [
+            {
+              "$": {
+                "fromKey": "17",
+                "fromKeyPath": "*[@key='1']/*[@key='2']/*[@key='12']/*[@key='13']/*[@key='14']/*[@key='15']/*[@key='17']",
+                "fromNamePath": "Root/Object/Messages/Array/ArrayElement1/Object/success",
+                "fromType": "profile",
+                "toKey": "7",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='3']/*[@key='4']/*[@key='5']/*[@key='6']/*[@key='7']",
+                "toNamePath": "Root/Object/messages/Array/ArrayElement1/Object/status",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromKey": "18",
+                "fromKeyPath": "*[@key='1']/*[@key='2']/*[@key='12']/*[@key='13']/*[@key='14']/*[@key='15']/*[@key='18']",
+                "fromNamePath": "Root/Object/Messages/Array/ArrayElement1/Object/message",
+                "fromType": "profile",
+                "toKey": "8",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='3']/*[@key='4']/*[@key='5']/*[@key='6']/*[@key='8']",
+                "toNamePath": "Root/Object/messages/Array/ArrayElement1/Object/message",
+                "toType": "profile"
+              }
+            }
+          ]
+        },
+        "Functions": {
+          "$": {
+            "optimizeExecutionOrder": "true"
+          }
+        },
+        "Defaults": "",
+        "DocumentCacheJoins": ""
+      }
+    }
+  }
+}

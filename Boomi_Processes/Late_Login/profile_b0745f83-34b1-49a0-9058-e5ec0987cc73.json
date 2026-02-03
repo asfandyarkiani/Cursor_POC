@@ -1,0 +1,173 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Automotive/Buddy APP 2.0/LateLogin",
+      "componentId": "b0745f83-34b1-49a0-9058-e5ec0987cc73",
+      "version": "13",
+      "name": "D365_Driver_Latelogin Request",
+      "type": "profile.json",
+      "createdDate": "2022-09-14T05:31:56Z",
+      "createdBy": "mohan.jonnalagadda@al-ghurair.com",
+      "modifiedDate": "2024-05-20T06:00:07Z",
+      "modifiedBy": "indrajit.sarkar@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "LateLogin",
+      "folderId": "Rjo1MTk3ODg5",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "JSONProfile": {
+        "$": {
+          "strict": "false"
+        },
+        "DataElements": {
+          "JSONRootValue": {
+            "$": {
+              "dataType": "character",
+              "isMappable": "true",
+              "isNode": "true",
+              "key": "1",
+              "name": "Root"
+            },
+            "DataFormat": {
+              "ProfileCharacterFormat": ""
+            },
+            "JSONObject": {
+              "$": {
+                "isMappable": "false",
+                "isNode": "true",
+                "key": "2",
+                "name": "Object"
+              },
+              "JSONObjectEntry": {
+                "$": {
+                  "dataType": "character",
+                  "isMappable": "true",
+                  "isNode": "true",
+                  "key": "3",
+                  "name": "params"
+                },
+                "DataFormat": {
+                  "ProfileCharacterFormat": ""
+                },
+                "JSONObject": {
+                  "$": {
+                    "isMappable": "false",
+                    "isNode": "true",
+                    "key": "4",
+                    "name": "Object"
+                  },
+                  "JSONObjectEntry": [
+                    {
+                      "$": {
+                        "dataType": "character",
+                        "isMappable": "true",
+                        "isNode": "true",
+                        "key": "5",
+                        "name": "driverId"
+                      },
+                      "DataFormat": {
+                        "ProfileCharacterFormat": ""
+                      }
+                    },
+                    {
+                      "$": {
+                        "dataType": "character",
+                        "isMappable": "true",
+                        "isNode": "true",
+                        "key": "7",
+                        "name": "RequestNo",
+                        "validateData": "false"
+                      },
+                      "DataFormat": {
+                        "ProfileCharacterFormat": ""
+                      },
+                      "Qualifiers": {
+                        "QualifierList": ""
+                      }
+                    },
+                    {
+                      "$": {
+                        "dataType": "character",
+                        "isMappable": "true",
+                        "isNode": "true",
+                        "key": "8",
+                        "name": "requestDateTime",
+                        "validateData": "false"
+                      },
+                      "DataFormat": {
+                        "ProfileCharacterFormat": ""
+                      },
+                      "Qualifiers": {
+                        "QualifierList": ""
+                      }
+                    },
+                    {
+                      "$": {
+                        "dataType": "character",
+                        "isMappable": "true",
+                        "isNode": "true",
+                        "key": "9",
+                        "name": "companyCode",
+                        "validateData": "false"
+                      },
+                      "DataFormat": {
+                        "ProfileCharacterFormat": ""
+                      },
+                      "Qualifiers": {
+                        "QualifierList": ""
+                      }
+                    },
+                    {
+                      "$": {
+                        "dataType": "character",
+                        "isMappable": "true",
+                        "isNode": "true",
+                        "key": "10",
+                        "name": "remarks",
+                        "validateData": "false"
+                      },
+                      "DataFormat": {
+                        "ProfileCharacterFormat": ""
+                      },
+                      "Qualifiers": {
+                        "QualifierList": ""
+                      }
+                    },
+                    {
+                      "$": {
+                        "dataType": "character",
+                        "isMappable": "true",
+                        "isNode": "true",
+                        "key": "11",
+                        "name": "reasonCode",
+                        "validateData": "false"
+                      },
+                      "DataFormat": {
+                        "ProfileCharacterFormat": ""
+                      },
+                      "Qualifiers": {
+                        "QualifierList": ""
+                      }
+                    }
+                  ]
+                },
+                "Qualifiers": {
+                  "QualifierList": ""
+                }
+              }
+            },
+            "Qualifiers": {
+              "QualifierList": ""
+            }
+          }
+        },
+        "tagLists": ""
+      }
+    }
+  }
+}

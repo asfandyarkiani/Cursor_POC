@@ -1,0 +1,74 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Automotive/Buddy APP 2.0/LateLogin",
+      "componentId": "4e6e256a-8cb5-4eb4-a05c-3bac6a77788c",
+      "version": "5",
+      "name": "D365_Drivers_Latelogin",
+      "type": "connector-action",
+      "subType": "http",
+      "createdDate": "2022-09-14T05:31:57Z",
+      "createdBy": "mohan.jonnalagadda@al-ghurair.com",
+      "modifiedDate": "2022-10-18T05:37:11Z",
+      "modifiedBy": "mohan.jonnalagadda@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "LateLogin",
+      "folderId": "Rjo1MTk3ODg5",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "Operation": {
+        "Archiving": {
+          "$": {
+            "directory": "",
+            "enabled": "false"
+          }
+        },
+        "Configuration": {
+          "HttpGetAction": {
+            "$": {
+              "dataContentType": "application/json",
+              "followRedirects": "false",
+              "methodType": "POST",
+              "mimePassthrough": "false",
+              "requestProfile": "b0745f83-34b1-49a0-9058-e5ec0987cc73",
+              "requestProfileType": "JSON",
+              "responseProfile": "a30116a0-e900-4e68-9a74-7bd1dca4e7fb",
+              "responseProfileType": "JSON",
+              "returnErrors": "true",
+              "returnMimeResponse": "false"
+            },
+            "requestHeaders": {
+              "header": {
+                "$": {
+                  "headerName": "Authorization",
+                  "isVariable": "true",
+                  "key": "1000000"
+                }
+              }
+            },
+            "pathElements": {
+              "element": {
+                "$": {
+                  "isVariable": "true",
+                  "key": "2000000",
+                  "name": "URL"
+                }
+              }
+            },
+            "responseHeaderMapping": "",
+            "reflectHeaders": ""
+          }
+        },
+        "Tracking": {
+          "TrackedFields": ""
+        },
+        "Caching": ""
+      }
+    }
+  }
+}

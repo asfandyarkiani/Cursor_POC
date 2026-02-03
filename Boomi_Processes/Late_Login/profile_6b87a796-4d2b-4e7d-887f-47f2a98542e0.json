@@ -1,0 +1,189 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Automotive/Drivers/DriverPartner",
+      "componentId": "6b87a796-4d2b-4e7d-887f-47f2a98542e0",
+      "version": "7",
+      "name": "DriverPartner Get Response Common(C/U)",
+      "type": "profile.json",
+      "createdDate": "2022-09-30T06:24:36Z",
+      "createdBy": "mohan.jonnalagadda@al-ghurair.com",
+      "modifiedDate": "2022-10-28T11:24:11Z",
+      "modifiedBy": "mohan.jonnalagadda@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "DriverPartner",
+      "folderId": "Rjo1MjQ4MTky",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "JSONProfile": {
+        "$": {
+          "strict": "false"
+        },
+        "DataElements": {
+          "JSONRootValue": {
+            "$": {
+              "dataType": "character",
+              "isMappable": "true",
+              "isNode": "true",
+              "key": "1",
+              "name": "partnerView"
+            },
+            "DataFormat": {
+              "ProfileCharacterFormat": ""
+            },
+            "JSONObject": {
+              "$": {
+                "isMappable": "false",
+                "isNode": "true",
+                "key": "2",
+                "name": "Object"
+              },
+              "JSONObjectEntry": [
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "3",
+                    "name": "messages"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  },
+                  "JSONArray": {
+                    "$": {
+                      "elementType": "repeating",
+                      "isMappable": "false",
+                      "isNode": "true",
+                      "key": "4",
+                      "name": "Array"
+                    },
+                    "JSONArrayElement": {
+                      "$": {
+                        "dataType": "character",
+                        "isMappable": "true",
+                        "isNode": "true",
+                        "key": "5",
+                        "maxOccurs": "-1",
+                        "minOccurs": "0",
+                        "name": "ArrayElement1"
+                      },
+                      "DataFormat": {
+                        "ProfileCharacterFormat": ""
+                      },
+                      "JSONObject": {
+                        "$": {
+                          "isMappable": "false",
+                          "isNode": "true",
+                          "key": "6",
+                          "name": "Object"
+                        },
+                        "JSONObjectEntry": [
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "9",
+                              "name": "name",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "10",
+                              "name": "contact",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "13",
+                              "name": "driverId",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          }
+                        ]
+                      },
+                      "Qualifiers": {
+                        "QualifierList": ""
+                      }
+                    }
+                  },
+                  "Qualifiers": {
+                    "QualifierList": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "11",
+                    "name": "success",
+                    "validateData": "false"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  },
+                  "Qualifiers": {
+                    "QualifierList": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "12",
+                    "name": "message",
+                    "validateData": "false"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  },
+                  "Qualifiers": {
+                    "QualifierList": ""
+                  }
+                }
+              ]
+            },
+            "Qualifiers": {
+              "QualifierList": ""
+            }
+          }
+        },
+        "tagLists": ""
+      }
+    }
+  }
+}
