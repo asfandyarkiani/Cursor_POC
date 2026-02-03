@@ -43,7 +43,7 @@ public class SubmitDriverLateLoginHandler : IBaseHandler<SubmitDriverLateLoginRe
     public async Task<BaseResponseDTO> HandleAsync(SubmitDriverLateLoginReqDTO requestDTO)
     {
         _logger.Info("[System Layer]-Initiating Submit Driver Late Login");
-        _logger.Info($"DriverId: {requestDTO.DriverId}, CompanyCode: {requestDTO.CompanyCode}");
+        _logger.Info($"DriverId: {requestDTO.DriverId}, CompanyCode: {requestDTO.CompanyCode ?? "not provided"}, RequestDateTime: {requestDTO.RequestDateTime ?? "not provided"}");
 
         // Call atomic handler to submit late login request to D365
         HttpResponseSnapshot d365Response = await SubmitLateLoginToDownstream(requestDTO);

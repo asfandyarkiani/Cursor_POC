@@ -53,13 +53,14 @@ public class SubmitLateLoginAtomicHandler : IAtomicHandler<HttpResponseSnapshot>
         _logger.Info($"D365 API URL: {fullApiUrl}");
 
         // Build request body (D365 expects params object)
+        // Note: requestDateTime and companyCode are optional in D365 contract
         object d365RequestBody = new
         {
             @params = new
             {
                 driverId = requestDTO.DriverId,
-                requestDateTime = requestDTO.RequestDateTime,
-                companyCode = requestDTO.CompanyCode,
+                requestDateTime = requestDTO.RequestDateTime ?? string.Empty,
+                companyCode = requestDTO.CompanyCode ?? string.Empty,
                 reasonCode = requestDTO.ReasonCode ?? string.Empty,
                 remarks = requestDTO.Remarks ?? string.Empty,
                 RequestNo = requestDTO.RequestNo ?? string.Empty

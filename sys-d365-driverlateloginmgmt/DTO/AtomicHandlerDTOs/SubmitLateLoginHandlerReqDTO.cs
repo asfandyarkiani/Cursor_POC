@@ -9,19 +9,19 @@ namespace AGI.SysD365DriverLateLoginMgmt.DTO.AtomicHandlerDTOs;
 public class SubmitLateLoginHandlerReqDTO : IDownStreamRequestDTO
 {
     /// <summary>
-    /// Driver ID
+    /// Driver ID (required)
     /// </summary>
     public string DriverId { get; set; } = string.Empty;
 
     /// <summary>
-    /// Late login date and time
+    /// Late login date and time (optional)
     /// </summary>
-    public string RequestDateTime { get; set; } = string.Empty;
+    public string? RequestDateTime { get; set; }
 
     /// <summary>
-    /// Company code
+    /// Company code (optional)
     /// </summary>
-    public string CompanyCode { get; set; } = string.Empty;
+    public string? CompanyCode { get; set; }
 
     /// <summary>
     /// Reason code for late login (optional)
@@ -55,20 +55,12 @@ public class SubmitLateLoginHandlerReqDTO : IDownStreamRequestDTO
             errors.Add("DriverId is required");
         }
 
-        if (string.IsNullOrWhiteSpace(RequestDateTime))
-        {
-            errors.Add("RequestDateTime is required");
-        }
-
-        if (string.IsNullOrWhiteSpace(CompanyCode))
-        {
-            errors.Add("CompanyCode is required");
-        }
-
         if (string.IsNullOrWhiteSpace(AuthorizationToken))
         {
             errors.Add("AuthorizationToken is required");
         }
+
+        // RequestDateTime and CompanyCode are optional (match D365 contract)
 
         if (errors.Count > 0)
         {

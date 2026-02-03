@@ -233,13 +233,19 @@ Root (Object)
 ```
 Root (Object)
 └── params (Object)
-    ├── driverId (string)
+    ├── driverId (string) [REQUIRED]
     ├── RequestNo (string) [OPTIONAL]
-    ├── requestDateTime (string) [OPTIONAL]
-    ├── companyCode (string) [OPTIONAL]
+    ├── requestDateTime (string) [OPTIONAL - but always populated by Boomi]
+    ├── companyCode (string) [OPTIONAL - but always populated by Boomi]
     ├── remarks (string) [OPTIONAL]
     └── reasonCode (string) [OPTIONAL]
 ```
+
+**Note:** While `requestDateTime` and `companyCode` are technically optional in the D365 API contract (validateData: false), the Boomi process always populates these fields before calling D365. For the System Layer API, we have two options:
+1. **Make them required** (enforces data quality, matches Boomi behavior)
+2. **Make them optional** (matches D365 contract exactly, more flexible)
+
+**Decision:** Make them **optional** in System Layer API to match D365 contract and provide flexibility for future use cases.
 
 **Field Mappings:**
 

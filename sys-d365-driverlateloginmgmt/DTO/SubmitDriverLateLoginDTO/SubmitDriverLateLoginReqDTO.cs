@@ -16,17 +16,17 @@ public class SubmitDriverLateLoginReqDTO : IRequestSysDTO
     public string DriverId { get; set; } = string.Empty;
 
     /// <summary>
-    /// Late login date and time (required)
+    /// Late login date and time (optional but recommended)
     /// Format: ISO 8601 (e.g., "2024-01-15T08:30:00Z")
+    /// Note: While optional in D365 contract, the Boomi process always provides this value
     /// </summary>
-    [Required(ErrorMessage = "RequestDateTime is required")]
-    public string RequestDateTime { get; set; } = string.Empty;
+    public string? RequestDateTime { get; set; }
 
     /// <summary>
-    /// Company code (required)
+    /// Company code (optional but recommended)
+    /// Note: While optional in D365 contract, the Boomi process always provides this value
     /// </summary>
-    [Required(ErrorMessage = "CompanyCode is required")]
-    public string CompanyCode { get; set; } = string.Empty;
+    public string? CompanyCode { get; set; }
 
     /// <summary>
     /// Reason code for late login (optional)
@@ -55,18 +55,10 @@ public class SubmitDriverLateLoginReqDTO : IRequestSysDTO
             errors.Add("DriverId is required and cannot be empty");
         }
 
-        if (string.IsNullOrWhiteSpace(RequestDateTime))
-        {
-            errors.Add("RequestDateTime is required and cannot be empty");
-        }
-        else if (!DateTime.TryParse(RequestDateTime, out DateTime _))
+        // RequestDateTime is optional, but if provided, must be valid
+        if (!string.IsNullOrWhiteSpace(RequestDateTime) && !DateTime.TryParse(RequestDateTime, out DateTime _))
         {
             errors.Add("RequestDateTime must be a valid date/time in ISO 8601 format");
-        }
-
-        if (string.IsNullOrWhiteSpace(CompanyCode))
-        {
-            errors.Add("CompanyCode is required and cannot be empty");
         }
 
         if (errors.Count > 0)
