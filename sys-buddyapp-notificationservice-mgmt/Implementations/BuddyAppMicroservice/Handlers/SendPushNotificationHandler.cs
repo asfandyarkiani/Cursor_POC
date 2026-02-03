@@ -171,7 +171,7 @@ public class SendPushNotificationHandler : IBaseHandler<SendPushNotificationReqD
 
         string genericErrorMessage = RestApiHelper.ExtractErrorMessage(httpResponseSnapshot);
         throw new DownStreamApiFailureException(
-            httpResponseSnapshot.StatusCode,
+            (System.Net.HttpStatusCode)httpResponseSnapshot.StatusCode,
             (ErrorConstants.SYS_NTFSVC_2004, ErrorConstants.SYS_NTFSVC_2004_MSG),
             new List<string> { genericErrorMessage }
         );
