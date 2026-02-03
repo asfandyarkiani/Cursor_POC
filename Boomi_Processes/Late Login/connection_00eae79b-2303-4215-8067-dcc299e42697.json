@@ -1,0 +1,48 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/#Commom/Common Connections",
+      "componentId": "00eae79b-2303-4215-8067-dcc299e42697",
+      "version": "17",
+      "name": "Office 365 Email",
+      "type": "connector-settings",
+      "subType": "mail",
+      "createdDate": "2022-09-08T06:31:00Z",
+      "createdBy": "Rajesh.Muppala@al-ghurair.com",
+      "modifiedDate": "2022-11-28T13:27:32Z",
+      "modifiedBy": "mohan.jonnalagadda@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Common Connections",
+      "folderId": "Rjo1MTgwNTcy",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": {
+      "{http://api.platform.boomi.com/}encryptedValue": {
+        "$": {
+          "path": "//MailSettings/AuthSettings/@password",
+          "isSet": "true"
+        }
+      }
+    },
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "MailSettings": {
+        "$": {
+          "host": "smtp-mail.outlook.com",
+          "port": "587",
+          "usesmtpauth": "true",
+          "usessl": "false",
+          "usetls": "true"
+        },
+        "AuthSettings": {
+          "$": {
+            "password": "ec7ce070d0424f7f442b28091c2cbc7918fc569f408d258dd31c5776cddeac9e80327b5671463651685d3ae2f0887aa8570db3c4c152886988f0c0e13982f187",
+            "user": "Boomi.Dev.failures@al-ghurair.com"
+          }
+        }
+      }
+    }
+  }
+}

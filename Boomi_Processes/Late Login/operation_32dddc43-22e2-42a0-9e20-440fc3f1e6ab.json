@@ -1,0 +1,74 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Automotive/Buddy APP 2.0/LateLogin",
+      "componentId": "32dddc43-22e2-42a0-9e20-440fc3f1e6ab",
+      "version": "10",
+      "name": "Latelogin Web Services Server Connector Operation",
+      "type": "connector-action",
+      "subType": "wss",
+      "createdDate": "2022-09-14T05:31:56Z",
+      "createdBy": "mohan.jonnalagadda@al-ghurair.com",
+      "modifiedDate": "2025-12-18T08:27:55Z",
+      "modifiedBy": "hari.krishna@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "LateLogin",
+      "folderId": "Rjo1MTk3ODg5",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "Operation": {
+        "Archiving": {
+          "$": {
+            "directory": "",
+            "enabled": "false"
+          }
+        },
+        "Configuration": {
+          "WebServicesServerListenAction": {
+            "$": {
+              "inputType": "singlejson",
+              "objectName": "",
+              "operationType": "EXECUTE",
+              "outputType": "singlejson",
+              "requestProfile": "b854b007-1bc1-410e-96fd-fae1b46454c3",
+              "responseContentType": "application/json",
+              "responseProfile": "bc9f24e9-854f-45cb-9871-2abe44b8963d"
+            }
+          }
+        },
+        "Tracking": {
+          "TrackedFields": {
+            "TrackedField": {
+              "$": {
+                "fieldId": "39434",
+                "fieldName": "driver-id"
+              },
+              "sourcevalues": {
+                "parametervalue": {
+                  "$": {
+                    "key": "0",
+                    "valueType": "profile"
+                  },
+                  "profileelement": {
+                    "$": {
+                      "elementId": "5",
+                      "elementName": "id (driverCreateRequest/Object/driver/Object/id)",
+                      "profileId": "01486775-2098-416b-8ba7-51697722edc9",
+                      "profileType": "profile.json"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "Caching": ""
+      }
+    }
+  }
+}

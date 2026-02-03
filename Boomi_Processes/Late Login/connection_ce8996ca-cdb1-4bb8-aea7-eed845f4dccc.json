@@ -1,0 +1,109 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/#Commom/Common Connections",
+      "componentId": "ce8996ca-cdb1-4bb8-aea7-eed845f4dccc",
+      "version": "59",
+      "name": "D365_Connection",
+      "type": "connector-settings",
+      "subType": "http",
+      "createdDate": "2022-10-04T12:11:49Z",
+      "createdBy": "Rajesh.Muppala@al-ghurair.com",
+      "modifiedDate": "2024-09-26T12:51:45Z",
+      "modifiedBy": "indrajit.sarkar@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Common Connections",
+      "folderId": "Rjo1MTgwNTcy",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": {
+      "{http://api.platform.boomi.com/}encryptedValue": {
+        "$": {
+          "path": "//HttpSettings/OAuth2Settings/credentials/@clientSecret",
+          "isSet": "true"
+        }
+      }
+    },
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "HttpSettings": {
+        "$": {
+          "authenticationType": "NONE",
+          "url": "https://agifd-dev1255993f31088ce6a4aos.cloudax.uae.dynamics.com"
+        },
+        "AuthSettings": {
+          "$": {
+            "user": ""
+          }
+        },
+        "OAuthSettings": {
+          "$": {
+            "accessToken": "",
+            "accessTokenURL": "",
+            "authorizationURL": "",
+            "consumerKey": "",
+            "realm": "",
+            "requestTokenURL": "",
+            "signatureMethod": "SHA256",
+            "suppressBlankAccessToken": "false"
+          }
+        },
+        "OAuth2Settings": {
+          "$": {
+            "grantType": "client_credentials"
+          },
+          "credentials": {
+            "$": {
+              "accessTokenKey": "4F07022A-9EDD-4214-A611-B5910A7585E4",
+              "clientId": "72a977d9-52a0-459c-bc78-53a9d307c251",
+              "clientSecret": "6d8ee77d0aaffc71fcb6c81710f5701df23e0615be03ad84982597590a5ef3fa309b132253786e5fb43b7cecf08b97b0b1cada648d09b474c9dc83a7d9d99af9"
+            }
+          },
+          "authorizationTokenEndpoint": {
+            "$": {
+              "url": ""
+            },
+            "sslOptions": ""
+          },
+          "authorizationParameters": "",
+          "accessTokenEndpoint": {
+            "$": {
+              "url": "https://login.microsoftonline.com/38a3f678-5fe7-4dbb-8eb9-eee7a0c6fd57/oauth2/token"
+            },
+            "sslOptions": ""
+          },
+          "accessTokenParameters": {
+            "parameter": {
+              "$": {
+                "name": "resource",
+                "value": "https://agifd-payrolluat.sandbox.operations.uae.dynamics.com"
+              }
+            }
+          },
+          "scope": ""
+        },
+        "AwsSettings": {
+          "credentials": {
+            "accessKeyId": "",
+            "awsService": {
+              "_": "s3"
+            },
+            "customService": "",
+            "awsRegion": {
+              "_": "ap-northeast-1"
+            },
+            "customRegion": ""
+          }
+        },
+        "SSLOptions": {
+          "$": {
+            "clientauth": "false",
+            "trustServerCert": "false"
+          }
+        }
+      }
+    }
+  }
+}

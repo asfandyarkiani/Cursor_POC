@@ -1,0 +1,94 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/#Commom/Common Connections",
+      "componentId": "2c8c173d-fc9d-41f1-a349-6e7f3fac0c32",
+      "version": "2",
+      "name": "D365_Token_URL",
+      "type": "connector-settings",
+      "subType": "http",
+      "createdDate": "2022-10-17T07:42:42Z",
+      "createdBy": "mohan.jonnalagadda@al-ghurair.com",
+      "modifiedDate": "2022-10-21T12:25:32Z",
+      "modifiedBy": "Rajesh.Muppala@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Common Connections",
+      "folderId": "Rjo1MTgwNTcy",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "HttpSettings": {
+        "$": {
+          "authenticationType": "NONE",
+          "url": "https://login.microsoftonline.com/38a3f678-5fe7-4dbb-8eb9-eee7a0c6fd57/oauth2/token"
+        },
+        "AuthSettings": {
+          "$": {
+            "user": ""
+          }
+        },
+        "OAuthSettings": {
+          "$": {
+            "accessToken": "",
+            "accessTokenURL": "",
+            "authorizationURL": "",
+            "consumerKey": "",
+            "realm": "",
+            "requestTokenURL": "",
+            "signatureMethod": "SHA256",
+            "suppressBlankAccessToken": "false"
+          }
+        },
+        "OAuth2Settings": {
+          "$": {
+            "grantType": "code",
+            "refreshAuthScheme": "req_body_params_auth"
+          },
+          "credentials": {
+            "$": {
+              "clientId": ""
+            }
+          },
+          "authorizationTokenEndpoint": {
+            "$": {
+              "url": ""
+            },
+            "sslOptions": ""
+          },
+          "authorizationParameters": "",
+          "accessTokenEndpoint": {
+            "$": {
+              "url": ""
+            },
+            "sslOptions": ""
+          },
+          "accessTokenParameters": "",
+          "scope": ""
+        },
+        "AwsSettings": {
+          "credentials": {
+            "accessKeyId": "",
+            "awsService": {
+              "_": "s3"
+            },
+            "customService": "",
+            "awsRegion": {
+              "_": "ap-northeast-1"
+            },
+            "customRegion": ""
+          }
+        },
+        "SSLOptions": {
+          "$": {
+            "clientauth": "false",
+            "trustServerCert": "false"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/#Commom/Common Process/D365_Token_Creation",
+      "componentId": "3c7211fa-5ae0-4b22-a9f6-f812d62ef13d",
+      "version": "3",
+      "name": "D365_Token_Details JSON",
+      "type": "profile.json",
+      "createdDate": "2022-10-17T07:42:42Z",
+      "createdBy": "mohan.jonnalagadda@al-ghurair.com",
+      "modifiedDate": "2025-10-27T05:57:57Z",
+      "modifiedBy": "gowri.sankar@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "D365_Token_Creation",
+      "folderId": "Rjo1MjkxNjgz",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "JSONProfile": {
+        "$": {
+          "strict": "false"
+        },
+        "DataElements": {
+          "JSONRootValue": {
+            "$": {
+              "dataType": "character",
+              "isMappable": "true",
+              "isNode": "true",
+              "key": "1",
+              "name": "Root"
+            },
+            "DataFormat": {
+              "ProfileCharacterFormat": ""
+            },
+            "JSONObject": {
+              "$": {
+                "isMappable": "false",
+                "isNode": "true",
+                "key": "2",
+                "name": "Object"
+              },
+              "JSONObjectEntry": [
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "3",
+                    "name": "token_type"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "4",
+                    "name": "expires_in"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "5",
+                    "name": "ext_expires_in"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "6",
+                    "name": "expires_on"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "7",
+                    "name": "not_before"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "8",
+                    "name": "resource"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "9",
+                    "name": "access_token"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  }
+                }
+              ]
+            },
+            "Qualifiers": {
+              "QualifierList": ""
+            }
+          }
+        },
+        "tagLists": ""
+      }
+    }
+  }
+}
