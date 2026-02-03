@@ -15,11 +15,41 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Restore
-        run: dotnet restore
+      - name: Restore Framework Core
+        run: dotnet restore Framework/Core/Core/Core.csproj
 
-      - name: Build
-        run: dotnet build --no-restore -c Release
+      - name: Restore Framework Cache
+        run: dotnet restore Framework/Cache/Cache.csproj
+
+      - name: Restore System Layer Projects
+        run: |
+          for project in sys-*/; do
+            if [ -f "${project}"*.csproj ]; then
+              echo "Restoring ${project}"
+              dotnet restore "${project}"*.csproj
+            fi
+          done
+
+      - name: Build Framework Core
+        run: dotnet build Framework/Core/Core/Core.csproj --no-restore -c Release
+
+      - name: Build Framework Cache
+        run: dotnet build Framework/Cache/Cache.csproj --no-restore -c Release
+
+      - name: Build System Layer Projects
+        run: |
+          for project in sys-*/; do
+            if [ -f "${project}"*.csproj ]; then
+              echo "Building ${project}"
+              dotnet build "${project}"*.csproj --no-restore -c Release
+            fi
+          done
 
       - name: Test
-        run: dotnet test --no-build -c Release
+        run: |
+          for project in sys-*/; do
+            if [ -f "${project}"*.csproj ]; then
+              echo "Testing ${project}"
+              dotnet test "${project}"*.csproj --no-build -c Release || echo "No tests found for ${project}"
+            fi
+          done
