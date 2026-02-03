@@ -1,0 +1,51 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Automotive/Buddy APP 2.0/Notifications",
+      "componentId": "4ab8bfa0-158f-49ad-8361-361f40516d6a",
+      "version": "1",
+      "name": "Push Notifications",
+      "type": "connector-action",
+      "subType": "wss",
+      "createdDate": "2024-03-26T06:13:08Z",
+      "createdBy": "indrajit.sarkar@al-ghurair.com",
+      "modifiedDate": "2024-03-26T06:13:08Z",
+      "modifiedBy": "indrajit.sarkar@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Notifications",
+      "folderId": "Rjo2NjA5OTcx",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "Operation": {
+        "Archiving": {
+          "$": {
+            "directory": "",
+            "enabled": "false"
+          }
+        },
+        "Configuration": {
+          "WebServicesServerListenAction": {
+            "$": {
+              "inputType": "singlejson",
+              "objectName": "",
+              "operationType": "CREATE",
+              "outputType": "singlejson",
+              "requestProfile": "73bddad7-d222-4774-ad8a-6efe0b9feac6",
+              "responseContentType": "application/json",
+              "responseProfile": "2f7ea94e-3063-493f-bc5e-8b0fe1bc0c66"
+            }
+          }
+        },
+        "Tracking": {
+          "TrackedFields": ""
+        },
+        "Caching": ""
+      }
+    }
+  }
+}

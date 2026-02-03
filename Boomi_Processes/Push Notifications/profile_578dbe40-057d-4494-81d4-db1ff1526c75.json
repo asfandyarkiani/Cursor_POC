@@ -1,0 +1,373 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Automotive/Buddy APP 2.0/Notifications",
+      "componentId": "578dbe40-057d-4494-81d4-db1ff1526c75",
+      "version": "2",
+      "name": "Push Notifications BuddyApp Response",
+      "type": "profile.json",
+      "createdDate": "2025-08-15T05:44:03Z",
+      "createdBy": "hari.krishna@al-ghurair.com",
+      "modifiedDate": "2025-08-15T05:58:50Z",
+      "modifiedBy": "hari.krishna@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Notifications",
+      "folderId": "Rjo2NjA5OTcx",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "JSONProfile": {
+        "$": {
+          "strict": "false"
+        },
+        "DataElements": {
+          "JSONRootValue": {
+            "$": {
+              "dataType": "character",
+              "isMappable": "true",
+              "isNode": "true",
+              "key": "1",
+              "name": "Root"
+            },
+            "DataFormat": {
+              "ProfileCharacterFormat": ""
+            },
+            "JSONObject": {
+              "$": {
+                "isMappable": "false",
+                "isNode": "true",
+                "key": "2",
+                "name": "Object"
+              },
+              "JSONObjectEntry": [
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "3",
+                    "name": "success"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  },
+                  "JSONArray": {
+                    "$": {
+                      "elementType": "repeating",
+                      "isMappable": "false",
+                      "isNode": "true",
+                      "key": "4",
+                      "name": "Array"
+                    },
+                    "JSONArrayElement": {
+                      "$": {
+                        "dataType": "character",
+                        "isMappable": "true",
+                        "isNode": "true",
+                        "key": "5",
+                        "maxOccurs": "-1",
+                        "minOccurs": "0",
+                        "name": "ArrayElement1"
+                      },
+                      "DataFormat": {
+                        "ProfileCharacterFormat": ""
+                      },
+                      "JSONObject": {
+                        "$": {
+                          "isMappable": "false",
+                          "isNode": "true",
+                          "key": "6",
+                          "name": "Object"
+                        },
+                        "JSONObjectEntry": [
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "7",
+                              "name": "type"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "8",
+                              "name": "provider"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "9",
+                              "name": "resp"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "10",
+                              "name": "refId"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "11",
+                              "name": "_id"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            }
+                          }
+                        ]
+                      },
+                      "Qualifiers": {
+                        "QualifierList": ""
+                      }
+                    }
+                  },
+                  "Qualifiers": {
+                    "QualifierList": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "12",
+                    "name": "failed"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  },
+                  "JSONArray": {
+                    "$": {
+                      "elementType": "repeating",
+                      "isMappable": "false",
+                      "isNode": "true",
+                      "key": "13",
+                      "name": "Array"
+                    },
+                    "JSONArrayElement": {
+                      "$": {
+                        "dataType": "character",
+                        "isMappable": "true",
+                        "isNode": "true",
+                        "key": "14",
+                        "maxOccurs": "-1",
+                        "minOccurs": "0",
+                        "name": "ArrayElement1"
+                      },
+                      "DataFormat": {
+                        "ProfileCharacterFormat": ""
+                      },
+                      "JSONObject": {
+                        "$": {
+                          "isMappable": "false",
+                          "isNode": "true",
+                          "key": "15",
+                          "name": "Object"
+                        },
+                        "JSONObjectEntry": [
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "16",
+                              "name": "type"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "17",
+                              "name": "provider"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "18",
+                              "name": "error"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "JSONObject": {
+                              "$": {
+                                "isMappable": "false",
+                                "isNode": "true",
+                                "key": "19",
+                                "name": "Object"
+                              },
+                              "JSONObjectEntry": [
+                                {
+                                  "$": {
+                                    "dataType": "character",
+                                    "isMappable": "true",
+                                    "isNode": "true",
+                                    "key": "20",
+                                    "name": "response"
+                                  },
+                                  "DataFormat": {
+                                    "ProfileCharacterFormat": ""
+                                  },
+                                  "JSONObject": {
+                                    "$": {
+                                      "isMappable": "false",
+                                      "isNode": "true",
+                                      "key": "21",
+                                      "name": "Object"
+                                    },
+                                    "JSONObjectEntry": [
+                                      {
+                                        "$": {
+                                          "dataType": "character",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "22",
+                                          "name": "message"
+                                        },
+                                        "DataFormat": {
+                                          "ProfileCharacterFormat": ""
+                                        }
+                                      },
+                                      {
+                                        "$": {
+                                          "dataType": "boolean",
+                                          "isMappable": "true",
+                                          "isNode": "true",
+                                          "key": "23",
+                                          "name": "isValidationError"
+                                        },
+                                        "DataFormat": ""
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "$": {
+                                    "dataType": "number",
+                                    "isMappable": "true",
+                                    "isNode": "true",
+                                    "key": "24",
+                                    "name": "status"
+                                  },
+                                  "DataFormat": {
+                                    "ProfileNumberFormat": {
+                                      "$": {
+                                        "numberFormat": ""
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "$": {
+                                    "dataType": "character",
+                                    "isMappable": "true",
+                                    "isNode": "true",
+                                    "key": "25",
+                                    "name": "options"
+                                  },
+                                  "DataFormat": {
+                                    "ProfileCharacterFormat": ""
+                                  },
+                                  "JSONObject": {
+                                    "$": {
+                                      "isMappable": "false",
+                                      "isNode": "true",
+                                      "key": "26",
+                                      "name": "Object"
+                                    }
+                                  }
+                                },
+                                {
+                                  "$": {
+                                    "dataType": "character",
+                                    "isMappable": "true",
+                                    "isNode": "true",
+                                    "key": "27",
+                                    "name": "message"
+                                  },
+                                  "DataFormat": {
+                                    "ProfileCharacterFormat": ""
+                                  }
+                                },
+                                {
+                                  "$": {
+                                    "dataType": "character",
+                                    "isMappable": "true",
+                                    "isNode": "true",
+                                    "key": "28",
+                                    "name": "name"
+                                  },
+                                  "DataFormat": {
+                                    "ProfileCharacterFormat": ""
+                                  }
+                                }
+                              ]
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          }
+                        ]
+                      },
+                      "Qualifiers": {
+                        "QualifierList": ""
+                      }
+                    }
+                  },
+                  "Qualifiers": {
+                    "QualifierList": ""
+                  }
+                }
+              ]
+            },
+            "Qualifiers": {
+              "QualifierList": ""
+            }
+          }
+        },
+        "tagLists": ""
+      }
+    }
+  }
+}

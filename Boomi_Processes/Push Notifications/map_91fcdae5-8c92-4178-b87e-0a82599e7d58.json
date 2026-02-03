@@ -1,0 +1,110 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Automotive/Buddy APP 2.0/Notifications",
+      "componentId": "91fcdae5-8c92-4178-b87e-0a82599e7d58",
+      "version": "3",
+      "name": "Push Notification Error Map",
+      "type": "transform.map",
+      "createdDate": "2024-03-26T06:50:09Z",
+      "createdBy": "indrajit.sarkar@al-ghurair.com",
+      "modifiedDate": "2025-08-15T08:41:28Z",
+      "modifiedBy": "hari.krishna@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Notifications",
+      "folderId": "Rjo2NjA5OTcx",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "Map": {
+        "$": {
+          "fromProfile": "56b9d8b3-9a77-44a1-891f-14537281207f",
+          "toProfile": "2f7ea94e-3063-493f-bc5e-8b0fe1bc0c66"
+        },
+        "Mappings": {
+          "Mapping": {
+            "$": {
+              "fromFunction": "1",
+              "fromKey": "3",
+              "fromType": "function",
+              "toKey": "11",
+              "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='11']",
+              "toNamePath": "notificationsResponse/Object/message",
+              "toType": "profile"
+            }
+          }
+        },
+        "Functions": {
+          "$": {
+            "optimizeExecutionOrder": "true"
+          },
+          "FunctionStep": {
+            "$": {
+              "cacheEnabled": "true",
+              "cacheOption": "none",
+              "category": "ProcessProperty",
+              "enabled": "true",
+              "key": "1",
+              "name": "Get Dynamic Process Property",
+              "position": "1",
+              "sumEnabled": "false",
+              "type": "PropertyGet",
+              "x": "10.0",
+              "y": "10.0"
+            },
+            "Inputs": {
+              "Input": [
+                {
+                  "$": {
+                    "default": "DPP_ErrorMessage",
+                    "isReset": "false",
+                    "key": "1",
+                    "name": "Property Name"
+                  }
+                },
+                {
+                  "$": {
+                    "isReset": "false",
+                    "key": "2",
+                    "name": "Default Value"
+                  }
+                }
+              ]
+            },
+            "Outputs": {
+              "Output": {
+                "$": {
+                  "isReset": "false",
+                  "key": "3",
+                  "name": "Result"
+                }
+              }
+            },
+            "Configuration": ""
+          }
+        },
+        "Defaults": {
+          "Default": [
+            {
+              "$": {
+                "toKey": "10",
+                "value": "failure"
+              }
+            },
+            {
+              "$": {
+                "toKey": "11",
+                "value": "Please try again later"
+              }
+            }
+          ]
+        },
+        "DocumentCacheJoins": ""
+      }
+    }
+  }
+}

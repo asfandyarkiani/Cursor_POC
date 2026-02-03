@@ -1,0 +1,104 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Automotive/Buddy APP 2.0/Notifications",
+      "componentId": "dba123b1-f408-49d7-b258-3c715311f4f3",
+      "version": "4",
+      "name": "Push Notifications_APP",
+      "type": "connector-action",
+      "subType": "http",
+      "createdDate": "2024-03-26T06:25:06Z",
+      "createdBy": "indrajit.sarkar@al-ghurair.com",
+      "modifiedDate": "2024-03-26T07:00:03Z",
+      "modifiedBy": "indrajit.sarkar@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Notifications",
+      "folderId": "Rjo2NjA5OTcx",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "Operation": {
+        "Archiving": {
+          "$": {
+            "directory": "",
+            "enabled": "false"
+          }
+        },
+        "Configuration": {
+          "HttpSendAction": {
+            "$": {
+              "dataContentType": "application/json",
+              "followRedirects": "false",
+              "methodType": "POST",
+              "mimePassthrough": "false",
+              "requestProfile": "bca09894-db59-4b96-a448-2ef082cfd05f",
+              "requestProfileType": "JSON",
+              "responseProfileType": "NONE",
+              "returnErrors": "true",
+              "returnMimeResponse": "false",
+              "returnResponses": "true"
+            },
+            "requestHeaders": {
+              "header": [
+                {
+                  "$": {
+                    "headerName": "organization-unit",
+                    "isVariable": "true",
+                    "key": "1000000"
+                  }
+                },
+                {
+                  "$": {
+                    "headerName": "bussiness-unit",
+                    "isVariable": "true",
+                    "key": "1000001"
+                  }
+                },
+                {
+                  "$": {
+                    "headerName": "channel",
+                    "isVariable": "true",
+                    "key": "1000002"
+                  }
+                },
+                {
+                  "$": {
+                    "headerName": "accept-language",
+                    "isVariable": "true",
+                    "key": "1000003"
+                  }
+                },
+                {
+                  "$": {
+                    "headerName": "source",
+                    "isVariable": "true",
+                    "key": "1000004"
+                  }
+                }
+              ]
+            },
+            "pathElements": {
+              "element": {
+                "$": {
+                  "isVariable": "true",
+                  "key": "2000000",
+                  "name": "URL"
+                }
+              }
+            },
+            "responseHeaderMapping": "",
+            "reflectHeaders": ""
+          }
+        },
+        "Tracking": {
+          "TrackedFields": ""
+        },
+        "Caching": ""
+      }
+    }
+  }
+}

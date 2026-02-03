@@ -1,0 +1,148 @@
+{
+  "root_process_id": "50751707-15fe-4c27-a814-426385d7e8aa",
+  "version": null,
+  "export_dir": "exports\\50751707-15fe-4c27-a814-426385d7e8aa",
+  "unique_component_ids": [
+    "00eae79b-2303-4215-8067-dcc299e42697",
+    "0feff13f-8a2c-438a-b3c7-1909e2a7f533",
+    "15a72a21-9b57-49a1-a8ed-d70367146644",
+    "2d956ec0-4920-47bf-b215-0cbcdc6ef206",
+    "2f7ea94e-3063-493f-bc5e-8b0fe1bc0c66",
+    "4ab8bfa0-158f-49ad-8361-361f40516d6a",
+    "50751707-15fe-4c27-a814-426385d7e8aa",
+    "56b9d8b3-9a77-44a1-891f-14537281207f",
+    "578dbe40-057d-4494-81d4-db1ff1526c75",
+    "73bddad7-d222-4774-ad8a-6efe0b9feac6",
+    "91fcdae5-8c92-4178-b87e-0a82599e7d58",
+    "a85945c5-3004-42b9-80b1-104f465cd1fb",
+    "af07502a-fafd-4976-a691-45d51a33b549",
+    "bca09894-db59-4b96-a448-2ef082cfd05f",
+    "be424c58-d837-4cd0-ae60-79955ef4a4e4",
+    "bea12f88-2c91-4b2b-b2a5-83bb8a701c76",
+    "c031c43d-3f87-4fc2-8700-5bb57fe0a8bc",
+    "dba123b1-f408-49d7-b258-3c715311f4f3"
+  ],
+  "counts": {
+    "connection": 2,
+    "operation": 4,
+    "map": 2,
+    "profile": 6,
+    "subprocess": 1,
+    "component": 18
+  },
+  "components_exported": 18,
+  "components_index": [
+    {
+      "kind": "connection",
+      "id": "bea12f88-2c91-4b2b-b2a5-83bb8a701c76",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\connection_bea12f88-2c91-4b2b-b2a5-83bb8a701c76.json"
+    },
+    {
+      "kind": "profile",
+      "id": "2f7ea94e-3063-493f-bc5e-8b0fe1bc0c66",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\profile_2f7ea94e-3063-493f-bc5e-8b0fe1bc0c66.json"
+    },
+    {
+      "kind": "profile",
+      "id": "73bddad7-d222-4774-ad8a-6efe0b9feac6",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\profile_73bddad7-d222-4774-ad8a-6efe0b9feac6.json"
+    },
+    {
+      "kind": "operation",
+      "id": "4ab8bfa0-158f-49ad-8361-361f40516d6a",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\operation_4ab8bfa0-158f-49ad-8361-361f40516d6a.json"
+    },
+    {
+      "kind": "profile",
+      "id": "bca09894-db59-4b96-a448-2ef082cfd05f",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\profile_bca09894-db59-4b96-a448-2ef082cfd05f.json"
+    },
+    {
+      "kind": "operation",
+      "id": "dba123b1-f408-49d7-b258-3c715311f4f3",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\operation_dba123b1-f408-49d7-b258-3c715311f4f3.json"
+    },
+    {
+      "kind": "profile",
+      "id": "56b9d8b3-9a77-44a1-891f-14537281207f",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\profile_56b9d8b3-9a77-44a1-891f-14537281207f.json"
+    },
+    {
+      "kind": "map",
+      "id": "91fcdae5-8c92-4178-b87e-0a82599e7d58",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\map_91fcdae5-8c92-4178-b87e-0a82599e7d58.json"
+    },
+    {
+      "kind": "profile",
+      "id": "578dbe40-057d-4494-81d4-db1ff1526c75",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\profile_578dbe40-057d-4494-81d4-db1ff1526c75.json"
+    },
+    {
+      "kind": "map",
+      "id": "be424c58-d837-4cd0-ae60-79955ef4a4e4",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\map_be424c58-d837-4cd0-ae60-79955ef4a4e4.json"
+    },
+    {
+      "kind": "profile",
+      "id": "2d956ec0-4920-47bf-b215-0cbcdc6ef206",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\profile_2d956ec0-4920-47bf-b215-0cbcdc6ef206.json"
+    },
+    {
+      "kind": "connection",
+      "id": "00eae79b-2303-4215-8067-dcc299e42697",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\connection_00eae79b-2303-4215-8067-dcc299e42697.json"
+    },
+    {
+      "kind": "operation",
+      "id": "15a72a21-9b57-49a1-a8ed-d70367146644",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\operation_15a72a21-9b57-49a1-a8ed-d70367146644.json"
+    },
+    {
+      "kind": "operation",
+      "id": "af07502a-fafd-4976-a691-45d51a33b549",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\operation_af07502a-fafd-4976-a691-45d51a33b549.json"
+    },
+    {
+      "kind": "component",
+      "id": "0feff13f-8a2c-438a-b3c7-1909e2a7f533",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\component_0feff13f-8a2c-438a-b3c7-1909e2a7f533.json"
+    },
+    {
+      "kind": "subprocess",
+      "id": "a85945c5-3004-42b9-80b1-104f465cd1fb",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\subprocess_a85945c5-3004-42b9-80b1-104f465cd1fb.json"
+    },
+    {
+      "kind": "component",
+      "id": "c031c43d-3f87-4fc2-8700-5bb57fe0a8bc",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\component_c031c43d-3f87-4fc2-8700-5bb57fe0a8bc.json"
+    },
+    {
+      "kind": "process_root",
+      "id": "50751707-15fe-4c27-a814-426385d7e8aa",
+      "status": 200,
+      "file": "exports\\50751707-15fe-4c27-a814-426385d7e8aa\\process_root_50751707-15fe-4c27-a814-426385d7e8aa.json"
+    }
+  ],
+  "notes": [
+    "ComponentReference/query returns one-level references; this export recursively traverses to reach the last grain level.",
+    "If enable_guid_scan=true, you may see unresolved IDs; those are GUID-like strings that are not necessarily Boomi components."
+  ]
+}
