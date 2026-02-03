@@ -1,3 +1,4 @@
+using Core.DTOs;
 using AGI.Enterprise.Automotive.BuddyApp.NotificationService.Mgmt.DTO.SendPushNotificationDTO;
 
 namespace AGI.Enterprise.Automotive.BuddyApp.NotificationService.Mgmt.Abstractions;
@@ -12,6 +13,6 @@ public interface INotificationMgmt
     /// Sends push notification to drivers via Buddy App microservice
     /// </summary>
     /// <param name="request">Notification request containing modes and data</param>
-    /// <returns>Response indicating success or failure</returns>
-    Task<SendPushNotificationResDTO> SendPushNotification(SendPushNotificationReqDTO request);
+    /// <returns>BaseResponseDTO with notification result</returns>
+    Task<BaseResponseDTO> SendPushNotification(SendPushNotificationReqDTO request);
 }

@@ -14,7 +14,7 @@ namespace AGI.Enterprise.Automotive.BuddyApp.NotificationService.Mgmt.Implementa
 /// Atomic handler for sending push notifications to Buddy App microservice
 /// Makes single HTTP POST call to downstream API
 /// </summary>
-public class SendPushNotificationAtomicHandler : IAtomicHandler<SendPushNotificationHandlerReqDTO, HttpResponseSnapshot>
+public class SendPushNotificationAtomicHandler : IAtomicHandler<HttpResponseSnapshot>
 {
     private readonly ILogger<SendPushNotificationAtomicHandler> _logger;
     private readonly CustomHTTPClient _httpClient;
@@ -33,7 +33,10 @@ public class SendPushNotificationAtomicHandler : IAtomicHandler<SendPushNotifica
     /// <summary>
     /// Sends push notification to Buddy App microservice
     /// </summary>
-    public async Task<HttpResponseSnapshot> Handle(SendPushNotificationHandlerReqDTO request)
+    public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamRequestDTO)
+    {
+        SendPushNotificationHandlerReqDTO request = (SendPushNotificationHandlerReqDTO)downStreamRequestDTO;
+        request.ValidateDownStreamRequestParameters();
     {
         _logger.LogInformation("SendPushNotificationAtomicHandler: Starting to send push notification to microservice");
 

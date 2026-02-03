@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Core.DTOs;
 using AGI.Enterprise.Automotive.BuddyApp.NotificationService.Mgmt.Abstractions;
 using AGI.Enterprise.Automotive.BuddyApp.NotificationService.Mgmt.DTO.SendPushNotificationDTO;
 using AGI.Enterprise.Automotive.BuddyApp.NotificationService.Mgmt.Implementations.BuddyAppMicroservice.Handlers;
@@ -25,13 +26,13 @@ public class NotificationMgmtService : INotificationMgmt
     /// <summary>
     /// Sends push notification to drivers
     /// </summary>
-    public async Task<SendPushNotificationResDTO> SendPushNotification(SendPushNotificationReqDTO request)
+    public async Task<BaseResponseDTO> SendPushNotification(SendPushNotificationReqDTO request)
     {
         _logger.LogInformation("NotificationMgmtService: SendPushNotification called");
         
-        SendPushNotificationResDTO response = await _sendPushNotificationHandler.Handle(request);
+        BaseResponseDTO response = await _sendPushNotificationHandler.HandleAsync(request);
         
-        _logger.LogInformation($"NotificationMgmtService: SendPushNotification completed with status: {response.Status}");
+        _logger.LogInformation($"NotificationMgmtService: SendPushNotification completed with message: {response.Message}");
         
         return response;
     }

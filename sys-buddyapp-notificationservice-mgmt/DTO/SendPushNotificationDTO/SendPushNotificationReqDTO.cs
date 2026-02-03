@@ -23,34 +23,66 @@ public class SendPushNotificationReqDTO : IRequestSysDTO
     [Required(ErrorMessage = ErrorConstants.SYS_NTFSVC_1002_MSG)]
     public NotificationData Data { get; set; } = new();
 
+    // Headers (populated by Function, not part of JSON body)
+    /// <summary>
+    /// Organization unit header (not serialized)
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? OrganizationUnit { get; set; }
+
+    /// <summary>
+    /// Business unit header (not serialized)
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? BusinessUnit { get; set; }
+
+    /// <summary>
+    /// Channel header (not serialized)
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? Channel { get; set; }
+
+    /// <summary>
+    /// Accept-Language header (not serialized)
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? AcceptLanguage { get; set; }
+
+    /// <summary>
+    /// Source header (not serialized)
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? Source { get; set; }
+
     /// <summary>
     /// Validates the request DTO
+    /// Throws RequestValidationFailureException if validation fails
     /// </summary>
-    public bool IsValid()
+    public void ValidateAPIRequestParameters()
     {
         if (Modes == null || Modes.Count == 0)
         {
-            return false;
+            throw new Core.Exceptions.RequestValidationFailureException(ErrorConstants.SYS_NTFSVC_1003_MSG);
         }
 
         if (Data == null)
         {
-            return false;
+            throw new Core.Exceptions.RequestValidationFailureException(ErrorConstants.SYS_NTFSVC_1002_MSG);
         }
 
         if (string.IsNullOrWhiteSpace(Data.DriverId))
         {
-            return false;
+            throw new Core.Exceptions.RequestValidationFailureException(ErrorConstants.SYS_NTFSVC_1004_MSG);
         }
 
         if (string.IsNullOrWhiteSpace(Data.Title))
         {
-            return false;
+            throw new Core.Exceptions.RequestValidationFailureException(ErrorConstants.SYS_NTFSVC_1005_MSG);
         }
 
         if (string.IsNullOrWhiteSpace(Data.Message))
         {
-            return false;
+            throw new Core.Exceptions.RequestValidationFailureException(ErrorConstants.SYS_NTFSVC_1006_MSG);
         }
 
         // Validate each mode
@@ -58,16 +90,14 @@ public class SendPushNotificationReqDTO : IRequestSysDTO
         {
             if (string.IsNullOrWhiteSpace(mode.Type))
             {
-                return false;
+                throw new Core.Exceptions.RequestValidationFailureException(ErrorConstants.SYS_NTFSVC_1007_MSG);
             }
 
             if (string.IsNullOrWhiteSpace(mode.Provider))
             {
-                return false;
+                throw new Core.Exceptions.RequestValidationFailureException(ErrorConstants.SYS_NTFSVC_1008_MSG);
             }
         }
-
-        return true;
     }
 }
 

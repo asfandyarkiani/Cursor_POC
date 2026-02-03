@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Core.DTOs;
 using Core.SystemLayer.Middlewares;
 using Core.SystemLayer.Handlers;
 using Core.SystemLayer.Exceptions;
@@ -15,7 +16,7 @@ namespace AGI.Enterprise.Automotive.BuddyApp.NotificationService.Mgmt.Implementa
 /// Handler for sending push notifications
 /// Orchestrates atomic handler and processes response
 /// </summary>
-public class SendPushNotificationHandler : IBaseHandler<SendPushNotificationReqDTO, SendPushNotificationResDTO>
+public class SendPushNotificationHandler : IBaseHandler<SendPushNotificationReqDTO>
 {
     private readonly ILogger<SendPushNotificationHandler> _logger;
     private readonly SendPushNotificationAtomicHandler _atomicHandler;
@@ -31,23 +32,19 @@ public class SendPushNotificationHandler : IBaseHandler<SendPushNotificationReqD
     /// <summary>
     /// Handles push notification request
     /// </summary>
-    public async Task<SendPushNotificationResDTO> Handle(SendPushNotificationReqDTO request, Dictionary<string, string>? headers = null)
+    public async Task<BaseResponseDTO> HandleAsync(SendPushNotificationReqDTO request)
     {
         _logger.LogInformation("SendPushNotificationHandler: Starting to process push notification request");
 
         // Validate request
-        if (!request.IsValid())
-        {
-            _logger.LogError("SendPushNotificationHandler: Invalid request");
-            throw new RequestValidationFailureException(ErrorConstants.SYS_NTFSVC_1001_MSG);
-        }
+        request.ValidateAPIRequestParameters();
 
-        // Extract headers
-        string? organizationUnit = headers?.GetValueOrDefault(InfoConstants.HEADER_ORGANIZATION_UNIT);
-        string? businessUnit = headers?.GetValueOrDefault(InfoConstants.HEADER_BUSINESS_UNIT);
-        string? channel = headers?.GetValueOrDefault(InfoConstants.HEADER_CHANNEL);
-        string? acceptLanguage = headers?.GetValueOrDefault(InfoConstants.HEADER_ACCEPT_LANGUAGE);
-        string? source = headers?.GetValueOrDefault(InfoConstants.HEADER_SOURCE);
+        // Extract headers from request DTO (populated by Function)
+        string? organizationUnit = request.OrganizationUnit;
+        string? businessUnit = request.BusinessUnit;
+        string? channel = request.Channel;
+        string? acceptLanguage = request.AcceptLanguage;
+        string? source = request.Source;
 
         // Build atomic handler request
         SendPushNotificationHandlerReqDTO atomicHandlerRequest = new()
@@ -75,7 +72,7 @@ public class SendPushNotificationHandler : IBaseHandler<SendPushNotificationReqD
     /// Processes HTTP response from microservice
     /// Implements Boomi decision logic: status code 20x → check error message → return success/failure
     /// </summary>
-    private SendPushNotificationResDTO ProcessResponse(HttpResponseSnapshot httpResponseSnapshot)
+    private BaseResponseDTO ProcessResponse(HttpResponseSnapshot httpResponseSnapshot)
     {
         int statusCode = (int)httpResponseSnapshot.StatusCode;
 
@@ -88,7 +85,12 @@ public class SendPushNotificationHandler : IBaseHandler<SendPushNotificationReqD
             if (string.IsNullOrWhiteSpace(httpResponseSnapshot.Content))
             {
                 _logger.LogWarning("SendPushNotificationHandler: Response content is empty");
-                return SendPushNotificationResDTO.CreateSuccess(InfoConstants.NOTIFICATION_SENT_SUCCESS);
+                SendPushNotificationResDTO successResponse = SendPushNotificationResDTO.CreateSuccess(InfoConstants.NOTIFICATION_SENT_SUCCESS);
+                return new BaseResponseDTO(
+                    message: InfoConstants.NOTIFICATION_SENT_SUCCESS,
+                    errorCode: string.Empty,
+                    data: successResponse
+                );
             }
 
             SendPushNotificationApiResDTO apiResponse = RestApiHelper.DeserializeJsonResponse<SendPushNotificationApiResDTO>(httpResponseSnapshot.Content);
@@ -102,7 +104,12 @@ public class SendPushNotificationHandler : IBaseHandler<SendPushNotificationReqD
                 if (!string.IsNullOrWhiteSpace(errorMessage))
                 {
                     _logger.LogWarning($"SendPushNotificationHandler: Notification failed with error: {errorMessage}");
-                    return SendPushNotificationResDTO.CreateFailure(errorMessage);
+                    SendPushNotificationResDTO failureResponse = SendPushNotificationResDTO.CreateFailure(errorMessage);
+                    return new BaseResponseDTO(
+                        message: errorMessage,
+                        errorCode: ErrorConstants.SYS_NTFSVC_2002,
+                        data: failureResponse
+                    );
                 }
             }
 
@@ -118,7 +125,12 @@ public class SendPushNotificationHandler : IBaseHandler<SendPushNotificationReqD
             }
 
             _logger.LogInformation($"SendPushNotificationHandler: Notification sent successfully: {successMessage}");
-            return SendPushNotificationResDTO.CreateSuccess(successMessage);
+            SendPushNotificationResDTO successResponseDto = SendPushNotificationResDTO.CreateSuccess(successMessage);
+            return new BaseResponseDTO(
+                message: successMessage,
+                errorCode: string.Empty,
+                data: successResponseDto
+            );
         }
 
         // Check if status code is 40x (client error)

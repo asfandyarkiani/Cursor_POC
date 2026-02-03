@@ -37,4 +37,16 @@ public class SendPushNotificationHandlerReqDTO : IDownStreamRequestDTO
     /// Source system header value
     /// </summary>
     public string? Source { get; set; }
+
+    /// <summary>
+    /// Validates the downstream request parameters
+    /// Throws RequestValidationFailureException if validation fails
+    /// </summary>
+    public void ValidateDownStreamRequestParameters()
+    {
+        if (NotificationPayload == null)
+        {
+            throw new Core.Exceptions.RequestValidationFailureException("Notification payload is required");
+        }
+    }
 }

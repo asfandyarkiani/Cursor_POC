@@ -2,12 +2,14 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using System.Text;
+using Core.DTOs;
+using Core.Context;
 using Core.Extensions;
 using Core.Exceptions;
 using AGI.Enterprise.Automotive.BuddyApp.NotificationService.Mgmt.Abstractions;
 using AGI.Enterprise.Automotive.BuddyApp.NotificationService.Mgmt.DTO.SendPushNotificationDTO;
 using AGI.Enterprise.Automotive.BuddyApp.NotificationService.Mgmt.Constants;
-using AGI.Enterprise.Automotive.BuddyApp.NotificationService.Mgmt.Helpers;
 
 namespace AGI.Enterprise.Automotive.BuddyApp.NotificationService.Mgmt.Functions;
 
@@ -41,54 +43,27 @@ public class SendPushNotificationAPI
 
         try
         {
-            // Read request body
-            string requestBody = await req.ReadAsStringAsync() ?? string.Empty;
+            // Store custom headers in Session context for Handler access
+            StoreCustomHeaders(req);
 
-            if (string.IsNullOrWhiteSpace(requestBody))
+            // Read and deserialize request body
+            SendPushNotificationReqDTO? requestDto = await req.ReadBodyAsync<SendPushNotificationReqDTO>();
+
+            if (requestDto == null)
             {
-                _logger.LogError("SendPushNotificationAPI: Request body is null or empty");
+                _logger.LogError("SendPushNotificationAPI: Failed to deserialize request body");
                 throw new NoRequestBodyException(ErrorConstants.SYS_NTFSVC_1001_MSG);
             }
 
-            // Deserialize request
-            SendPushNotificationReqDTO requestDto = RestApiHelper.DeserializeJsonResponse<SendPushNotificationReqDTO>(requestBody);
-
             _logger.LogInformation("SendPushNotificationAPI: Request deserialized successfully");
 
-            // Extract headers
-            Dictionary<string, string> headers = new();
-            
-            if (req.Headers.TryGetValues(InfoConstants.HEADER_ORGANIZATION_UNIT, out IEnumerable<string>? orgUnitValues))
-            {
-                headers[InfoConstants.HEADER_ORGANIZATION_UNIT] = orgUnitValues.FirstOrDefault() ?? string.Empty;
-            }
-
-            if (req.Headers.TryGetValues(InfoConstants.HEADER_BUSINESS_UNIT, out IEnumerable<string>? busUnitValues))
-            {
-                headers[InfoConstants.HEADER_BUSINESS_UNIT] = busUnitValues.FirstOrDefault() ?? string.Empty;
-            }
-
-            if (req.Headers.TryGetValues(InfoConstants.HEADER_CHANNEL, out IEnumerable<string>? channelValues))
-            {
-                headers[InfoConstants.HEADER_CHANNEL] = channelValues.FirstOrDefault() ?? string.Empty;
-            }
-
-            if (req.Headers.TryGetValues(InfoConstants.HEADER_ACCEPT_LANGUAGE, out IEnumerable<string>? acceptLangValues))
-            {
-                headers[InfoConstants.HEADER_ACCEPT_LANGUAGE] = acceptLangValues.FirstOrDefault() ?? string.Empty;
-            }
-
-            if (req.Headers.TryGetValues(InfoConstants.HEADER_SOURCE, out IEnumerable<string>? sourceValues))
-            {
-                headers[InfoConstants.HEADER_SOURCE] = sourceValues.FirstOrDefault() ?? string.Empty;
-            }
-
-            _logger.LogInformation("SendPushNotificationAPI: Headers extracted successfully");
+            // Populate headers from HTTP request
+            PopulateHeadersFromRequest(req, requestDto);
 
             // Call service
-            SendPushNotificationResDTO response = await _notificationMgmt.SendPushNotification(requestDto);
+            BaseResponseDTO response = await _notificationMgmt.SendPushNotification(requestDto);
 
-            _logger.LogInformation($"SendPushNotificationAPI: Notification processed with status: {response.Status}");
+            _logger.LogInformation($"SendPushNotificationAPI: Notification processed with message: {response.Message}");
 
             // Create HTTP response
             HttpResponseData httpResponse = req.CreateResponse(HttpStatusCode.OK);
@@ -111,5 +86,38 @@ public class SendPushNotificationAPI
             _logger.LogError($"SendPushNotificationAPI: Unexpected error: {ex.Message}");
             throw new BaseException(ErrorConstants.SYS_NTFSVC_9001, ErrorConstants.SYS_NTFSVC_9001_MSG, ex);
         }
+    }
+
+    /// <summary>
+    /// Populates custom headers from HTTP request into DTO
+    /// </summary>
+    private void PopulateHeadersFromRequest(HttpRequestData req, SendPushNotificationReqDTO requestDto)
+    {
+        if (req.Headers.TryGetValues(InfoConstants.HEADER_ORGANIZATION_UNIT, out IEnumerable<string>? orgUnitValues))
+        {
+            requestDto.OrganizationUnit = orgUnitValues.FirstOrDefault();
+        }
+
+        if (req.Headers.TryGetValues(InfoConstants.HEADER_BUSINESS_UNIT, out IEnumerable<string>? busUnitValues))
+        {
+            requestDto.BusinessUnit = busUnitValues.FirstOrDefault();
+        }
+
+        if (req.Headers.TryGetValues(InfoConstants.HEADER_CHANNEL, out IEnumerable<string>? channelValues))
+        {
+            requestDto.Channel = channelValues.FirstOrDefault();
+        }
+
+        if (req.Headers.TryGetValues(InfoConstants.HEADER_ACCEPT_LANGUAGE, out IEnumerable<string>? acceptLangValues))
+        {
+            requestDto.AcceptLanguage = acceptLangValues.FirstOrDefault();
+        }
+
+        if (req.Headers.TryGetValues(InfoConstants.HEADER_SOURCE, out IEnumerable<string>? sourceValues))
+        {
+            requestDto.Source = sourceValues.FirstOrDefault();
+        }
+
+        _logger.LogInformation("SendPushNotificationAPI: Custom headers populated in request DTO");
     }
 }
