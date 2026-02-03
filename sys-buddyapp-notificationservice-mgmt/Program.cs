@@ -42,6 +42,12 @@ IHost host = new HostBuilder()
         // Register CustomHTTPClient
         services.AddScoped<CustomHTTPClient>();
 
+        // Register Atomic Handlers
+        services.AddScoped<AGI.Enterprise.Automotive.BuddyApp.NotificationService.Mgmt.Implementations.BuddyAppMicroservice.AtomicHandlers.SendPushNotificationAtomicHandler>();
+
+        // Register Handlers
+        services.AddScoped<AGI.Enterprise.Automotive.BuddyApp.NotificationService.Mgmt.Implementations.BuddyAppMicroservice.Handlers.SendPushNotificationHandler>();
+
         // Register Services
         services.AddScoped<INotificationMgmt, NotificationMgmtService>();
     })
