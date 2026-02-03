@@ -8,8 +8,8 @@ using AGI.Enterprise.Automotive.BuddyApp.NotificationService.Mgmt.Implementation
 using Core.Middlewares;
 using Core.SystemLayer.Middlewares;
 
-IHost host = new HostBuilder()
-    .ConfigureFunctionsWebApplication(builder =>
+IHostBuilder hostBuilder = new HostBuilder()
+    .ConfigureFunctionsWorkerDefaults(builder =>
     {
         // Register middleware in EXACT order: ExecutionTiming → ExceptionHandler
         builder.UseMiddleware<ExecutionTimingMiddleware>();
@@ -34,10 +34,8 @@ IHost host = new HostBuilder()
         // Register configuration
         services.Configure<AppConfigs>(context.Configuration.GetSection("AppConfigs"));
 
-        // Register HttpClient with Polly policies
-        services.AddHttpClient<CustomHTTPClient>()
-            .AddPolicyHandler(CustomHTTPClient.GetRetryPolicy())
-            .AddPolicyHandler(CustomHTTPClient.GetCircuitBreakerPolicy());
+        // Register HttpClient
+        services.AddHttpClient<CustomHTTPClient>();
 
         // Register CustomHTTPClient
         services.AddScoped<CustomHTTPClient>();
@@ -50,7 +48,7 @@ IHost host = new HostBuilder()
 
         // Register Services
         services.AddScoped<INotificationMgmt, NotificationMgmtService>();
-    })
-    .Build();
+    });
 
+IHost host = hostBuilder.Build();
 host.Run();

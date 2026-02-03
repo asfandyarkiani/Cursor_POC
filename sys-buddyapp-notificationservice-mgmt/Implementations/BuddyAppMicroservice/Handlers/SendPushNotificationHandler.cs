@@ -159,13 +159,21 @@ public class SendPushNotificationHandler : IBaseHandler<SendPushNotificationReqD
             }
 
             _logger.LogError($"SendPushNotificationHandler: Client error: {errorMessage}");
-            throw new DownStreamApiFailureException(ErrorConstants.SYS_NTFSVC_2003, ErrorConstants.SYS_NTFSVC_2003_MSG, errorMessage);
+            throw new DownStreamApiFailureException(
+                System.Net.HttpStatusCode.BadRequest,
+                (ErrorConstants.SYS_NTFSVC_2003, ErrorConstants.SYS_NTFSVC_2003_MSG),
+                new List<string> { errorMessage }
+            );
         }
 
         // Other error (5xx or other)
         _logger.LogError($"SendPushNotificationHandler: Unexpected status code: {statusCode}");
 
         string genericErrorMessage = RestApiHelper.ExtractErrorMessage(httpResponseSnapshot);
-        throw new DownStreamApiFailureException(ErrorConstants.SYS_NTFSVC_2004, ErrorConstants.SYS_NTFSVC_2004_MSG, genericErrorMessage);
+        throw new DownStreamApiFailureException(
+            httpResponseSnapshot.StatusCode,
+            (ErrorConstants.SYS_NTFSVC_2004, ErrorConstants.SYS_NTFSVC_2004_MSG),
+            new List<string> { genericErrorMessage }
+        );
     }
 }

@@ -58,42 +58,46 @@ public class SendPushNotificationAtomicHandler : IAtomicHandler<HttpResponseSnap
         string fullUrl = $"{_appConfigs.MicroserviceBaseUrl.TrimEnd('/')}/{_appConfigs.ResourcePath.TrimStart('/')}";
         _logger.LogInformation($"SendPushNotificationAtomicHandler: Target URL: {fullUrl}");
 
-        // Create HTTP request message
-        HttpRequestMessage httpRequestMessage = new(HttpMethod.Post, fullUrl);
+        // Build request headers list
+        List<Tuple<string, string>> requestHeaders = new();
 
-        // Add headers
         if (!string.IsNullOrWhiteSpace(request.OrganizationUnit))
         {
-            httpRequestMessage.Headers.Add(InfoConstants.HEADER_ORGANIZATION_UNIT, request.OrganizationUnit);
+            requestHeaders.Add(new Tuple<string, string>(InfoConstants.HEADER_ORGANIZATION_UNIT, request.OrganizationUnit));
         }
 
         if (!string.IsNullOrWhiteSpace(request.BusinessUnit))
         {
-            httpRequestMessage.Headers.Add(InfoConstants.HEADER_BUSINESS_UNIT, request.BusinessUnit);
+            requestHeaders.Add(new Tuple<string, string>(InfoConstants.HEADER_BUSINESS_UNIT, request.BusinessUnit));
         }
 
         if (!string.IsNullOrWhiteSpace(request.Channel))
         {
-            httpRequestMessage.Headers.Add(InfoConstants.HEADER_CHANNEL, request.Channel);
+            requestHeaders.Add(new Tuple<string, string>(InfoConstants.HEADER_CHANNEL, request.Channel));
         }
 
         if (!string.IsNullOrWhiteSpace(request.AcceptLanguage))
         {
-            httpRequestMessage.Headers.Add(InfoConstants.HEADER_ACCEPT_LANGUAGE, request.AcceptLanguage);
+            requestHeaders.Add(new Tuple<string, string>(InfoConstants.HEADER_ACCEPT_LANGUAGE, request.AcceptLanguage));
         }
 
         if (!string.IsNullOrWhiteSpace(request.Source))
         {
-            httpRequestMessage.Headers.Add(InfoConstants.HEADER_SOURCE, request.Source);
+            requestHeaders.Add(new Tuple<string, string>(InfoConstants.HEADER_SOURCE, request.Source));
         }
-
-        // Set request body
-        httpRequestMessage.Content = RestApiHelper.CreateJsonContent(request.NotificationPayload);
 
         _logger.LogInformation("SendPushNotificationAtomicHandler: Sending HTTP POST request to microservice");
 
-        // Send HTTP request
-        HttpResponseSnapshot httpResponseSnapshot = await _httpClient.SendAsync(httpRequestMessage);
+        // Send HTTP request using CustomHTTPClient
+        HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(
+            HttpMethod.Post,
+            fullUrl,
+            () => RestApiHelper.CreateJsonContent(request.NotificationPayload),
+            reqHeaders: requestHeaders
+        );
+
+        // Convert to HttpResponseSnapshot
+        HttpResponseSnapshot httpResponseSnapshot = await HttpResponseSnapshot.FromAsync(httpResponseMessage);
 
         _logger.LogInformation($"SendPushNotificationAtomicHandler: Received response with status code: {httpResponseSnapshot.StatusCode}");
 

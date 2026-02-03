@@ -81,7 +81,7 @@ public class SendPushNotificationAPI
         catch (Exception ex)
         {
             _logger.LogError($"SendPushNotificationAPI: Unexpected error: {ex.Message}");
-            throw new BaseException(ErrorConstants.SYS_NTFSVC_9001, ErrorConstants.SYS_NTFSVC_9001_MSG, ex);
+            throw new BaseException(ErrorConstants.SYS_NTFSVC_9001_MSG);
         }
     }
 
