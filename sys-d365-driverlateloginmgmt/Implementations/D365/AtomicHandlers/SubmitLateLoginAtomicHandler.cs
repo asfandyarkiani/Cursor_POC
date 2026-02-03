@@ -1,0 +1,129 @@
+using AGI.ApiEcoSys.Core.Exceptions;
+using AGI.ApiEcoSys.Core.Extensions;
+using AGI.ApiEcoSys.Core.Middlewares;
+using AGI.ApiEcoSys.Core.SystemLayer.DTOs;
+using AGI.ApiEcoSys.Core.SystemLayer.Handlers;
+using AGI.ApiEcoSys.Core.SystemLayer.Middlewares;
+using AGI.SysD365DriverLateLoginMgmt.ConfigModels;
+using AGI.SysD365DriverLateLoginMgmt.Constants;
+using AGI.SysD365DriverLateLoginMgmt.DTO.AtomicHandlerDTOs;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System.Text.Json;
+
+namespace AGI.SysD365DriverLateLoginMgmt.Implementations.D365.AtomicHandlers;
+
+/// <summary>
+/// Atomic Handler for submitting late login request to D365
+/// Makes single HTTP POST call to D365 late login API
+/// </summary>
+public class SubmitLateLoginAtomicHandler : IAtomicHandler<HttpResponseSnapshot>
+{
+    private readonly CustomRestClient _restClient;
+    private readonly AppConfigs _appConfigs;
+    private readonly ILogger<SubmitLateLoginAtomicHandler> _logger;
+
+    public SubmitLateLoginAtomicHandler(
+        CustomRestClient restClient,
+        IOptions<AppConfigs> options,
+        ILogger<SubmitLateLoginAtomicHandler> logger)
+    {
+        _restClient = restClient;
+        _appConfigs = options.Value;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Handles the atomic operation of submitting late login request to D365
+    /// </summary>
+    /// <param name="downStreamRequestDTO">Request DTO containing late login details</param>
+    /// <returns>HTTP response snapshot from D365 API</returns>
+    public async Task<HttpResponseSnapshot> Handle(IDownStreamRequestDTO downStreamRequestDTO)
+    {
+        SubmitLateLoginHandlerReqDTO requestDTO = downStreamRequestDTO as SubmitLateLoginHandlerReqDTO 
+            ?? throw new ArgumentException("Invalid DTO type - expected SubmitLateLoginHandlerReqDTO");
+
+        _logger.Info($"Starting SubmitLateLogin for DriverId: {requestDTO.DriverId}");
+
+        // Validate request parameters
+        ValidateRequest(requestDTO);
+
+        // Build D365 API URL
+        string fullApiUrl = $"{_appConfigs.D365Config.BaseUrl}/{_appConfigs.D365Config.LateLoginResourcePath}";
+        _logger.Info($"D365 API URL: {fullApiUrl}");
+
+        // Build request body (D365 expects params object)
+        object d365RequestBody = new
+        {
+            @params = new
+            {
+                driverId = requestDTO.DriverId,
+                requestDateTime = requestDTO.RequestDateTime,
+                companyCode = requestDTO.CompanyCode,
+                reasonCode = requestDTO.ReasonCode ?? string.Empty,
+                remarks = requestDTO.Remarks ?? string.Empty,
+                RequestNo = requestDTO.RequestNo ?? string.Empty
+            }
+        };
+
+        string requestBodyJson = JsonSerializer.Serialize(d365RequestBody);
+        _logger.Info($"Request body: {requestBodyJson}");
+
+        // Build custom headers with Authorization token
+        Dictionary<string, string> customHeaders = new Dictionary<string, string>
+        {
+            { "Authorization", requestDTO.AuthorizationToken }
+        };
+
+        // Call D365 late login API
+        HttpResponseSnapshot d365Response = await _restClient.ExecuteCustomRestRequestAsync(
+            operationName: "SubmitLateLogin",
+            apiUrl: fullApiUrl,
+            httpMethod: HttpMethod.Post,
+            bodyContent: requestBodyJson,
+            customHeaders: customHeaders,
+            contentType: "application/json"
+        );
+
+        _logger.Info($"SubmitLateLogin completed - Status: {d365Response.StatusCode}");
+
+        return d365Response;
+    }
+
+    /// <summary>
+    /// Validates the request parameters
+    /// </summary>
+    /// <param name="requestDTO">Request DTO to validate</param>
+    private void ValidateRequest(SubmitLateLoginHandlerReqDTO requestDTO)
+    {
+        List<string> validationErrors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(requestDTO.DriverId))
+        {
+            validationErrors.Add("DriverId is required");
+        }
+
+        if (string.IsNullOrWhiteSpace(requestDTO.RequestDateTime))
+        {
+            validationErrors.Add("RequestDateTime is required");
+        }
+
+        if (string.IsNullOrWhiteSpace(requestDTO.CompanyCode))
+        {
+            validationErrors.Add("CompanyCode is required");
+        }
+
+        if (string.IsNullOrWhiteSpace(requestDTO.AuthorizationToken))
+        {
+            validationErrors.Add("AuthorizationToken is required");
+        }
+
+        if (validationErrors.Count > 0)
+        {
+            throw new RequestValidationFailureException(
+                errorDetails: validationErrors,
+                stepName: "SubmitLateLoginAtomicHandler.cs / ValidateRequest"
+            );
+        }
+    }
+}
