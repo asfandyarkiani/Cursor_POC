@@ -37,7 +37,7 @@ public class SendPushNotificationAtomicHandler : IAtomicHandler<HttpResponseSnap
     {
         SendPushNotificationHandlerReqDTO request = (SendPushNotificationHandlerReqDTO)downStreamRequestDTO;
         request.ValidateDownStreamRequestParameters();
-    {
+
         _logger.LogInformation("SendPushNotificationAtomicHandler: Starting to send push notification to microservice");
 
         // Validate configuration
