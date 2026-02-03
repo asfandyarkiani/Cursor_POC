@@ -80,9 +80,10 @@ public class SubmitLateLoginAtomicHandler : IAtomicHandler<HttpResponseSnapshot>
             operationName: "SubmitLateLogin",
             apiUrl: fullApiUrl,
             httpMethod: HttpMethod.Post,
-            bodyContent: requestBodyJson,
-            customHeaders: customHeaders,
-            contentType: "application/json"
+            contentFactory: () => CustomRestClient.CreateContentWithHeaders(
+                CustomRestClient.CreateJsonContent(requestBodyJson),
+                customHeaders
+            )
         );
 
         _logger.Info($"SubmitLateLogin completed - Status: {d365Response.StatusCode}");

@@ -130,7 +130,7 @@ public class SubmitDriverLateLoginHandler : IBaseHandler<SubmitDriverLateLoginRe
             ReasonCode = request.ReasonCode,
             Remarks = request.Remarks,
             RequestNo = request.RequestNo,
-            AuthorizationToken = _requestContext.AuthorizationToken ?? string.Empty
+            AuthorizationToken = _requestContext.AuthorizationToken ?? throw new InvalidOperationException("Authorization token is not available in RequestContext")
         };
 
         return await _submitLateLoginAtomicHandler.Handle(atomicHandlerRequest);

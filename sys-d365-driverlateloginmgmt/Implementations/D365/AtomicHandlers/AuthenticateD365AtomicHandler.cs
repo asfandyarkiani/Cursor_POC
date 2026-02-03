@@ -57,8 +57,7 @@ public class AuthenticateD365AtomicHandler
                 operationName: "AuthenticateD365",
                 apiUrl: _appConfigs.D365Config.TokenUrl,
                 httpMethod: HttpMethod.Post,
-                bodyContent: tokenRequestBody,
-                contentType: "application/x-www-form-urlencoded"
+                contentFactory: () => new StringContent(tokenRequestBody, System.Text.Encoding.UTF8, "application/x-www-form-urlencoded")
             );
 
             _logger.Info($"D365 authentication completed - Status: {tokenResponse.StatusCode}");
