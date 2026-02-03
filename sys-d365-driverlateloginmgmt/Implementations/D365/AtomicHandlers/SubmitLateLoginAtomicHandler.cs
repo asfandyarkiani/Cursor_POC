@@ -81,7 +81,7 @@ public class SubmitLateLoginAtomicHandler : IAtomicHandler<HttpResponseSnapshot>
             apiUrl: fullApiUrl,
             httpMethod: HttpMethod.Post,
             contentFactory: () => CustomRestClient.CreateContentWithHeaders(
-                CustomRestClient.CreateJsonContent(requestBodyJson),
+                CustomRestClient.CreateJsonContent(requestBodyJson, System.Text.Encoding.UTF8, "application/json"),
                 customHeaders
             )
         );

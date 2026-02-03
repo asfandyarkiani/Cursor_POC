@@ -16,7 +16,8 @@ using Microsoft.Extensions.Logging;
 
 // Create Host Builder
 IHostBuilder builder = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults();
+    .ConfigureFunctionsWorkerDefaults()
+    .ConfigureFunctionsWebApplication();
 
 builder.ConfigureServices((context, services) =>
 {

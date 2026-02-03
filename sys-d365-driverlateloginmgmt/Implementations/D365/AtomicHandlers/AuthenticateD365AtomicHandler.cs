@@ -66,7 +66,7 @@ public class AuthenticateD365AtomicHandler
             {
                 _logger.Error($"D365 authentication failed - Status: {tokenResponse.StatusCode}, Response: {tokenResponse.Content}");
                 throw new RequestValidationFailureException(
-                    errorDetails: [ErrorConstants.D365_AUTHEN_0001, $"Status: {tokenResponse.StatusCode}", $"Response: {tokenResponse.Content}"],
+                    errorDetails: [ErrorConstants.D365_AUTHEN_0001.Message, $"Status: {tokenResponse.StatusCode}", $"Response: {tokenResponse.Content}"],
                     stepName: "AuthenticateD365AtomicHandler.cs / AuthenticateAsync"
                 );
             }
@@ -79,7 +79,7 @@ public class AuthenticateD365AtomicHandler
                 {
                     _logger.Error("D365 authentication response is null or missing access token");
                     throw new RequestValidationFailureException(
-                        errorDetails: [ErrorConstants.D365_AUTHEN_0002, "Access token is missing in response"],
+                        errorDetails: [ErrorConstants.D365_AUTHEN_0002.Message, "Access token is missing in response"],
                         stepName: "AuthenticateD365AtomicHandler.cs / AuthenticateAsync"
                     );
                 }
