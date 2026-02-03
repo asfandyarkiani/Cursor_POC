@@ -62,27 +62,27 @@ public class SendPushNotificationReqDTO : IRequestSysDTO
     {
         if (Modes == null || Modes.Count == 0)
         {
-            throw new Core.Exceptions.RequestValidationFailureException(ErrorConstants.SYS_NTFSVC_1003_MSG);
+            throw new Core.Exceptions.RequestValidationFailureException((ErrorConstants.SYS_NTFSVC_1003, ErrorConstants.SYS_NTFSVC_1003_MSG));
         }
 
         if (Data == null)
         {
-            throw new Core.Exceptions.RequestValidationFailureException(ErrorConstants.SYS_NTFSVC_1002_MSG);
+            throw new Core.Exceptions.RequestValidationFailureException((ErrorConstants.SYS_NTFSVC_1002, ErrorConstants.SYS_NTFSVC_1002_MSG));
         }
 
         if (string.IsNullOrWhiteSpace(Data.DriverId))
         {
-            throw new Core.Exceptions.RequestValidationFailureException(ErrorConstants.SYS_NTFSVC_1004_MSG);
+            throw new Core.Exceptions.RequestValidationFailureException((ErrorConstants.SYS_NTFSVC_1004, ErrorConstants.SYS_NTFSVC_1004_MSG));
         }
 
         if (string.IsNullOrWhiteSpace(Data.Title))
         {
-            throw new Core.Exceptions.RequestValidationFailureException(ErrorConstants.SYS_NTFSVC_1005_MSG);
+            throw new Core.Exceptions.RequestValidationFailureException((ErrorConstants.SYS_NTFSVC_1005, ErrorConstants.SYS_NTFSVC_1005_MSG));
         }
 
         if (string.IsNullOrWhiteSpace(Data.Message))
         {
-            throw new Core.Exceptions.RequestValidationFailureException(ErrorConstants.SYS_NTFSVC_1006_MSG);
+            throw new Core.Exceptions.RequestValidationFailureException((ErrorConstants.SYS_NTFSVC_1006, ErrorConstants.SYS_NTFSVC_1006_MSG));
         }
 
         // Validate each mode
@@ -90,12 +90,12 @@ public class SendPushNotificationReqDTO : IRequestSysDTO
         {
             if (string.IsNullOrWhiteSpace(mode.Type))
             {
-                throw new Core.Exceptions.RequestValidationFailureException(ErrorConstants.SYS_NTFSVC_1007_MSG);
+                throw new Core.Exceptions.RequestValidationFailureException((ErrorConstants.SYS_NTFSVC_1007, ErrorConstants.SYS_NTFSVC_1007_MSG));
             }
 
             if (string.IsNullOrWhiteSpace(mode.Provider))
             {
-                throw new Core.Exceptions.RequestValidationFailureException(ErrorConstants.SYS_NTFSVC_1008_MSG);
+                throw new Core.Exceptions.RequestValidationFailureException((ErrorConstants.SYS_NTFSVC_1008, ErrorConstants.SYS_NTFSVC_1008_MSG));
             }
         }
     }

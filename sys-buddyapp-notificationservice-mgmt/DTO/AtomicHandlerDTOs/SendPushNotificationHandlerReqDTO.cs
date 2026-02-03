@@ -46,7 +46,7 @@ public class SendPushNotificationHandlerReqDTO : IDownStreamRequestDTO
     {
         if (NotificationPayload == null)
         {
-            throw new Core.Exceptions.RequestValidationFailureException("Notification payload is required");
+            throw new Core.Exceptions.RequestValidationFailureException(("SYS_NTFSVC_1002", "Notification payload is required"));
         }
     }
 }

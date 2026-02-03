@@ -43,16 +43,13 @@ public class SendPushNotificationAPI
 
         try
         {
-            // Store custom headers in Session context for Handler access
-            StoreCustomHeaders(req);
-
             // Read and deserialize request body
             SendPushNotificationReqDTO? requestDto = await req.ReadBodyAsync<SendPushNotificationReqDTO>();
 
             if (requestDto == null)
             {
                 _logger.LogError("SendPushNotificationAPI: Failed to deserialize request body");
-                throw new NoRequestBodyException(ErrorConstants.SYS_NTFSVC_1001_MSG);
+                throw new NoRequestBodyException((ErrorConstants.SYS_NTFSVC_1001, ErrorConstants.SYS_NTFSVC_1001_MSG));
             }
 
             _logger.LogInformation("SendPushNotificationAPI: Request deserialized successfully");
