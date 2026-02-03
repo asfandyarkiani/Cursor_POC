@@ -24,7 +24,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Framework/Core/Core/Core.csproj" />
-    <ProjectReference Include="../Framework/Cache/Cache.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

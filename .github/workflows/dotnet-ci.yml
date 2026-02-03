@@ -18,9 +18,6 @@ jobs:
       - name: Restore Framework Core
         run: dotnet restore Framework/Core/Core/Core.csproj
 
-      - name: Restore Framework Cache
-        run: dotnet restore Framework/Cache/Cache.csproj
-
       - name: Restore System Layer Projects
         run: |
           for project in sys-*/; do
@@ -32,9 +29,6 @@ jobs:
 
       - name: Build Framework Core
         run: dotnet build Framework/Core/Core/Core.csproj --no-restore -c Release
-
-      - name: Build Framework Cache
-        run: dotnet build Framework/Cache/Cache.csproj --no-restore -c Release
 
       - name: Build System Layer Projects
         run: |
