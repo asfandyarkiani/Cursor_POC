@@ -46,7 +46,7 @@ public class SubmitLateLoginAtomicHandler : IAtomicHandler<HttpResponseSnapshot>
         _logger.Info($"Starting SubmitLateLogin for DriverId: {requestDTO.DriverId}");
 
         // Validate request parameters
-        ValidateRequest(requestDTO);
+        requestDTO.ValidateDownStreamRequestParameters();
 
         // Build D365 API URL
         string fullApiUrl = $"{_appConfigs.D365Config.BaseUrl}/{_appConfigs.D365Config.LateLoginResourcePath}";
@@ -88,42 +88,5 @@ public class SubmitLateLoginAtomicHandler : IAtomicHandler<HttpResponseSnapshot>
         _logger.Info($"SubmitLateLogin completed - Status: {d365Response.StatusCode}");
 
         return d365Response;
-    }
-
-    /// <summary>
-    /// Validates the request parameters
-    /// </summary>
-    /// <param name="requestDTO">Request DTO to validate</param>
-    private void ValidateRequest(SubmitLateLoginHandlerReqDTO requestDTO)
-    {
-        List<string> validationErrors = new List<string>();
-
-        if (string.IsNullOrWhiteSpace(requestDTO.DriverId))
-        {
-            validationErrors.Add("DriverId is required");
-        }
-
-        if (string.IsNullOrWhiteSpace(requestDTO.RequestDateTime))
-        {
-            validationErrors.Add("RequestDateTime is required");
-        }
-
-        if (string.IsNullOrWhiteSpace(requestDTO.CompanyCode))
-        {
-            validationErrors.Add("CompanyCode is required");
-        }
-
-        if (string.IsNullOrWhiteSpace(requestDTO.AuthorizationToken))
-        {
-            validationErrors.Add("AuthorizationToken is required");
-        }
-
-        if (validationErrors.Count > 0)
-        {
-            throw new RequestValidationFailureException(
-                errorDetails: validationErrors,
-                stepName: "SubmitLateLoginAtomicHandler.cs / ValidateRequest"
-            );
-        }
     }
 }

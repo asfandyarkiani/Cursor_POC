@@ -6,7 +6,7 @@ namespace AGI.SysD365DriverLateLoginMgmt.DTO.SubmitDriverLateLoginDTO;
 /// Response DTO for submitting driver late login request to D365
 /// Returned to Process Layer
 /// </summary>
-public class SubmitDriverLateLoginResDTO : BaseResponseDTO
+public class SubmitDriverLateLoginResDTO
 {
     /// <summary>
     /// Success status from D365 API
@@ -29,13 +29,13 @@ public class SubmitDriverLateLoginResDTO : BaseResponseDTO
     public string? InputReference { get; set; }
 
     /// <summary>
-    /// Creates a success response
+    /// Maps D365 API response to System Layer response
     /// </summary>
-    /// <param name="message">Success message</param>
+    /// <param name="message">Message from D365</param>
     /// <param name="reference">Reference ID</param>
     /// <param name="inputReference">Input reference</param>
-    /// <returns>Success response DTO</returns>
-    public static SubmitDriverLateLoginResDTO CreateSuccessResponse(string message, string? reference = null, string? inputReference = null)
+    /// <returns>Response DTO</returns>
+    public static SubmitDriverLateLoginResDTO Map(string message, string? reference = null, string? inputReference = null)
     {
         return new SubmitDriverLateLoginResDTO
         {
@@ -43,20 +43,6 @@ public class SubmitDriverLateLoginResDTO : BaseResponseDTO
             Message = message,
             Reference = reference,
             InputReference = inputReference
-        };
-    }
-
-    /// <summary>
-    /// Creates an error response
-    /// </summary>
-    /// <param name="message">Error message</param>
-    /// <returns>Error response DTO</returns>
-    public static SubmitDriverLateLoginResDTO CreateErrorResponse(string message)
-    {
-        return new SubmitDriverLateLoginResDTO
-        {
-            Success = false,
-            Message = message
         };
     }
 }

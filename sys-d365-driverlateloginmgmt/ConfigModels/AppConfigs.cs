@@ -1,4 +1,4 @@
-using Core.Validators;
+using Core.DTOs;
 
 namespace AGI.SysD365DriverLateLoginMgmt.ConfigModels;
 
@@ -20,27 +20,37 @@ public class AppConfigs : IConfigValidator
     /// <summary>
     /// Validates the configuration
     /// </summary>
-    /// <returns>Tuple with validation result and error message</returns>
-    public (bool IsValid, string ErrorMessage) Validate()
+    public void validate()
     {
+        List<string> errors = new List<string>();
+
         // Validate D365 configuration
-        (bool d365IsValid, string d365ErrorMessage) = D365Config.Validate();
-        if (!d365IsValid)
+        try
         {
-            return (false, $"D365 configuration validation failed: {d365ErrorMessage}");
+            D365Config.validate();
+        }
+        catch (InvalidOperationException ex)
+        {
+            errors.Add($"D365 configuration validation failed: {ex.Message}");
         }
 
         // Validate Key Vault configuration if enabled
         if (KeyVaultConfig.UseKeyVault)
         {
-            (bool kvIsValid, string kvErrorMessage) = KeyVaultConfig.Validate();
-            if (!kvIsValid)
+            try
             {
-                return (false, $"Key Vault configuration validation failed: {kvErrorMessage}");
+                KeyVaultConfig.validate();
+            }
+            catch (InvalidOperationException ex)
+            {
+                errors.Add($"Key Vault configuration validation failed: {ex.Message}");
             }
         }
 
-        return (true, string.Empty);
+        if (errors.Count > 0)
+        {
+            throw new InvalidOperationException($"AppConfigs validation failed:\n{string.Join("\n", errors)}");
+        }
     }
 }
 
@@ -92,45 +102,49 @@ public class D365Config : IConfigValidator
     /// <summary>
     /// Validates the D365 configuration
     /// </summary>
-    /// <returns>Tuple with validation result and error message</returns>
-    public (bool IsValid, string ErrorMessage) Validate()
+    public void validate()
     {
+        List<string> errors = new List<string>();
+
         if (string.IsNullOrWhiteSpace(BaseUrl))
         {
-            return (false, "BaseUrl is required");
+            errors.Add("BaseUrl is required");
         }
 
         if (string.IsNullOrWhiteSpace(LateLoginResourcePath))
         {
-            return (false, "LateLoginResourcePath is required");
+            errors.Add("LateLoginResourcePath is required");
         }
 
         if (string.IsNullOrWhiteSpace(TokenUrl))
         {
-            return (false, "TokenUrl is required");
+            errors.Add("TokenUrl is required");
         }
 
         if (string.IsNullOrWhiteSpace(ClientId))
         {
-            return (false, "ClientId is required");
+            errors.Add("ClientId is required");
         }
 
         if (string.IsNullOrWhiteSpace(ClientSecret))
         {
-            return (false, "ClientSecret is required");
+            errors.Add("ClientSecret is required");
         }
 
         if (string.IsNullOrWhiteSpace(Resource))
         {
-            return (false, "Resource is required");
+            errors.Add("Resource is required");
         }
 
         if (TokenCacheDurationMinutes <= 0 || TokenCacheDurationMinutes > 60)
         {
-            return (false, "TokenCacheDurationMinutes must be between 1 and 60 minutes");
+            errors.Add("TokenCacheDurationMinutes must be between 1 and 60 minutes");
         }
 
-        return (true, string.Empty);
+        if (errors.Count > 0)
+        {
+            throw new InvalidOperationException($"D365Config validation failed:\n{string.Join("\n", errors)}");
+        }
     }
 }
 
@@ -152,14 +166,18 @@ public class KeyVaultConfig : IConfigValidator
     /// <summary>
     /// Validates the Key Vault configuration
     /// </summary>
-    /// <returns>Tuple with validation result and error message</returns>
-    public (bool IsValid, string ErrorMessage) Validate()
+    public void validate()
     {
+        List<string> errors = new List<string>();
+
         if (UseKeyVault && string.IsNullOrWhiteSpace(KeyVaultUrl))
         {
-            return (false, "KeyVaultUrl is required when UseKeyVault is true");
+            errors.Add("KeyVaultUrl is required when UseKeyVault is true");
         }
 
-        return (true, string.Empty);
+        if (errors.Count > 0)
+        {
+            throw new InvalidOperationException($"KeyVaultConfig validation failed:\n{string.Join("\n", errors)}");
+        }
     }
 }

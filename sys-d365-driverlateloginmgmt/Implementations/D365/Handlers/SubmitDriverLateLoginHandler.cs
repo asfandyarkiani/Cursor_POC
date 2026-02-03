@@ -98,7 +98,7 @@ public class SubmitDriverLateLoginHandler : IBaseHandler<SubmitDriverLateLoginRe
                     _logger.Info("[System Layer]-Completed Submit Driver Late Login");
 
                     // Map D365 response to System Layer response DTO
-                    SubmitDriverLateLoginResDTO responseDTO = SubmitDriverLateLoginResDTO.CreateSuccessResponse(
+                    SubmitDriverLateLoginResDTO responseDTO = SubmitDriverLateLoginResDTO.Map(
                         message: d365Message.Message,
                         reference: d365Message.Reference,
                         inputReference: d365Message.InputReference
@@ -106,8 +106,8 @@ public class SubmitDriverLateLoginHandler : IBaseHandler<SubmitDriverLateLoginRe
 
                     return new BaseResponseDTO(
                         message: InfoConstants.LATE_LOGIN_REQUEST_SUCCESS,
-                        data: responseDTO,
-                        errorCode: null
+                        errorCode: null,
+                        data: responseDTO
                     );
                 }
             }

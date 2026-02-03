@@ -46,30 +46,35 @@ public class SubmitDriverLateLoginReqDTO : IRequestSysDTO
     /// <summary>
     /// Validates the request DTO
     /// </summary>
-    /// <returns>Tuple with validation result and error message</returns>
-    public (bool IsValid, string ErrorMessage) Validate()
+    public void ValidateAPIRequestParameters()
     {
+        List<string> errors = new List<string>();
+
         if (string.IsNullOrWhiteSpace(DriverId))
         {
-            return (false, "DriverId is required and cannot be empty");
+            errors.Add("DriverId is required and cannot be empty");
         }
 
         if (string.IsNullOrWhiteSpace(RequestDateTime))
         {
-            return (false, "RequestDateTime is required and cannot be empty");
+            errors.Add("RequestDateTime is required and cannot be empty");
+        }
+        else if (!DateTime.TryParse(RequestDateTime, out DateTime _))
+        {
+            errors.Add("RequestDateTime must be a valid date/time in ISO 8601 format");
         }
 
         if (string.IsNullOrWhiteSpace(CompanyCode))
         {
-            return (false, "CompanyCode is required and cannot be empty");
+            errors.Add("CompanyCode is required and cannot be empty");
         }
 
-        // Validate RequestDateTime format (ISO 8601)
-        if (!DateTime.TryParse(RequestDateTime, out DateTime _))
+        if (errors.Count > 0)
         {
-            return (false, "RequestDateTime must be a valid date/time in ISO 8601 format");
+            throw new Core.Exceptions.RequestValidationFailureException(
+                errorDetails: errors,
+                stepName: "SubmitDriverLateLoginReqDTO.cs / ValidateAPIRequestParameters"
+            );
         }
-
-        return (true, string.Empty);
     }
 }

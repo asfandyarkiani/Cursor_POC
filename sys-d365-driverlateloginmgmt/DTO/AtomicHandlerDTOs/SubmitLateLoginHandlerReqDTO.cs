@@ -42,4 +42,40 @@ public class SubmitLateLoginHandlerReqDTO : IDownStreamRequestDTO
     /// OAuth2 Bearer token for D365 authentication
     /// </summary>
     public string AuthorizationToken { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Validates the downstream request parameters
+    /// </summary>
+    public void ValidateDownStreamRequestParameters()
+    {
+        List<string> errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(DriverId))
+        {
+            errors.Add("DriverId is required");
+        }
+
+        if (string.IsNullOrWhiteSpace(RequestDateTime))
+        {
+            errors.Add("RequestDateTime is required");
+        }
+
+        if (string.IsNullOrWhiteSpace(CompanyCode))
+        {
+            errors.Add("CompanyCode is required");
+        }
+
+        if (string.IsNullOrWhiteSpace(AuthorizationToken))
+        {
+            errors.Add("AuthorizationToken is required");
+        }
+
+        if (errors.Count > 0)
+        {
+            throw new Core.Exceptions.RequestValidationFailureException(
+                errorDetails: errors,
+                stepName: "SubmitLateLoginHandlerReqDTO.cs / ValidateDownStreamRequestParameters"
+            );
+        }
+    }
 }

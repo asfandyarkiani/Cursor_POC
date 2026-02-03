@@ -56,26 +56,16 @@ public class SubmitDriverLateLoginRequestAPI
         else
         {
             // Validate request parameters
-            (bool isValid, string errorMessage) = lateLoginRequest.Validate();
-            if (!isValid)
-            {
-                _logger.Error($"Request validation failed: {errorMessage}");
-                throw new RequestValidationFailureException(
-                    errorDetails: [errorMessage],
-                    stepName: "SubmitDriverLateLoginRequestAPI.cs / Run"
-                );
-            }
-            else
-            {
-                _logger.Info($"Request validated successfully - DriverId: {lateLoginRequest.DriverId}, CompanyCode: {lateLoginRequest.CompanyCode}");
+            lateLoginRequest.ValidateAPIRequestParameters();
 
-                // Delegate to service
-                BaseResponseDTO result = await _driverLateLoginMgmt.SubmitDriverLateLoginRequest(lateLoginRequest);
+            _logger.Info($"Request validated successfully - DriverId: {lateLoginRequest.DriverId}, CompanyCode: {lateLoginRequest.CompanyCode}");
 
-                _logger.Info("Submit Driver Late Login Request completed successfully");
+            // Delegate to service
+            BaseResponseDTO result = await _driverLateLoginMgmt.SubmitDriverLateLoginRequest(lateLoginRequest);
 
-                return result;
-            }
+            _logger.Info("Submit Driver Late Login Request completed successfully");
+
+            return result;
         }
     }
 }
