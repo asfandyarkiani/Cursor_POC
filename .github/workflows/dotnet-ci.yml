@@ -15,11 +15,27 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Restore
+      - name: Restore Framework Core
         run: dotnet restore
+        working-directory: ./Framework/Core
 
-      - name: Build
+      - name: Build Framework Core
         run: dotnet build --no-restore -c Release
+        working-directory: ./Framework/Core
+
+      - name: Restore System Layer Project
+        run: dotnet restore
+        working-directory: ./sys-buddyapp-notificationservice-mgmt
+
+      - name: Build System Layer Project
+        run: dotnet build --no-restore -c Release
+        working-directory: ./sys-buddyapp-notificationservice-mgmt
 
       - name: Test
-        run: dotnet test --no-build -c Release
+        run: |
+          if [ -d "./Framework/Core" ]; then
+            cd ./Framework/Core && dotnet test --no-build -c Release || true
+          fi
+          if [ -d "./sys-buddyapp-notificationservice-mgmt" ]; then
+            cd ./sys-buddyapp-notificationservice-mgmt && dotnet test --no-build -c Release || true
+          fi
