@@ -1,0 +1,25 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.fsi.co.uk/services/evolution/04/09" xmlns:fsi="http://schemas.datacontract.org/2004/07/Fsi.Concept.Contracts.Entities.ServiceModel">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ns:CreateBreakdownTask>
+         <ns:sessionId>{{SessionId}}</ns:sessionId>
+         <ns:breakdownTaskDto>
+            <fsi:ReporterName>{{ReporterName}}</fsi:ReporterName>
+            <fsi:BDET_EMAIL>{{ReporterEmail}}</fsi:BDET_EMAIL>
+            <fsi:Phone>{{ReporterPhoneNumber}}</fsi:Phone>
+            <fsi:CallId>{{ServiceRequestNumber}}</fsi:CallId>
+            <fsi:LongDescription>{{Description}}</fsi:LongDescription>
+            <fsi:CategoryId>{{CategoryId}}</fsi:CategoryId>
+            <fsi:DisciplineId>{{DisciplineId}}</fsi:DisciplineId>
+            <fsi:PriorityId>{{PriorityId}}</fsi:PriorityId>
+            <fsi:BuildingId>{{BuildingId}}</fsi:BuildingId>
+            <fsi:LocationId>{{LocationId}}</fsi:LocationId>
+            <fsi:InstructionId>{{InstructionId}}</fsi:InstructionId>
+            <fsi:ScheduledDateUtc>{{ScheduledDateUtc}}</fsi:ScheduledDateUtc>
+            <fsi:RaisedDateUtc>{{RaisedDateUtc}}</fsi:RaisedDateUtc>
+            <fsi:ContractId>{{ContractId}}</fsi:ContractId>
+            <fsi:BDET_CALLER_SOURCE_ID>{{CallerSourceId}}</fsi:BDET_CALLER_SOURCE_ID>
+         </ns:breakdownTaskDto>
+      </ns:CreateBreakdownTask>
+   </soapenv:Body>
+</soapenv:Envelope>
