@@ -2674,9 +2674,17 @@ System Layer Error Code (Constants/ErrorConstants.cs):
 
 ## 11. KEYVAULT INTEGRATION
 
+**🚨 MANDATORY RULE: ALL sensitive information MUST be stored in Azure KeyVault**
+- **NEVER** store sensitive data in appsettings.json, appsettings.{environment}.json, or any configuration files
+- **ALWAYS** use KeyVault for: passwords, API keys, client secrets, connection strings, encryption keys, and any other sensitive configuration
+- **ALWAYS** leave sensitive fields empty in appsettings.json (add placeholders for keyvault secret keys)
+- **ALWAYS** retrieve sensitive values from KeyVault at runtime using KeyVaultReader
+
+
 **When to Use KeyVault:**
 ✅ Passwords, API keys | ✅ Client secrets, auth tokens | ✅ Connection strings | ✅ Encryption keys | ✅ Any sensitive configuration  
 ❌ Non-sensitive config (URLs, timeouts) | ❌ Public information | ❌ Frequently changing settings
+
 
 **appsettings.json (with KeyVault):**
 ```json
@@ -2685,7 +2693,7 @@ System Layer Error Code (Constants/ErrorConstants.cs):
   "KeyVault": {"Url": "https://your-keyvault.vault.azure.net/", "Secrets": {"Password": "ExternalSystemPassword", "ApiKey": "ExternalSystemApiKey"}}
 }
 ```
-
+ 
 ---
 
 ## 12. COMMON MISTAKES & FIXES
