@@ -48,6 +48,7 @@ alwaysApply: true
 5. ✅ **VALIDATE mandatory patterns** (validation methods, static Map(), etc.)
 6. ✅ **🔴 NON-NEGOTIABLE: Check Core Framework extensions first** - All simple conversion or helper functionality MUST first leverage existing Core Framework extension methods. Only create new extensions if Core Framework does not provide a suitable option. Applies to DTOs, Handlers, Atomic Handlers, Services, and all components.
 7. ✅ **🔴 NON-NEGOTIABLE: Use descriptive variable names** - Variable names MUST clearly reflect what they are or what they are doing. Avoid ambiguous, generic, or unclear names. Names should be self-documenting and improve code readability.
+8. ✅ **🔴 CRITICAL: ALWAYS use Framework extension methods for request handling** - Before implementing ANY deserialization or HTTP handling, search Framework/Core/Core/Extensions/ for existing extension methods. The framework provides `ReadBodyAsync<T>()` for BOTH `HttpRequest` (in-process) and `HttpRequestData` (isolated worker). ALWAYS use `await req.ReadBodyAsync<T>()` - NEVER manually use `ReadAsStringAsync()` + manual deserialization.
 
 **❌ DO NOT:**
 - ❌ Create components without reading rules first
@@ -56,6 +57,7 @@ alwaysApply: true
 - ❌ Ignore naming conventions
 - ❌ Use 'var' keyword (NEVER use 'var' - always declare explicit types)
 - ❌ Use ambiguous or unclear variable names (🔴 NON-NEGOTIABLE: Variable names must clearly reflect what they are or what they are doing)
+- ❌ Manually deserialize requests with ReadAsStringAsync() when ReadBodyAsync<T>() extension exists
 
 **⚠️ COMMON MISTAKES TO AVOID:**
 - Creating Extensions in Helpers/ directory (WRONG - use Extensions/)
