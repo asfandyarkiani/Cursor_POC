@@ -15,11 +15,24 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
+      - name: Check for solution file
+        id: check_sln
+        run: |
+          if ls *.sln 1> /dev/null 2>&1; then
+            echo "has_solution=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_solution=false" >> $GITHUB_OUTPUT
+            echo "No solution file found - skipping build (Phase 1 analysis only)"
+          fi
+
       - name: Restore
+        if: steps.check_sln.outputs.has_solution == 'true'
         run: dotnet restore
 
       - name: Build
+        if: steps.check_sln.outputs.has_solution == 'true'
         run: dotnet build --no-restore -c Release
 
       - name: Test
+        if: steps.check_sln.outputs.has_solution == 'true'
         run: dotnet test --no-build -c Release
