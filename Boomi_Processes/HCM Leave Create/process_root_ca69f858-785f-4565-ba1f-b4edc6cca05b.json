@@ -1,0 +1,1577 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Corporate/Fusion-HCM/Leaves",
+      "componentId": "ca69f858-785f-4565-ba1f-b4edc6cca05b",
+      "version": "29",
+      "name": "HCM_Leave Create",
+      "type": "process",
+      "createdDate": "2024-04-26T07:42:25Z",
+      "createdBy": "Rajesh.Muppala@al-ghurair.com",
+      "modifiedDate": "2024-11-04T08:54:39Z",
+      "modifiedBy": "Rajesh.Muppala@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Leaves",
+      "folderId": "Rjo2NjgzNzU0",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": {
+      "_": "This Process will sync the Leave data between D365 and Oracle HCM"
+    },
+    "{http://api.platform.boomi.com/}object": {
+      "process": {
+        "$": {
+          "allowSimultaneous": "true",
+          "enableUserLog": "false",
+          "processLogOnErrorOnly": "true",
+          "purgeDataImmediately": "false",
+          "updateRunDates": "false",
+          "workload": "low_latency"
+        },
+        "shapes": {
+          "shape": [
+            {
+              "$": {
+                "image": "start",
+                "name": "shape1",
+                "shapetype": "start",
+                "userlabel": "",
+                "x": "16.0",
+                "y": "94.0"
+              },
+              "configuration": {
+                "connectoraction": {
+                  "$": {
+                    "actionType": "Listen",
+                    "allowDynamicCredentials": "NONE",
+                    "connectorType": "wss",
+                    "hideSettings": "true",
+                    "operationId": "8f709c2b-e63f-4d5f-9374-2932ed70415d"
+                  },
+                  "parameters": "",
+                  "dynamicProperties": ""
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape1.dragpoint1",
+                    "toShape": "shape38",
+                    "x": "192.0",
+                    "y": "104.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "decision_icon",
+                "name": "shape2",
+                "shapetype": "decision",
+                "userlabel": "HTTP Status 20 check",
+                "x": "1200.0",
+                "y": "96.0"
+              },
+              "configuration": {
+                "decision": {
+                  "$": {
+                    "comparison": "wildcard",
+                    "name": "HTTP Status 20 check"
+                  },
+                  "decisionvalue": [
+                    {
+                      "$": {
+                        "valueType": "track"
+                      },
+                      "trackparameter": {
+                        "$": {
+                          "defaultValue": "",
+                          "propertyId": "meta.base.applicationstatuscode",
+                          "propertyName": "Base - Application Status Code"
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "valueType": "static"
+                      },
+                      "staticparameter": {
+                        "$": {
+                          "staticproperty": "20*"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "dragpoints": {
+                "dragpoint": [
+                  {
+                    "$": {
+                      "identifier": "true",
+                      "name": "shape2.dragpoint1",
+                      "text": "True",
+                      "toShape": "shape34",
+                      "x": "1488.0",
+                      "y": "104.0"
+                    }
+                  },
+                  {
+                    "$": {
+                      "identifier": "false",
+                      "name": "shape2.dragpoint2",
+                      "text": "False",
+                      "toShape": "shape44",
+                      "x": "1392.0",
+                      "y": "232.0"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "$": {
+                "image": "documentproperties_icon",
+                "name": "shape8",
+                "shapetype": "documentproperties",
+                "userlabel": "set URL",
+                "x": "832.0",
+                "y": "96.0"
+              },
+              "configuration": {
+                "documentproperties": {
+                  "documentproperty": {
+                    "$": {
+                      "defaultValue": "",
+                      "isDynamicCredential": "false",
+                      "isTradingPartner": "false",
+                      "name": "Dynamic Document Property - URL",
+                      "persist": "false",
+                      "propertyId": "dynamicdocument.URL",
+                      "shouldEncrypt": "false"
+                    },
+                    "sourcevalues": {
+                      "parametervalue": {
+                        "$": {
+                          "key": "3",
+                          "valueType": "definedparameter"
+                        },
+                        "definedprocessparameter": {
+                          "$": {
+                            "componentId": "e22c04db-7dfa-4b1b-9d88-77365b0fdb18",
+                            "componentName": "PP_HCM_LeaveCreate_Properties",
+                            "propertyKey": "c2d1a1e8-4bcb-435b-b1d2-bb10a209bcc0",
+                            "propertyLabel": "Resource_Path"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape8.dragpoint1",
+                    "toShape": "shape49",
+                    "x": "944.0",
+                    "y": "104.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "catcherrors_icon",
+                "name": "shape17",
+                "shapetype": "catcherrors",
+                "userlabel": "",
+                "x": "368.0",
+                "y": "96.0"
+              },
+              "configuration": {
+                "catcherrors": {
+                  "$": {
+                    "catchAll": "true",
+                    "retryCount": "0"
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": [
+                  {
+                    "$": {
+                      "identifier": "default",
+                      "name": "shape17.dragpoint1",
+                      "text": "Try",
+                      "toShape": "shape29",
+                      "x": "592.0",
+                      "y": "104.0"
+                    }
+                  },
+                  {
+                    "$": {
+                      "identifier": "error",
+                      "name": "shape17.dragpoint2",
+                      "text": "Catch",
+                      "toShape": "shape20",
+                      "x": "512.0",
+                      "y": "280.0"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "$": {
+                "image": "documentproperties_icon",
+                "name": "shape19",
+                "shapetype": "documentproperties",
+                "userlabel": "ErrorMsg",
+                "x": "688.0",
+                "y": "272.0"
+              },
+              "configuration": {
+                "documentproperties": {
+                  "documentproperty": {
+                    "$": {
+                      "defaultValue": "",
+                      "isDynamicCredential": "false",
+                      "isTradingPartner": "false",
+                      "name": "Dynamic Process Property - DPP_ErrorMessage",
+                      "persist": "false",
+                      "propertyId": "process.DPP_ErrorMessage",
+                      "shouldEncrypt": "false"
+                    },
+                    "sourcevalues": {
+                      "parametervalue": {
+                        "$": {
+                          "key": "1",
+                          "valueType": "track"
+                        },
+                        "trackparameter": {
+                          "$": {
+                            "defaultValue": "",
+                            "propertyId": "meta.base.catcherrorsmessage",
+                            "propertyName": "Base - Try/Catch Message"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape19.dragpoint1",
+                    "toShape": "shape21",
+                    "x": "816.0",
+                    "y": "280.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "branch_icon",
+                "name": "shape20",
+                "shapetype": "branch",
+                "userlabel": "",
+                "x": "528.0",
+                "y": "272.0"
+              },
+              "configuration": {
+                "branch": {
+                  "$": {
+                    "numBranches": "2"
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": [
+                  {
+                    "$": {
+                      "identifier": "1",
+                      "name": "shape20.dragpoint1",
+                      "text": "1",
+                      "toShape": "shape19",
+                      "x": "672.0",
+                      "y": "280.0"
+                    }
+                  },
+                  {
+                    "$": {
+                      "identifier": "2",
+                      "name": "shape20.dragpoint2",
+                      "text": "2",
+                      "toShape": "shape41",
+                      "x": "608.0",
+                      "y": "408.0"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "$": {
+                "image": "processcall_icon",
+                "name": "shape21",
+                "shapetype": "processcall",
+                "userlabel": "",
+                "x": "832.0",
+                "y": "272.0"
+              },
+              "configuration": {
+                "processcall": {
+                  "$": {
+                    "abort": "true",
+                    "processId": "a85945c5-3004-42b9-80b1-104f465cd1fb",
+                    "wait": "true"
+                  },
+                  "parameters": "",
+                  "returnpaths": ""
+                }
+              },
+              "dragpoints": ""
+            },
+            {
+              "$": {
+                "image": "message_icon",
+                "name": "shape28",
+                "shapetype": "message",
+                "userlabel": "",
+                "x": "112.0",
+                "y": "272.0"
+              },
+              "configuration": {
+                "message": {
+                  "$": {
+                    "combined": "false"
+                  },
+                  "msgTxt": {
+                    "_": "'{\n    \"employeeNumber\": 9000604,\n    \"absenceType\": \"Sick Leave\",\n    \"employer\": \"Al Ghurair Investment LLC\",\n    \"startDate\": \"2024-03-24\",\n    \"endDate\": \"2024-03-25\",\n    \"absenceStatusCode\": \"SUBMITTED\",\n    \"approvalStatusCode\": \"APPROVED\",\n    \"startDateDuration\": 1,\n    \"endDateDuration\": 1\n}'"
+                  },
+                  "msgParameters": ""
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape28.dragpoint1",
+                    "toShape": "unset",
+                    "x": "252.0",
+                    "y": "282.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "map_icon",
+                "name": "shape29",
+                "shapetype": "map",
+                "userlabel": "",
+                "x": "608.0",
+                "y": "96.0"
+              },
+              "configuration": {
+                "map": {
+                  "$": {
+                    "mapId": "c426b4d6-2aff-450e-b43b-59956c4dbc96"
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape29.dragpoint1",
+                    "toShape": "shape8",
+                    "x": "816.0",
+                    "y": "104.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "connectoraction_icon",
+                "name": "shape33",
+                "shapetype": "connectoraction",
+                "userlabel": "",
+                "x": "1072.0",
+                "y": "96.0"
+              },
+              "configuration": {
+                "connectoraction": {
+                  "$": {
+                    "actionType": "Send",
+                    "allowDynamicCredentials": "NONE",
+                    "connectionId": "aa1fcb29-d146-4425-9ea6-b9698090f60e",
+                    "connectorType": "http",
+                    "hideSettings": "false",
+                    "operationId": "6e8920fd-af5a-430b-a1d9-9fde7ac29a12",
+                    "parameter-profile": "EMBEDDED|HttpParameterChooser|6e8920fd-af5a-430b-a1d9-9fde7ac29a12"
+                  },
+                  "parameters": "",
+                  "dynamicProperties": ""
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape33.dragpoint1",
+                    "toShape": "shape2",
+                    "x": "1184.0",
+                    "y": "104.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "map_icon",
+                "name": "shape34",
+                "shapetype": "map",
+                "userlabel": "",
+                "x": "1504.0",
+                "y": "96.0"
+              },
+              "configuration": {
+                "map": {
+                  "$": {
+                    "mapId": "e4fd3f59-edb5-43a1-aeae-143b600a064e"
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape34.dragpoint1",
+                    "toShape": "shape35",
+                    "x": "1696.0",
+                    "y": "104.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "returndocuments_icon",
+                "name": "shape35",
+                "shapetype": "returndocuments",
+                "userlabel": "Success Response",
+                "x": "1712.0",
+                "y": "96.0"
+              },
+              "configuration": {
+                "returndocuments": {
+                  "$": {
+                    "label": "Success Response"
+                  }
+                }
+              },
+              "dragpoints": ""
+            },
+            {
+              "$": {
+                "image": "returndocuments_icon",
+                "name": "shape36",
+                "shapetype": "returndocuments",
+                "userlabel": "Error Response",
+                "x": "2016.0",
+                "y": "384.0"
+              },
+              "configuration": {
+                "returndocuments": {
+                  "$": {
+                    "label": "Error Response"
+                  }
+                }
+              },
+              "dragpoints": ""
+            },
+            {
+              "$": {
+                "image": "documentproperties_icon",
+                "name": "shape38",
+                "shapetype": "documentproperties",
+                "userlabel": "Input_details",
+                "x": "208.0",
+                "y": "96.0"
+              },
+              "configuration": {
+                "documentproperties": {
+                  "documentproperty": [
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_Process_Name",
+                        "persist": "false",
+                        "propertyId": "process.DPP_Process_Name",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "1",
+                            "valueType": "execution"
+                          },
+                          "executionparameter": {
+                            "$": {
+                              "executionproperty": "Process Name"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_AtomName",
+                        "persist": "false",
+                        "propertyId": "process.DPP_AtomName",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "7",
+                            "valueType": "execution"
+                          },
+                          "executionparameter": {
+                            "$": {
+                              "executionproperty": "Atom Name"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_Payload",
+                        "persist": "false",
+                        "propertyId": "process.DPP_Payload",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "8",
+                            "valueType": "current"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_ExecutionID",
+                        "persist": "false",
+                        "propertyId": "process.DPP_ExecutionID",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "9",
+                            "valueType": "execution"
+                          },
+                          "executionparameter": {
+                            "$": {
+                              "executionproperty": "Execution Id"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_File_Name",
+                        "persist": "false",
+                        "propertyId": "process.DPP_File_Name",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": [
+                          {
+                            "$": {
+                              "key": "10",
+                              "valueType": "execution"
+                            },
+                            "executionparameter": {
+                              "$": {
+                                "executionproperty": "Process Name"
+                              }
+                            }
+                          },
+                          {
+                            "$": {
+                              "key": "11",
+                              "valueType": "date"
+                            },
+                            "dateparameter": {
+                              "$": {
+                                "dateparametertype": "current",
+                                "datetimemask": "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+                              }
+                            }
+                          },
+                          {
+                            "$": {
+                              "key": "12",
+                              "valueType": "static"
+                            },
+                            "staticparameter": {
+                              "$": {
+                                "staticproperty": ".txt"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_Subject",
+                        "persist": "false",
+                        "propertyId": "process.DPP_Subject",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": [
+                          {
+                            "$": {
+                              "key": "14",
+                              "valueType": "execution"
+                            },
+                            "executionparameter": {
+                              "$": {
+                                "executionproperty": "Atom Name"
+                              }
+                            }
+                          },
+                          {
+                            "$": {
+                              "key": "15",
+                              "valueType": "static"
+                            },
+                            "staticparameter": {
+                              "$": {
+                                "staticproperty": " ("
+                              }
+                            }
+                          },
+                          {
+                            "$": {
+                              "key": "13",
+                              "valueType": "execution"
+                            },
+                            "executionparameter": {
+                              "$": {
+                                "executionproperty": "Process Name"
+                              }
+                            }
+                          },
+                          {
+                            "$": {
+                              "key": "16",
+                              "valueType": "static"
+                            },
+                            "staticparameter": {
+                              "$": {
+                                "staticproperty": " ) has errors to report"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - To_Email",
+                        "persist": "false",
+                        "propertyId": "process.To_Email",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "17",
+                            "valueType": "definedparameter"
+                          },
+                          "definedprocessparameter": {
+                            "$": {
+                              "componentId": "e22c04db-7dfa-4b1b-9d88-77365b0fdb18",
+                              "componentName": "PP_HCM_LeaveCreate_Properties",
+                              "propertyKey": "71c90f6e-4f86-49f3-8aef-bae6668c73f9",
+                              "propertyLabel": "To_Email"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_HasAttachment",
+                        "persist": "false",
+                        "propertyId": "process.DPP_HasAttachment",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "18",
+                            "valueType": "definedparameter"
+                          },
+                          "definedprocessparameter": {
+                            "$": {
+                              "componentId": "e22c04db-7dfa-4b1b-9d88-77365b0fdb18",
+                              "componentName": "PP_HCM_LeaveCreate_Properties",
+                              "propertyKey": "a717867b-67f4-4a72-be2d-c99c73309fdb",
+                              "propertyLabel": "DPP_HasAttachment"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape38.dragpoint1",
+                    "toShape": "shape17",
+                    "x": "352.0",
+                    "y": "104.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "documentproperties_icon",
+                "name": "shape39",
+                "shapetype": "documentproperties",
+                "userlabel": "error msg",
+                "x": "1648.0",
+                "y": "384.0"
+              },
+              "configuration": {
+                "documentproperties": {
+                  "documentproperty": {
+                    "$": {
+                      "defaultValue": "",
+                      "isDynamicCredential": "false",
+                      "isTradingPartner": "false",
+                      "name": "Dynamic Process Property - DPP_ErrorMessage",
+                      "persist": "false",
+                      "propertyId": "process.DPP_ErrorMessage",
+                      "shouldEncrypt": "false"
+                    },
+                    "sourcevalues": {
+                      "parametervalue": {
+                        "$": {
+                          "key": "1",
+                          "valueType": "track"
+                        },
+                        "trackparameter": {
+                          "$": {
+                            "defaultValue": "",
+                            "propertyId": "meta.base.applicationstatusmessage",
+                            "propertyName": "Base - Application Status Message"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape39.dragpoint1",
+                    "toShape": "shape40",
+                    "x": "1760.0",
+                    "y": "392.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "map_icon",
+                "name": "shape40",
+                "shapetype": "map",
+                "userlabel": "",
+                "x": "1776.0",
+                "y": "384.0"
+              },
+              "configuration": {
+                "map": {
+                  "$": {
+                    "mapId": "f46b845a-7d75-41b5-b0ad-c41a6a8e9b12"
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape40.dragpoint1",
+                    "toShape": "shape36",
+                    "x": "2000.0",
+                    "y": "392.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "map_icon",
+                "name": "shape41",
+                "shapetype": "map",
+                "userlabel": "",
+                "x": "624.0",
+                "y": "400.0"
+              },
+              "configuration": {
+                "map": {
+                  "$": {
+                    "mapId": "f46b845a-7d75-41b5-b0ad-c41a6a8e9b12"
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape41.dragpoint1",
+                    "toShape": "shape43",
+                    "x": "816.0",
+                    "y": "408.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "returndocuments_icon",
+                "name": "shape43",
+                "shapetype": "returndocuments",
+                "userlabel": "Error Response",
+                "x": "832.0",
+                "y": "400.0"
+              },
+              "configuration": {
+                "returndocuments": {
+                  "$": {
+                    "label": "Error Response"
+                  }
+                }
+              },
+              "dragpoints": ""
+            },
+            {
+              "$": {
+                "image": "decision_icon",
+                "name": "shape44",
+                "shapetype": "decision",
+                "userlabel": "Check Response Content Type",
+                "x": "1408.0",
+                "y": "224.0"
+              },
+              "configuration": {
+                "decision": {
+                  "$": {
+                    "comparison": "equals",
+                    "name": "Check Response Content Type"
+                  },
+                  "decisionvalue": [
+                    {
+                      "$": {
+                        "valueType": "track"
+                      },
+                      "trackparameter": {
+                        "$": {
+                          "defaultValue": "",
+                          "propertyId": "dynamicdocument.DDP_RespHeader",
+                          "propertyName": "Dynamic Document Property - DDP_RespHeader"
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "valueType": "static"
+                      },
+                      "staticparameter": {
+                        "$": {
+                          "staticproperty": "gzip"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "dragpoints": {
+                "dragpoint": [
+                  {
+                    "$": {
+                      "identifier": "true",
+                      "name": "shape44.dragpoint1",
+                      "text": "True",
+                      "toShape": "shape45",
+                      "x": "1648.0",
+                      "y": "232.0"
+                    }
+                  },
+                  {
+                    "$": {
+                      "identifier": "false",
+                      "name": "shape44.dragpoint2",
+                      "text": "False",
+                      "toShape": "shape39",
+                      "x": "1632.0",
+                      "y": "392.0"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "$": {
+                "image": "documentproperties_icon",
+                "name": "shape46",
+                "shapetype": "documentproperties",
+                "userlabel": "error msg",
+                "x": "1792.0",
+                "y": "224.0"
+              },
+              "configuration": {
+                "documentproperties": {
+                  "documentproperty": {
+                    "$": {
+                      "defaultValue": "",
+                      "isDynamicCredential": "false",
+                      "isTradingPartner": "false",
+                      "name": "Dynamic Process Property - DPP_ErrorMessage",
+                      "persist": "false",
+                      "propertyId": "process.DPP_ErrorMessage",
+                      "shouldEncrypt": "false"
+                    },
+                    "sourcevalues": {
+                      "parametervalue": {
+                        "$": {
+                          "key": "1",
+                          "valueType": "current"
+                        },
+                        "trackparameter": {
+                          "$": {
+                            "defaultValue": "",
+                            "propertyId": "meta.base.applicationstatusmessage",
+                            "propertyName": "Base - Application Status Message"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape46.dragpoint1",
+                    "toShape": "shape47",
+                    "x": "1936.0",
+                    "y": "232.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "dataprocess_icon",
+                "name": "shape45",
+                "shapetype": "dataprocess",
+                "userlabel": "",
+                "x": "1664.0",
+                "y": "224.0"
+              },
+              "configuration": {
+                "dataprocess": {
+                  "step": {
+                    "$": {
+                      "index": "1",
+                      "key": "1",
+                      "name": "Custom Scripting",
+                      "processtype": "12"
+                    },
+                    "dataprocessscript": {
+                      "$": {
+                        "language": "groovy",
+                        "useCache": "true",
+                        "useComponent": "false"
+                      },
+                      "script": {
+                        "_": "import java.util.zip.GZIPInputStream\r\n0.upto(dataContext.getDataCount()-1) {\r\n     dataContext.storeStream(new GZIPInputStream(dataContext.getStream(it)), dataContext.getProperties(it))\r\n}"
+                      }
+                    }
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape45.dragpoint1",
+                    "toShape": "shape46",
+                    "x": "1776.0",
+                    "y": "232.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "map_icon",
+                "name": "shape47",
+                "shapetype": "map",
+                "userlabel": "",
+                "x": "1952.0",
+                "y": "224.0"
+              },
+              "configuration": {
+                "map": {
+                  "$": {
+                    "mapId": "f46b845a-7d75-41b5-b0ad-c41a6a8e9b12"
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape47.dragpoint1",
+                    "toShape": "shape48",
+                    "x": "2128.0",
+                    "y": "232.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "returndocuments_icon",
+                "name": "shape48",
+                "shapetype": "returndocuments",
+                "userlabel": "Error Response",
+                "x": "2144.0",
+                "y": "224.0"
+              },
+              "configuration": {
+                "returndocuments": {
+                  "$": {
+                    "label": "Error Response"
+                  }
+                }
+              },
+              "dragpoints": ""
+            },
+            {
+              "$": {
+                "image": "notify_icon",
+                "name": "shape49",
+                "shapetype": "notify",
+                "userlabel": "",
+                "x": "960.0",
+                "y": "96.0"
+              },
+              "configuration": {
+                "notify": {
+                  "$": {
+                    "disableEvent": "true",
+                    "enableUserLog": "false",
+                    "perExecution": "false",
+                    "title": ""
+                  },
+                  "notifyMessage": {
+                    "_": "{1}"
+                  },
+                  "notifyMessageLevel": {
+                    "_": "INFO"
+                  },
+                  "notifyParameters": {
+                    "parametervalue": {
+                      "$": {
+                        "key": "0",
+                        "valueType": "current"
+                      }
+                    }
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape49.dragpoint1",
+                    "toShape": "shape33",
+                    "x": "1056.0",
+                    "y": "104.0"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "{http://api.platform.boomi.com/}processOverrides": {
+      "Overrides": {
+        "Connections": {
+          "ConnectionOverride": [
+            {
+              "$": {
+                "id": "00eae79b-2303-4215-8067-dcc299e42697"
+              },
+              "field": [
+                {
+                  "$": {
+                    "id": "host",
+                    "label": "Host",
+                    "overrideable": "true",
+                    "xpath": "MailSettings/@host"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "port",
+                    "label": "Port",
+                    "overrideable": "true",
+                    "xpath": "MailSettings/@port"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "usessl",
+                    "label": "Use SSL",
+                    "overrideable": "true",
+                    "xpath": "MailSettings/@usessl"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "usesmtpauth",
+                    "label": "Use SMTP AUTH",
+                    "overrideable": "true",
+                    "xpath": "MailSettings/@usesmtpauth"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "user",
+                    "label": "User",
+                    "overrideable": "true",
+                    "xpath": "MailSettings/AuthSettings/@user"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "password",
+                    "label": "Password",
+                    "overrideable": "true",
+                    "xpath": "MailSettings/AuthSettings/@password"
+                  }
+                }
+              ]
+            },
+            {
+              "$": {
+                "id": "aa1fcb29-d146-4425-9ea6-b9698090f60e"
+              },
+              "field": [
+                {
+                  "$": {
+                    "id": "url",
+                    "label": "URL",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/@url"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "connectTimeout",
+                    "label": "Connect Timeout",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/@connectTimeout"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "readTimeout",
+                    "label": "Read Timeout",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/@readTimeout"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "useBasicAuth",
+                    "label": "Use Basic Authentication",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/@useBasicAuth"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "user",
+                    "label": "User",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/AuthSettings/@user"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "password",
+                    "label": "Password",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/AuthSettings/@password"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "consumerKey",
+                    "label": "OAuth Consumer Key",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuthSettings/@consumerKey"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "accessToken",
+                    "label": "OAuth Access Token",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuthSettings/@accessToken"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "tokenSecret",
+                    "label": "OAuth Token Secret",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuthSettings/@tokenSecret"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "requestTokenURL",
+                    "label": "OAuth Request Token URL",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuthSettings/@requestTokenURL"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "authorizationURL",
+                    "label": "OAuth Authorization URL",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuthSettings/@authorizationURL"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "accessTokenURL",
+                    "label": "OAuth Access URL",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuthSettings/@accessTokenURL"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "consumerSecret",
+                    "label": "OAuth Consumer Secret",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuthSettings/@consumerSecret"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "realm",
+                    "label": "OAuth Realm",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuthSettings/@realm"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "signatureMethod",
+                    "label": "OAuth Signature Method",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuthSettings/@signatureMethod"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "clientauth",
+                    "label": "Use Client Authorization",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/SSLOptions/@clientauth"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "clientsslalias",
+                    "label": "Client SSL Certificate",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/SSLOptions/@clientsslalias"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "trustServerCert",
+                    "label": "Use Trusted SSL Certificate",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/SSLOptions/@trustServerCert"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "trustedcertalias",
+                    "label": "Trust SSL Server Certificate",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/SSLOptions/@trustedcertalias"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "clientId",
+                    "label": "OAuth2 Client ID",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuth2Settings/credentials/@clientId"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "clientSecret",
+                    "label": "OAuth2 Client Secret",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuth2Settings/credentials/@clientSecret"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "authTokenURL2",
+                    "label": "OAuth2 Authorization Token URL",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuth2Settings/authorizationTokenEndpoint/@url"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "authorizationParameters",
+                    "label": "OAuth2 Authorization Parameters",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuth2Settings/authorizationParameters"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "accessTokenURL2",
+                    "label": "OAuth2 Access Token URL",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuth2Settings/accessTokenEndpoint/@url"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "accessTokenParameters",
+                    "label": "OAuth2 Access Token Parameters",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuth2Settings/accessTokenParameters"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "scope",
+                    "label": "OAuth2 Scope",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuth2Settings/scope"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "accessToken2",
+                    "label": "OAuth2 Access Token",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuth2Settings/credentials/@accessToken"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "refreshAuthScheme",
+                    "label": "OAuth2 Refresh Authorization Scheme",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/OAuth2Settings/@refreshAuthScheme"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "accessKeyId",
+                    "label": "Amazon AWS Access Key",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/AwsSettings/credentials/accessKeyId"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "awsSecret",
+                    "label": "Amazon AWS Secret Key",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/AwsSettings/credentials/awsSecret"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "awsRegion",
+                    "label": "Amazon AWS Region",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/AwsSettings/credentials/awsRegion"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "customRegion",
+                    "label": "Custom Region",
+                    "overrideable": "true",
+                    "xpath": "HttpSettings/AwsSettings/credentials/customRegion"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "Operations": {
+          "OperationOverride": {
+            "$": {
+              "id": "8f709c2b-e63f-4d5f-9374-2932ed70415d"
+            },
+            "field": {
+              "$": {
+                "id": "ObjectName",
+                "label": "Object",
+                "overrideable": "false",
+                "xpath": "WebServicesServerListenAction/@objectName"
+              }
+            }
+          }
+        },
+        "PartnerOverrides": "",
+        "Properties": "",
+        "Extensions": {
+          "ObjectDefinitions": {
+            "unusedProfiles": ""
+          },
+          "DataMaps": {
+            "unusedMaps": ""
+          }
+        },
+        "CrossReferenceOverrides": "",
+        "PGPOverrides": "",
+        "DefinedProcessPropertyOverrides": {
+          "OverrideableDefinedProcessPropertyComponent": [
+            {
+              "$": {
+                "componentId": "e22c04db-7dfa-4b1b-9d88-77365b0fdb18"
+              },
+              "OverrideableDefinedProcessPropertyValue": [
+                {
+                  "$": {
+                    "key": "c2d1a1e8-4bcb-435b-b1d2-bb10a209bcc0",
+                    "name": "Resource_Path",
+                    "overrideable": "true"
+                  }
+                },
+                {
+                  "$": {
+                    "key": "71c90f6e-4f86-49f3-8aef-bae6668c73f9",
+                    "name": "To_Email",
+                    "overrideable": "true"
+                  }
+                },
+                {
+                  "$": {
+                    "key": "a717867b-67f4-4a72-be2d-c99c73309fdb",
+                    "name": "DPP_HasAttachment",
+                    "overrideable": "true"
+                  }
+                }
+              ]
+            },
+            {
+              "$": {
+                "componentId": "0feff13f-8a2c-438a-b3c7-1909e2a7f533"
+              },
+              "OverrideableDefinedProcessPropertyValue": [
+                {
+                  "$": {
+                    "key": "804b6d40-eeee-4ac0-ab4b-94e1aca9f4b7",
+                    "name": "From_Email",
+                    "overrideable": "true"
+                  }
+                },
+                {
+                  "$": {
+                    "key": "600acadb-ee02-4369-af85-ee70af380b6c",
+                    "name": "To_Email",
+                    "overrideable": "true"
+                  }
+                },
+                {
+                  "$": {
+                    "key": "2fa6ce9e-437a-44cc-b44f-5c7e61052f41",
+                    "name": "HasAttachment",
+                    "overrideable": "true"
+                  }
+                },
+                {
+                  "$": {
+                    "key": "3ca9f307-cecb-4d1e-b9ec-007839509ed7",
+                    "name": "EmailBody",
+                    "overrideable": "true"
+                  }
+                },
+                {
+                  "$": {
+                    "key": "d8fc7496-ec2c-4308-a4ca-e9f49c0c9500",
+                    "name": "Environment",
+                    "overrideable": "true"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

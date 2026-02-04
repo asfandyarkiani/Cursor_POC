@@ -1,0 +1,86 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Corporate/Fusion-HCM/Leaves",
+      "componentId": "23d7a2e9-5cb0-4e9c-9e4b-3154834bad0d",
+      "version": "1",
+      "name": "Dummy FF Profile",
+      "type": "profile.flatfile",
+      "createdDate": "2024-04-29T11:20:59Z",
+      "createdBy": "harikrishna.namburu@al-ghurair.com",
+      "modifiedDate": "2024-04-29T11:20:59Z",
+      "modifiedBy": "harikrishna.namburu@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Leaves",
+      "folderId": "Rjo2NjgzNzU0",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "FlatFileProfile": {
+        "$": {
+          "modelVersion": "2",
+          "strict": "true"
+        },
+        "ProfileProperties": {
+          "GeneralInfo": {
+            "$": {
+              "fileType": "delimited",
+              "useColumnHeaders": "false"
+            }
+          },
+          "Options": {
+            "DataOptions": "",
+            "DelimitedOptions": {
+              "$": {
+                "fileDelimiter": "stardelimited",
+                "removeEscape": "false",
+                "textQualifier": "na"
+              }
+            }
+          }
+        },
+        "DataElements": {
+          "FlatFileRecord": {
+            "$": {
+              "detectFormat": "numberofcolumns",
+              "isNode": "true",
+              "key": "1",
+              "name": "Record"
+            },
+            "FlatFileElements": {
+              "$": {
+                "isNode": "true",
+                "key": "2",
+                "name": "Elements"
+              },
+              "FlatFileElement": {
+                "$": {
+                  "dataType": "character",
+                  "enforceUnique": "false",
+                  "identityValue": "",
+                  "isMappable": "true",
+                  "isNode": "true",
+                  "justification": "left",
+                  "key": "3",
+                  "mandatory": "false",
+                  "maxLength": "0",
+                  "minLength": "0",
+                  "name": "dummy",
+                  "useToIdentifyFormat": "false",
+                  "validateData": "false"
+                },
+                "DataFormat": {
+                  "ProfileCharacterFormat": ""
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Corporate/Fusion-HCM/Leaves",
+      "componentId": "e22c04db-7dfa-4b1b-9d88-77365b0fdb18",
+      "version": "2",
+      "name": "PP_HCM_LeaveCreate_Properties",
+      "type": "processproperty",
+      "createdDate": "2024-04-29T06:43:37Z",
+      "createdBy": "harikrishna.namburu@al-ghurair.com",
+      "modifiedDate": "2024-04-29T07:20:58Z",
+      "modifiedBy": "harikrishna.namburu@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Leaves",
+      "folderId": "Rjo2NjgzNzU0",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "DefinedProcessProperties": {
+        "definedProcessProperty": [
+          {
+            "$": {
+              "key": "c2d1a1e8-4bcb-435b-b1d2-bb10a209bcc0"
+            },
+            "helpText": "",
+            "label": {
+              "_": "Resource_Path"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "hcmRestApi/resources/11.13.18.05/absences"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "71c90f6e-4f86-49f3-8aef-bae6668c73f9"
+            },
+            "helpText": "",
+            "label": {
+              "_": "To_Email"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "BoomiIntegrationTeam@al-ghurair.com"
+            },
+            "allowedValues": "",
+            "persisted": {
+              "_": "false"
+            }
+          },
+          {
+            "$": {
+              "key": "a717867b-67f4-4a72-be2d-c99c73309fdb"
+            },
+            "helpText": "",
+            "label": {
+              "_": "DPP_HasAttachment"
+            },
+            "type": {
+              "_": "string"
+            },
+            "defaultValue": {
+              "_": "Y"
+            },
+            "allowedValues": {
+              "allowedValueSet": [
+                {
+                  "$": {
+                    "label": "Y",
+                    "value": "Y"
+                  }
+                },
+                {
+                  "$": {
+                    "label": "N",
+                    "value": "N"
+                  }
+                }
+              ]
+            },
+            "persisted": {
+              "_": "false"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

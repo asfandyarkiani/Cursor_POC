@@ -1,0 +1,150 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Corporate/Fusion-HCM/Leaves",
+      "componentId": "c426b4d6-2aff-450e-b43b-59956c4dbc96",
+      "version": "4",
+      "name": "Leave Create Map",
+      "type": "transform.map",
+      "createdDate": "2024-04-29T06:20:14Z",
+      "createdBy": "harikrishna.namburu@al-ghurair.com",
+      "modifiedDate": "2024-04-29T08:15:56Z",
+      "modifiedBy": "harikrishna.namburu@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Leaves",
+      "folderId": "Rjo2NjgzNzU0",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "Map": {
+        "$": {
+          "fromProfile": "febfa3e1-f719-4ee8-ba57-cdae34137ab3",
+          "toProfile": "a94fa205-c740-40a5-9fda-3d018611135a"
+        },
+        "Mappings": {
+          "Mapping": [
+            {
+              "$": {
+                "fromKey": "3",
+                "fromKeyPath": "*[@key='1']/*[@key='2']/*[@key='3']",
+                "fromNamePath": "Root/Object/employeeNumber",
+                "fromType": "profile",
+                "toKey": "3",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='3']",
+                "toNamePath": "Root/Object/personNumber",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromKey": "4",
+                "fromKeyPath": "*[@key='1']/*[@key='2']/*[@key='4']",
+                "fromNamePath": "Root/Object/absenceType",
+                "fromType": "profile",
+                "toKey": "4",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='4']",
+                "toNamePath": "Root/Object/absenceType",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromKey": "5",
+                "fromKeyPath": "*[@key='1']/*[@key='2']/*[@key='5']",
+                "fromNamePath": "Root/Object/employer",
+                "fromType": "profile",
+                "toKey": "5",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='5']",
+                "toNamePath": "Root/Object/employer",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromKey": "6",
+                "fromKeyPath": "*[@key='1']/*[@key='2']/*[@key='6']",
+                "fromNamePath": "Root/Object/startDate",
+                "fromType": "profile",
+                "toKey": "6",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='6']",
+                "toNamePath": "Root/Object/startDate",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromKey": "7",
+                "fromKeyPath": "*[@key='1']/*[@key='2']/*[@key='7']",
+                "fromNamePath": "Root/Object/endDate",
+                "fromType": "profile",
+                "toKey": "7",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='7']",
+                "toNamePath": "Root/Object/endDate",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromKey": "8",
+                "fromKeyPath": "*[@key='1']/*[@key='2']/*[@key='8']",
+                "fromNamePath": "Root/Object/absenceStatusCode",
+                "fromType": "profile",
+                "toKey": "8",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='8']",
+                "toNamePath": "Root/Object/absenceStatusCd",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromKey": "9",
+                "fromKeyPath": "*[@key='1']/*[@key='2']/*[@key='9']",
+                "fromNamePath": "Root/Object/approvalStatusCode",
+                "fromType": "profile",
+                "toKey": "9",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='9']",
+                "toNamePath": "Root/Object/approvalStatusCd",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromKey": "10",
+                "fromKeyPath": "*[@key='1']/*[@key='2']/*[@key='10']",
+                "fromNamePath": "Root/Object/startDateDuration",
+                "fromType": "profile",
+                "toKey": "10",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='10']",
+                "toNamePath": "Root/Object/startDateDuration",
+                "toType": "profile"
+              }
+            },
+            {
+              "$": {
+                "fromKey": "11",
+                "fromKeyPath": "*[@key='1']/*[@key='2']/*[@key='11']",
+                "fromNamePath": "Root/Object/endDateDuration",
+                "fromType": "profile",
+                "toKey": "11",
+                "toKeyPath": "*[@key='1']/*[@key='2']/*[@key='11']",
+                "toNamePath": "Root/Object/endDateDuration",
+                "toType": "profile"
+              }
+            }
+          ]
+        },
+        "Functions": {
+          "$": {
+            "optimizeExecutionOrder": "true"
+          }
+        },
+        "Defaults": "",
+        "DocumentCacheJoins": ""
+      }
+    }
+  }
+}

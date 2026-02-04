@@ -1,0 +1,124 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Corporate/Fusion-HCM/Leaves",
+      "componentId": "f4ca3a70-114a-4601-bad8-44a3eb20e2c0",
+      "version": "4",
+      "name": "Leave D365 Response",
+      "type": "profile.json",
+      "createdDate": "2024-04-29T11:14:29Z",
+      "createdBy": "harikrishna.namburu@al-ghurair.com",
+      "modifiedDate": "2024-04-30T06:23:36Z",
+      "modifiedBy": "harikrishna.namburu@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Leaves",
+      "folderId": "Rjo2NjgzNzU0",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "JSONProfile": {
+        "DataElements": {
+          "JSONRootValue": {
+            "$": {
+              "dataType": "character",
+              "isMappable": "false",
+              "isNode": "true",
+              "key": "1",
+              "name": "leaveResponse",
+              "validateData": "false"
+            },
+            "DataFormat": {
+              "ProfileCharacterFormat": ""
+            },
+            "JSONObject": {
+              "$": {
+                "isMappable": "false",
+                "isNode": "true",
+                "key": "3",
+                "name": "Object"
+              },
+              "JSONObjectEntry": [
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "4",
+                    "name": "status",
+                    "validateData": "false"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  },
+                  "Qualifiers": {
+                    "QualifierList": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "5",
+                    "name": "message",
+                    "validateData": "false"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  },
+                  "Qualifiers": {
+                    "QualifierList": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "number",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "6",
+                    "name": "personAbsenceEntryId",
+                    "validateData": "false"
+                  },
+                  "DataFormat": {
+                    "ProfileNumberFormat": {
+                      "$": {
+                        "numberFormat": ""
+                      }
+                    }
+                  },
+                  "Qualifiers": {
+                    "QualifierList": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "7",
+                    "name": "success",
+                    "validateData": "false"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  },
+                  "Qualifiers": {
+                    "QualifierList": ""
+                  }
+                }
+              ]
+            },
+            "Qualifiers": {
+              "QualifierList": ""
+            }
+          }
+        },
+        "tagLists": ""
+      }
+    }
+  }
+}

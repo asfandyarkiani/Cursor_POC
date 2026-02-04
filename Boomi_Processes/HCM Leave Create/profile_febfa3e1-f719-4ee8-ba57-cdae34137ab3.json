@@ -1,0 +1,182 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Corporate/Fusion-HCM/Leaves",
+      "componentId": "febfa3e1-f719-4ee8-ba57-cdae34137ab3",
+      "version": "5",
+      "name": "D365 Leave Create JSON Profile",
+      "type": "profile.json",
+      "createdDate": "2024-04-29T06:17:23Z",
+      "createdBy": "harikrishna.namburu@al-ghurair.com",
+      "modifiedDate": "2024-04-29T10:43:21Z",
+      "modifiedBy": "Rajesh.Muppala@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Leaves",
+      "folderId": "Rjo2NjgzNzU0",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "JSONProfile": {
+        "$": {
+          "strict": "false"
+        },
+        "DataElements": {
+          "JSONRootValue": {
+            "$": {
+              "dataType": "character",
+              "isMappable": "true",
+              "isNode": "true",
+              "key": "1",
+              "name": "Root"
+            },
+            "DataFormat": {
+              "ProfileCharacterFormat": ""
+            },
+            "JSONObject": {
+              "$": {
+                "isMappable": "false",
+                "isNode": "true",
+                "key": "2",
+                "name": "Object"
+              },
+              "JSONObjectEntry": [
+                {
+                  "$": {
+                    "dataType": "number",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "3",
+                    "name": "employeeNumber",
+                    "validateData": "false"
+                  },
+                  "DataFormat": {
+                    "ProfileNumberFormat": {
+                      "$": {
+                        "numberFormat": ""
+                      }
+                    }
+                  },
+                  "Qualifiers": {
+                    "QualifierList": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "4",
+                    "name": "absenceType"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "5",
+                    "name": "employer"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "6",
+                    "name": "startDate"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "7",
+                    "name": "endDate"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "8",
+                    "name": "absenceStatusCode"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "9",
+                    "name": "approvalStatusCode"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "number",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "10",
+                    "name": "startDateDuration"
+                  },
+                  "DataFormat": {
+                    "ProfileNumberFormat": {
+                      "$": {
+                        "numberFormat": ""
+                      }
+                    }
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "number",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "11",
+                    "name": "endDateDuration"
+                  },
+                  "DataFormat": {
+                    "ProfileNumberFormat": {
+                      "$": {
+                        "numberFormat": ""
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "Qualifiers": {
+              "QualifierList": ""
+            }
+          }
+        },
+        "tagLists": ""
+      }
+    }
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/#Commom/Common Connections",
+      "componentId": "aa1fcb29-d146-4425-9ea6-b9698090f60e",
+      "version": "21",
+      "name": "Oracle Fusion",
+      "type": "connector-settings",
+      "subType": "http",
+      "createdDate": "2024-04-23T11:07:26Z",
+      "createdBy": "indrajit.sarkar@al-ghurair.com",
+      "modifiedDate": "2025-11-27T07:46:38Z",
+      "modifiedBy": "Prudhvi.Sai@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Common Connections",
+      "folderId": "Rjo1MTgwNTcy",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": {
+      "{http://api.platform.boomi.com/}encryptedValue": {
+        "$": {
+          "path": "//HttpSettings/AuthSettings/@password",
+          "isSet": "true"
+        }
+      }
+    },
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "HttpSettings": {
+        "$": {
+          "authenticationType": "BASIC",
+          "url": "https://iaaxey-dev3.fa.ocs.oraclecloud.com:443"
+        },
+        "AuthSettings": {
+          "$": {
+            "password": "2e05eb7d97889a1ae5a53fc3992f939964675c35419e25288cd2f465b7035b128e021d9187a042b3a3f99dcd7535d72ef4d2e95d6aee4b669548bc0f343c4d44",
+            "user": "INTEGRATION.USER@al-ghurair.com"
+          }
+        },
+        "OAuthSettings": {
+          "$": {
+            "accessToken": "",
+            "accessTokenURL": "",
+            "authorizationURL": "",
+            "consumerKey": "",
+            "realm": "",
+            "requestTokenURL": "",
+            "signatureMethod": "SHA256",
+            "suppressBlankAccessToken": "false"
+          }
+        },
+        "OAuth2Settings": {
+          "$": {
+            "grantType": "code",
+            "refreshAuthScheme": "req_body_params_auth"
+          },
+          "credentials": {
+            "$": {
+              "clientId": ""
+            }
+          },
+          "authorizationTokenEndpoint": {
+            "$": {
+              "url": ""
+            },
+            "sslOptions": ""
+          },
+          "authorizationParameters": "",
+          "accessTokenEndpoint": {
+            "$": {
+              "url": ""
+            },
+            "sslOptions": ""
+          },
+          "accessTokenParameters": "",
+          "scope": ""
+        },
+        "AwsSettings": {
+          "credentials": {
+            "accessKeyId": "",
+            "awsService": {
+              "_": "s3"
+            },
+            "customService": "",
+            "awsRegion": {
+              "_": "ap-northeast-1"
+            },
+            "customRegion": ""
+          }
+        },
+        "SSLOptions": {
+          "$": {
+            "clientauth": "false",
+            "trustServerCert": "false"
+          }
+        }
+      }
+    }
+  }
+}

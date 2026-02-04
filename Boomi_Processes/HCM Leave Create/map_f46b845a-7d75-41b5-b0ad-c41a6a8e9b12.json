@@ -1,0 +1,110 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Corporate/Fusion-HCM/Leaves",
+      "componentId": "f46b845a-7d75-41b5-b0ad-c41a6a8e9b12",
+      "version": "3",
+      "name": "Leave Error Map",
+      "type": "transform.map",
+      "createdDate": "2024-04-29T11:21:53Z",
+      "createdBy": "harikrishna.namburu@al-ghurair.com",
+      "modifiedDate": "2024-04-30T06:24:07Z",
+      "modifiedBy": "harikrishna.namburu@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Leaves",
+      "folderId": "Rjo2NjgzNzU0",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "Map": {
+        "$": {
+          "fromProfile": "23d7a2e9-5cb0-4e9c-9e4b-3154834bad0d",
+          "toProfile": "f4ca3a70-114a-4601-bad8-44a3eb20e2c0"
+        },
+        "Mappings": {
+          "Mapping": {
+            "$": {
+              "fromFunction": "1",
+              "fromKey": "3",
+              "fromType": "function",
+              "toKey": "5",
+              "toKeyPath": "*[@key='1']/*[@key='3']/*[@key='5']",
+              "toNamePath": "leaveResponse/Object/message",
+              "toType": "profile"
+            }
+          }
+        },
+        "Functions": {
+          "$": {
+            "optimizeExecutionOrder": "true"
+          },
+          "FunctionStep": {
+            "$": {
+              "cacheEnabled": "true",
+              "cacheOption": "none",
+              "category": "ProcessProperty",
+              "enabled": "true",
+              "key": "1",
+              "name": "Get Dynamic Process Property",
+              "position": "1",
+              "sumEnabled": "false",
+              "type": "PropertyGet",
+              "x": "30.0",
+              "y": "85.0"
+            },
+            "Inputs": {
+              "Input": [
+                {
+                  "$": {
+                    "default": "DPP_ErrorMessage",
+                    "isReset": "false",
+                    "key": "1",
+                    "name": "Property Name"
+                  }
+                },
+                {
+                  "$": {
+                    "isReset": "false",
+                    "key": "2",
+                    "name": "Default Value"
+                  }
+                }
+              ]
+            },
+            "Outputs": {
+              "Output": {
+                "$": {
+                  "isReset": "false",
+                  "key": "3",
+                  "name": "Result"
+                }
+              }
+            },
+            "Configuration": ""
+          }
+        },
+        "Defaults": {
+          "Default": [
+            {
+              "$": {
+                "toKey": "4",
+                "value": "failure"
+              }
+            },
+            {
+              "$": {
+                "toKey": "7",
+                "value": "false"
+              }
+            }
+          ]
+        },
+        "DocumentCacheJoins": ""
+      }
+    }
+  }
+}
