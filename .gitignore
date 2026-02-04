@@ -1,0 +1,49 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+build/
+[Bb]uild[Ll]og.*
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# User-specific files (MonoDevelop/Xamarin Studio)
+*.userprefs
+
+# NuGet Packages
+*.nupkg
+packages/
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+
+# Azure Functions
+local.settings.json
+
+# IDE
+.idea/
+*.swp
+*~
+
+# Test Results
+TestResults/
+*.trx
+
+# Azurite local storage
+azurite-data/
+__azurite_db_*.json
+__blobstorage__/
+__queuestorage__/
+
+# macOS
+.DS_Store
