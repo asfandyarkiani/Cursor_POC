@@ -1,0 +1,1550 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Automotive/Buddy APP 2.0/Performance",
+      "componentId": "2eddbd33-dafe-441b-a5c8-35dad1b97008",
+      "version": "22",
+      "name": "Drivers Performance Trends",
+      "type": "process",
+      "createdDate": "2024-06-13T10:10:19Z",
+      "createdBy": "indrajit.sarkar@al-ghurair.com",
+      "modifiedDate": "2025-12-15T05:21:50Z",
+      "modifiedBy": "hari.krishna@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Performance",
+      "folderId": "Rjo2NzA0OTQz",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "process": {
+        "$": {
+          "allowSimultaneous": "true",
+          "enableUserLog": "false",
+          "processLogOnErrorOnly": "true",
+          "purgeDataImmediately": "false",
+          "updateRunDates": "false",
+          "workload": "low_latency"
+        },
+        "shapes": {
+          "shape": [
+            {
+              "$": {
+                "image": "start",
+                "name": "shape1",
+                "shapetype": "start",
+                "userlabel": "",
+                "x": "48.0",
+                "y": "46.0"
+              },
+              "configuration": {
+                "connectoraction": {
+                  "$": {
+                    "actionType": "Listen",
+                    "allowDynamicCredentials": "NONE",
+                    "connectorType": "wss",
+                    "hideSettings": "true",
+                    "operationId": "5c8c1d3f-71bd-4610-85e3-dc3467ddeadd"
+                  },
+                  "parameters": "",
+                  "dynamicProperties": ""
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape1.dragpoint1",
+                    "toShape": "shape2",
+                    "x": "224.0",
+                    "y": "56.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "documentproperties_icon",
+                "name": "shape2",
+                "shapetype": "documentproperties",
+                "userlabel": "Input_details",
+                "x": "240.0",
+                "y": "48.0"
+              },
+              "configuration": {
+                "documentproperties": {
+                  "documentproperty": [
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_Process_Name",
+                        "persist": "false",
+                        "propertyId": "process.DPP_Process_Name",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "1",
+                            "valueType": "execution"
+                          },
+                          "executionparameter": {
+                            "$": {
+                              "executionproperty": "Process Name"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_AtomName",
+                        "persist": "false",
+                        "propertyId": "process.DPP_AtomName",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "7",
+                            "valueType": "execution"
+                          },
+                          "executionparameter": {
+                            "$": {
+                              "executionproperty": "Atom Name"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_Payload",
+                        "persist": "false",
+                        "propertyId": "process.DPP_Payload",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "8",
+                            "valueType": "current"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_ExecutionID",
+                        "persist": "false",
+                        "propertyId": "process.DPP_ExecutionID",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "9",
+                            "valueType": "execution"
+                          },
+                          "executionparameter": {
+                            "$": {
+                              "executionproperty": "Execution Id"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_File_Name",
+                        "persist": "false",
+                        "propertyId": "process.DPP_File_Name",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": [
+                          {
+                            "$": {
+                              "key": "10",
+                              "valueType": "definedparameter"
+                            },
+                            "definedprocessparameter": {
+                              "$": {
+                                "componentId": "cffe069a-1a02-4a68-9456-82da886c8fe2",
+                                "componentName": "PP_Drivers_Performance",
+                                "propertyKey": "ddd19467-f6c7-4121-8b4c-f956e5ecfb56",
+                                "propertyLabel": "File_Name"
+                              }
+                            }
+                          },
+                          {
+                            "$": {
+                              "key": "11",
+                              "valueType": "date"
+                            },
+                            "dateparameter": {
+                              "$": {
+                                "dateparametertype": "current",
+                                "datetimemask": "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+                              }
+                            }
+                          },
+                          {
+                            "$": {
+                              "key": "12",
+                              "valueType": "static"
+                            },
+                            "staticparameter": {
+                              "$": {
+                                "staticproperty": ".txt"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_Subject",
+                        "persist": "false",
+                        "propertyId": "process.DPP_Subject",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": [
+                          {
+                            "$": {
+                              "key": "15",
+                              "valueType": "static"
+                            },
+                            "staticparameter": {
+                              "$": {
+                                "staticproperty": " ("
+                              }
+                            }
+                          },
+                          {
+                            "$": {
+                              "key": "13",
+                              "valueType": "execution"
+                            },
+                            "executionparameter": {
+                              "$": {
+                                "executionproperty": "Process Name"
+                              }
+                            }
+                          },
+                          {
+                            "$": {
+                              "key": "16",
+                              "valueType": "static"
+                            },
+                            "staticparameter": {
+                              "$": {
+                                "staticproperty": " ) has errors to report"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_HasAttachment",
+                        "persist": "false",
+                        "propertyId": "process.DPP_HasAttachment",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "17",
+                            "valueType": "definedparameter"
+                          },
+                          "definedprocessparameter": {
+                            "$": {
+                              "componentId": "cffe069a-1a02-4a68-9456-82da886c8fe2",
+                              "componentName": "PP_Drivers_Performance",
+                              "propertyKey": "e2ea6f09-dd5c-4570-906c-f9954a735027",
+                              "propertyLabel": "Has_Attachment"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_driverID",
+                        "persist": "false",
+                        "propertyId": "process.DPP_driverID",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "19",
+                            "valueType": "process"
+                          },
+                          "processparameter": {
+                            "$": {
+                              "processproperty": "param_id",
+                              "processpropertydefaultvalue": ""
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - To_Email",
+                        "persist": "false",
+                        "propertyId": "process.To_Email",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "20",
+                            "valueType": "definedparameter"
+                          },
+                          "definedprocessparameter": {
+                            "$": {
+                              "componentId": "cffe069a-1a02-4a68-9456-82da886c8fe2",
+                              "componentName": "PP_Drivers_Performance",
+                              "propertyKey": "b3e0c429-93ab-45a5-a0f2-5f314e0f98e1",
+                              "propertyLabel": "To_Email"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_Company-Code",
+                        "persist": "false",
+                        "propertyId": "process.DPP_Company-Code",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "21",
+                            "valueType": "track"
+                          },
+                          "trackparameter": {
+                            "$": {
+                              "defaultValue": "",
+                              "propertyId": "dynamicdocument.inheader_company-code",
+                              "propertyName": "Dynamic Document Property - inheader_company-code"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_DataReceived",
+                        "persist": "false",
+                        "propertyId": "process.DPP_DataReceived",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "22",
+                            "valueType": "static"
+                          },
+                          "staticparameter": {
+                            "$": {
+                              "staticproperty": "No"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_driverId",
+                        "persist": "false",
+                        "propertyId": "process.DPP_driverId",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "23",
+                            "valueType": "process"
+                          },
+                          "processparameter": {
+                            "$": {
+                              "processproperty": "query_driverId",
+                              "processpropertydefaultvalue": ""
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_landingScreen",
+                        "persist": "false",
+                        "propertyId": "process.DPP_landingScreen",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "24",
+                            "valueType": "process"
+                          },
+                          "processparameter": {
+                            "$": {
+                              "processproperty": "query_landingScreen",
+                              "processpropertydefaultvalue": ""
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_month",
+                        "persist": "false",
+                        "propertyId": "process.DPP_month",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "25",
+                            "valueType": "process"
+                          },
+                          "processparameter": {
+                            "$": {
+                              "processproperty": "query_month",
+                              "processpropertydefaultvalue": ""
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "defaultValue": "",
+                        "isDynamicCredential": "false",
+                        "isTradingPartner": "false",
+                        "name": "Dynamic Process Property - DPP_year",
+                        "persist": "false",
+                        "propertyId": "process.DPP_year",
+                        "shouldEncrypt": "false"
+                      },
+                      "sourcevalues": {
+                        "parametervalue": {
+                          "$": {
+                            "key": "26",
+                            "valueType": "process"
+                          },
+                          "processparameter": {
+                            "$": {
+                              "processproperty": "query_year",
+                              "processpropertydefaultvalue": ""
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape2.dragpoint1",
+                    "toShape": "shape9",
+                    "x": "416.0",
+                    "y": "56.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "returndocuments_icon",
+                "name": "shape4",
+                "shapetype": "returndocuments",
+                "userlabel": "Failure",
+                "x": "1200.0",
+                "y": "848.0"
+              },
+              "configuration": {
+                "returndocuments": {
+                  "$": {
+                    "label": "Failure"
+                  }
+                }
+              },
+              "dragpoints": ""
+            },
+            {
+              "$": {
+                "image": "map_icon",
+                "name": "shape3",
+                "shapetype": "map",
+                "userlabel": "",
+                "x": "1008.0",
+                "y": "848.0"
+              },
+              "configuration": {
+                "map": {
+                  "$": {
+                    "mapId": "9359b4aa-3885-464f-9ca5-e0a0167d711d"
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape3.dragpoint1",
+                    "toShape": "shape4",
+                    "x": "1184.0",
+                    "y": "856.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "branch_icon",
+                "name": "shape6",
+                "shapetype": "branch",
+                "userlabel": "",
+                "x": "816.0",
+                "y": "688.0"
+              },
+              "configuration": {
+                "branch": {
+                  "$": {
+                    "numBranches": "2"
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": [
+                  {
+                    "$": {
+                      "identifier": "1",
+                      "name": "shape6.dragpoint1",
+                      "text": "1",
+                      "toShape": "shape8",
+                      "x": "992.0",
+                      "y": "696.0"
+                    }
+                  },
+                  {
+                    "$": {
+                      "identifier": "2",
+                      "name": "shape6.dragpoint2",
+                      "text": "2",
+                      "toShape": "shape3",
+                      "x": "992.0",
+                      "y": "856.0"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "$": {
+                "image": "processcall_icon",
+                "name": "shape7",
+                "shapetype": "processcall",
+                "userlabel": "",
+                "x": "1200.0",
+                "y": "688.0"
+              },
+              "configuration": {
+                "processcall": {
+                  "$": {
+                    "abort": "true",
+                    "processId": "a85945c5-3004-42b9-80b1-104f465cd1fb",
+                    "wait": "true"
+                  },
+                  "parameters": "",
+                  "returnpaths": ""
+                }
+              },
+              "dragpoints": ""
+            },
+            {
+              "$": {
+                "image": "documentproperties_icon",
+                "name": "shape8",
+                "shapetype": "documentproperties",
+                "userlabel": "ErrorMsg",
+                "x": "1008.0",
+                "y": "688.0"
+              },
+              "configuration": {
+                "documentproperties": {
+                  "documentproperty": {
+                    "$": {
+                      "defaultValue": "",
+                      "isDynamicCredential": "false",
+                      "isTradingPartner": "false",
+                      "name": "Dynamic Process Property - DPP_ErrorMessage",
+                      "persist": "false",
+                      "propertyId": "process.DPP_ErrorMessage",
+                      "shouldEncrypt": "false"
+                    },
+                    "sourcevalues": {
+                      "parametervalue": {
+                        "$": {
+                          "key": "1",
+                          "valueType": "track"
+                        },
+                        "trackparameter": {
+                          "$": {
+                            "defaultValue": "",
+                            "propertyId": "meta.base.catcherrorsmessage",
+                            "propertyName": "Base - Try/Catch Message"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape8.dragpoint1",
+                    "toShape": "shape7",
+                    "x": "1184.0",
+                    "y": "696.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "notify_icon",
+                "name": "shape9",
+                "shapetype": "notify",
+                "userlabel": "Query Parameters",
+                "x": "432.0",
+                "y": "48.0"
+              },
+              "configuration": {
+                "notify": {
+                  "$": {
+                    "disableEvent": "true",
+                    "enableUserLog": "false",
+                    "perExecution": "false",
+                    "title": "Query Parameters"
+                  },
+                  "notifyMessage": {
+                    "_": "driver id: {1}\nyear: {2}\nmonth: {3}\ncompany code: {4}"
+                  },
+                  "notifyMessageLevel": {
+                    "_": "INFO"
+                  },
+                  "notifyParameters": {
+                    "parametervalue": [
+                      {
+                        "$": {
+                          "key": "0",
+                          "valueType": "process"
+                        },
+                        "processparameter": {
+                          "$": {
+                            "processproperty": "DPP_driverId",
+                            "processpropertydefaultvalue": ""
+                          }
+                        }
+                      },
+                      {
+                        "$": {
+                          "key": "2",
+                          "valueType": "process"
+                        },
+                        "processparameter": {
+                          "$": {
+                            "processproperty": "DPP_year",
+                            "processpropertydefaultvalue": ""
+                          }
+                        }
+                      },
+                      {
+                        "$": {
+                          "key": "3",
+                          "valueType": "process"
+                        },
+                        "processparameter": {
+                          "$": {
+                            "processproperty": "DPP_month",
+                            "processpropertydefaultvalue": ""
+                          }
+                        }
+                      },
+                      {
+                        "$": {
+                          "key": "4",
+                          "valueType": "process"
+                        },
+                        "processparameter": {
+                          "$": {
+                            "processproperty": "DPP_Company-Code",
+                            "processpropertydefaultvalue": ""
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape9.dragpoint1",
+                    "toShape": "shape10",
+                    "x": "608.0",
+                    "y": "56.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "catcherrors_icon",
+                "name": "shape10",
+                "shapetype": "catcherrors",
+                "userlabel": "",
+                "x": "624.0",
+                "y": "48.0"
+              },
+              "configuration": {
+                "catcherrors": {
+                  "$": {
+                    "catchAll": "true",
+                    "retryCount": "0"
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": [
+                  {
+                    "$": {
+                      "identifier": "default",
+                      "name": "shape10.dragpoint1",
+                      "text": "Try",
+                      "toShape": "shape12",
+                      "x": "800.0",
+                      "y": "56.0"
+                    }
+                  },
+                  {
+                    "$": {
+                      "identifier": "error",
+                      "name": "shape10.dragpoint2",
+                      "text": "Catch",
+                      "toShape": "shape6",
+                      "x": "800.0",
+                      "y": "696.0"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "$": {
+                "image": "connectoraction_icon",
+                "name": "shape11",
+                "shapetype": "connectoraction",
+                "userlabel": "",
+                "x": "1008.0",
+                "y": "48.0"
+              },
+              "configuration": {
+                "connectoraction": {
+                  "$": {
+                    "actionType": "Get",
+                    "allowDynamicCredentials": "NONE",
+                    "connectionId": "41b25642-798b-4076-8032-e952098d74de",
+                    "connectorType": "database",
+                    "hideSettings": "false",
+                    "operationId": "a280aa59-7d56-41b4-9570-d1fc22687443",
+                    "parameter-profile": "EMBEDDED|databaseparameterchooser|56bad8a3-1ec1-4053-ae51-5b67b8576aa6|a280aa59-7d56-41b4-9570-d1fc22687443"
+                  },
+                  "parameters": {
+                    "parametervalue": [
+                      {
+                        "$": {
+                          "elementToSetId": "30",
+                          "elementToSetName": "DID",
+                          "key": "0",
+                          "valueType": "process"
+                        },
+                        "processparameter": {
+                          "$": {
+                            "processproperty": "DPP_driverId",
+                            "processpropertydefaultvalue": ""
+                          }
+                        }
+                      },
+                      {
+                        "$": {
+                          "elementToSetId": "31",
+                          "elementToSetName": "year",
+                          "key": "1",
+                          "valueType": "process"
+                        },
+                        "processparameter": {
+                          "$": {
+                            "processproperty": "DPP_year",
+                            "processpropertydefaultvalue": ""
+                          }
+                        }
+                      },
+                      {
+                        "$": {
+                          "elementToSetId": "32",
+                          "elementToSetName": "month",
+                          "key": "2",
+                          "valueType": "process"
+                        },
+                        "processparameter": {
+                          "$": {
+                            "processproperty": "DPP_month",
+                            "processpropertydefaultvalue": ""
+                          }
+                        }
+                      },
+                      {
+                        "$": {
+                          "elementToSetId": "38",
+                          "elementToSetName": "dataareaid",
+                          "key": "3",
+                          "valueType": "process"
+                        },
+                        "processparameter": {
+                          "$": {
+                            "processproperty": "DPP_Company-Code",
+                            "processpropertydefaultvalue": ""
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "dynamicProperties": ""
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape11.dragpoint1",
+                    "toShape": "shape16",
+                    "x": "1184.0",
+                    "y": "56.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "branch_icon",
+                "name": "shape12",
+                "shapetype": "branch",
+                "userlabel": "",
+                "x": "816.0",
+                "y": "48.0"
+              },
+              "configuration": {
+                "branch": {
+                  "$": {
+                    "numBranches": "2"
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": [
+                  {
+                    "$": {
+                      "identifier": "1",
+                      "name": "shape12.dragpoint1",
+                      "text": "1",
+                      "toShape": "shape11",
+                      "x": "992.0",
+                      "y": "56.0"
+                    }
+                  },
+                  {
+                    "$": {
+                      "identifier": "2",
+                      "name": "shape12.dragpoint2",
+                      "text": "2",
+                      "toShape": "shape14",
+                      "x": "992.0",
+                      "y": "376.0"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "$": {
+                "image": "map_icon",
+                "name": "shape13",
+                "shapetype": "map",
+                "userlabel": "",
+                "x": "1776.0",
+                "y": "208.0"
+              },
+              "configuration": {
+                "map": {
+                  "$": {
+                    "mapId": "2ba5fdd2-652c-490c-b3d1-5054a5bdc718"
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape13.dragpoint1",
+                    "toShape": "shape18",
+                    "x": "1760.0",
+                    "y": "56.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "decision_icon",
+                "name": "shape14",
+                "shapetype": "decision",
+                "userlabel": "",
+                "x": "1008.0",
+                "y": "368.0"
+              },
+              "configuration": {
+                "decision": {
+                  "$": {
+                    "comparison": "equals",
+                    "name": ""
+                  },
+                  "decisionvalue": [
+                    {
+                      "$": {
+                        "valueType": "process"
+                      },
+                      "processparameter": {
+                        "$": {
+                          "processproperty": "DPP_DataReceived",
+                          "processpropertydefaultvalue": ""
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "valueType": "static"
+                      },
+                      "staticparameter": {
+                        "$": {
+                          "staticproperty": "Yes"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "dragpoints": {
+                "dragpoint": [
+                  {
+                    "$": {
+                      "identifier": "true",
+                      "name": "shape14.dragpoint1",
+                      "text": "True",
+                      "toShape": "shape15",
+                      "x": "1184.0",
+                      "y": "376.0"
+                    }
+                  },
+                  {
+                    "$": {
+                      "identifier": "false",
+                      "name": "shape14.dragpoint2",
+                      "text": "False",
+                      "toShape": "shape13",
+                      "x": "1760.0",
+                      "y": "216.0"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "$": {
+                "image": "stop_icon",
+                "name": "shape15",
+                "shapetype": "stop",
+                "userlabel": "",
+                "x": "1200.0",
+                "y": "368.0"
+              },
+              "configuration": {
+                "stop": {
+                  "$": {
+                    "continue": "true"
+                  }
+                }
+              },
+              "dragpoints": ""
+            },
+            {
+              "$": {
+                "image": "documentproperties_icon",
+                "name": "shape16",
+                "shapetype": "documentproperties",
+                "userlabel": "",
+                "x": "1200.0",
+                "y": "48.0"
+              },
+              "configuration": {
+                "documentproperties": {
+                  "documentproperty": {
+                    "$": {
+                      "defaultValue": "",
+                      "isDynamicCredential": "false",
+                      "isTradingPartner": "false",
+                      "name": "Dynamic Process Property - DPP_DataReceived",
+                      "persist": "false",
+                      "propertyId": "process.DPP_DataReceived",
+                      "shouldEncrypt": "false"
+                    },
+                    "sourcevalues": {
+                      "parametervalue": {
+                        "$": {
+                          "key": "1",
+                          "valueType": "static"
+                        },
+                        "staticparameter": {
+                          "$": {
+                            "staticproperty": "Yes"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape16.dragpoint1",
+                    "toShape": "shape21",
+                    "x": "1392.0",
+                    "y": "56.0"
+                  }
+                }
+              }
+            },
+            {
+              "$": {
+                "image": "decision_icon",
+                "name": "shape17",
+                "shapetype": "decision",
+                "userlabel": "",
+                "x": "1584.0",
+                "y": "48.0"
+              },
+              "configuration": {
+                "decision": {
+                  "$": {
+                    "comparison": "notequals",
+                    "name": ""
+                  },
+                  "decisionvalue": [
+                    {
+                      "$": {
+                        "valueType": "profile"
+                      },
+                      "profileelement": {
+                        "$": {
+                          "elementId": "13",
+                          "elementName": "ratingYear (driversPerformance/Object/messages/Array/ArrayElement1/Object/ratingYear)",
+                          "profileId": "627946c3-22fe-4d2c-907e-11be75c3cc12",
+                          "profileType": "profile.json"
+                        }
+                      }
+                    },
+                    {
+                      "$": {
+                        "valueType": "static"
+                      },
+                      "staticparameter": {
+                        "$": {
+                          "staticproperty": ""
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "dragpoints": {
+                "dragpoint": [
+                  {
+                    "$": {
+                      "identifier": "true",
+                      "name": "shape17.dragpoint1",
+                      "text": "True",
+                      "toShape": "shape18",
+                      "x": "1760.0",
+                      "y": "56.0"
+                    }
+                  },
+                  {
+                    "$": {
+                      "identifier": "false",
+                      "name": "shape17.dragpoint2",
+                      "text": "False",
+                      "toShape": "shape13",
+                      "x": "1760.0",
+                      "y": "216.0"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "$": {
+                "image": "returndocuments_icon",
+                "name": "shape18",
+                "shapetype": "returndocuments",
+                "userlabel": "",
+                "x": "1776.0",
+                "y": "48.0"
+              },
+              "configuration": {
+                "returndocuments": {
+                  "$": {
+                    "label": ""
+                  }
+                }
+              },
+              "dragpoints": ""
+            },
+            {
+              "$": {
+                "image": "map_icon",
+                "name": "shape21",
+                "shapetype": "map",
+                "userlabel": "",
+                "x": "1408.0",
+                "y": "48.0"
+              },
+              "configuration": {
+                "map": {
+                  "$": {
+                    "mapId": "df9ef66c-8ba1-4469-8dec-288dae85d803"
+                  }
+                }
+              },
+              "dragpoints": {
+                "dragpoint": {
+                  "$": {
+                    "name": "shape21.dragpoint1",
+                    "toShape": "shape17",
+                    "x": "1568.0",
+                    "y": "56.0"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "{http://api.platform.boomi.com/}processOverrides": {
+      "Overrides": {
+        "Connections": {
+          "ConnectionOverride": [
+            {
+              "$": {
+                "id": "00eae79b-2303-4215-8067-dcc299e42697"
+              },
+              "field": [
+                {
+                  "$": {
+                    "id": "host",
+                    "label": "Host",
+                    "overrideable": "true",
+                    "xpath": "MailSettings/@host"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "port",
+                    "label": "Port",
+                    "overrideable": "true",
+                    "xpath": "MailSettings/@port"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "usessl",
+                    "label": "Use SSL",
+                    "overrideable": "true",
+                    "xpath": "MailSettings/@usessl"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "usesmtpauth",
+                    "label": "Use SMTP AUTH",
+                    "overrideable": "true",
+                    "xpath": "MailSettings/@usesmtpauth"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "user",
+                    "label": "User",
+                    "overrideable": "true",
+                    "xpath": "MailSettings/AuthSettings/@user"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "password",
+                    "label": "Password",
+                    "overrideable": "true",
+                    "xpath": "MailSettings/AuthSettings/@password"
+                  }
+                }
+              ]
+            },
+            {
+              "$": {
+                "id": "41b25642-798b-4076-8032-e952098d74de"
+              },
+              "field": [
+                {
+                  "$": {
+                    "id": "driverId",
+                    "label": "Driver Type",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/@driverId"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "username",
+                    "label": "User",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/@username"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "password",
+                    "label": "Password",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/@password"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "host",
+                    "label": "Host",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/@host"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "port",
+                    "label": "Port",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/@port"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "dbname",
+                    "label": "DB Name",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/@dbname"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "additional",
+                    "label": "Additional Options",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/@additional"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "className",
+                    "label": "Class Name",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/@className"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "urlFormat",
+                    "label": "Connection URL",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/@urlFormat"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "writeSQLToFile",
+                    "label": "Write SQL To File?",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/WriteOptions/@writeSQLToFile"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "sqlFilePath",
+                    "label": "SQL File Path",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/WriteOptions/@sqlFilePath"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "isPoolEnabled",
+                    "label": "Enable Pooling",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/@isPoolEnabled"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "maxActive",
+                    "label": "Maximum Connections (0 for unlimited)",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/AdapterPoolInfo/@maxActive"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "minIdle",
+                    "label": "Minimum Connections",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/AdapterPoolInfo/@minIdle"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "maxIdleTime",
+                    "label": "Maximum Idle Time (sec)",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/AdapterPoolInfo/@maxIdleTime"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "exhaustedAction",
+                    "label": "When Exhausted Action",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/AdapterPoolInfo/@exhaustedAction"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "maxWait",
+                    "label": "Maximum Wait Time (sec)",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/AdapterPoolInfo/@maxWait"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "testOnBorrow",
+                    "label": "Test Connection When Borrowing From Pool",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/AdapterPoolInfo/@testOnBorrow"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "testOnReturn",
+                    "label": "Test Connection When Returning To Pool",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/AdapterPoolInfo/@testOnReturn"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "testIdle",
+                    "label": "Test Idle Connections",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/AdapterPoolInfo/@testIdle"
+                  }
+                },
+                {
+                  "$": {
+                    "id": "maxIdle",
+                    "label": "Validation Query",
+                    "overrideable": "true",
+                    "xpath": "DatabaseConnectionSettings/AdapterPoolInfo/@validationQuery"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "Operations": {
+          "OperationOverride": {
+            "$": {
+              "id": "5c8c1d3f-71bd-4610-85e3-dc3467ddeadd"
+            },
+            "field": {
+              "$": {
+                "id": "ObjectName",
+                "label": "Object",
+                "overrideable": "false",
+                "xpath": "WebServicesServerListenAction/@objectName"
+              }
+            }
+          }
+        },
+        "PartnerOverrides": "",
+        "Properties": "",
+        "Extensions": {
+          "ObjectDefinitions": {
+            "unusedProfiles": ""
+          },
+          "DataMaps": {
+            "unusedMaps": ""
+          }
+        },
+        "CrossReferenceOverrides": "",
+        "PGPOverrides": "",
+        "DefinedProcessPropertyOverrides": {
+          "OverrideableDefinedProcessPropertyComponent": [
+            {
+              "$": {
+                "componentId": "cffe069a-1a02-4a68-9456-82da886c8fe2"
+              },
+              "OverrideableDefinedProcessPropertyValue": [
+                {
+                  "$": {
+                    "key": "ddd19467-f6c7-4121-8b4c-f956e5ecfb56",
+                    "name": "File_Name",
+                    "overrideable": "true"
+                  }
+                },
+                {
+                  "$": {
+                    "key": "e2ea6f09-dd5c-4570-906c-f9954a735027",
+                    "name": "Has_Attachment",
+                    "overrideable": "true"
+                  }
+                },
+                {
+                  "$": {
+                    "key": "b3e0c429-93ab-45a5-a0f2-5f314e0f98e1",
+                    "name": "To_Email",
+                    "overrideable": "true"
+                  }
+                }
+              ]
+            },
+            {
+              "$": {
+                "componentId": "0feff13f-8a2c-438a-b3c7-1909e2a7f533"
+              },
+              "OverrideableDefinedProcessPropertyValue": [
+                {
+                  "$": {
+                    "key": "804b6d40-eeee-4ac0-ab4b-94e1aca9f4b7",
+                    "name": "From_Email",
+                    "overrideable": "true"
+                  }
+                },
+                {
+                  "$": {
+                    "key": "600acadb-ee02-4369-af85-ee70af380b6c",
+                    "name": "To_Email",
+                    "overrideable": "true"
+                  }
+                },
+                {
+                  "$": {
+                    "key": "2fa6ce9e-437a-44cc-b44f-5c7e61052f41",
+                    "name": "HasAttachment",
+                    "overrideable": "true"
+                  }
+                },
+                {
+                  "$": {
+                    "key": "3ca9f307-cecb-4d1e-b9ec-007839509ed7",
+                    "name": "EmailBody",
+                    "overrideable": "true"
+                  }
+                },
+                {
+                  "$": {
+                    "key": "d8fc7496-ec2c-4308-a4ca-e9f49c0c9500",
+                    "name": "Environment",
+                    "overrideable": "true"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,729 @@
+{
+  "{http://api.platform.boomi.com/}Component": {
+    "$": {
+      "folderFullPath": "Al Ghurair Investment LLC/Automotive/Buddy APP 2.0/Performance",
+      "componentId": "627946c3-22fe-4d2c-907e-11be75c3cc12",
+      "version": "23",
+      "name": "Drivers Performance Response Common(C/U)",
+      "type": "profile.json",
+      "createdDate": "2024-05-06T13:43:32Z",
+      "createdBy": "indrajit.sarkar@al-ghurair.com",
+      "modifiedDate": "2025-11-24T02:42:40Z",
+      "modifiedBy": "hari.krishna@al-ghurair.com",
+      "deleted": "false",
+      "currentVersion": "true",
+      "folderName": "Performance",
+      "folderId": "Rjo2NzA0OTQz",
+      "branchName": "main",
+      "branchId": "QjozNzA0MDQ"
+    },
+    "{http://api.platform.boomi.com/}encryptedValues": "",
+    "{http://api.platform.boomi.com/}description": "",
+    "{http://api.platform.boomi.com/}object": {
+      "JSONProfile": {
+        "$": {
+          "strict": "false"
+        },
+        "DataElements": {
+          "JSONRootValue": {
+            "$": {
+              "dataType": "character",
+              "isMappable": "true",
+              "isNode": "true",
+              "key": "1",
+              "name": "driversPerformance"
+            },
+            "DataFormat": {
+              "ProfileCharacterFormat": ""
+            },
+            "JSONObject": {
+              "$": {
+                "isMappable": "false",
+                "isNode": "true",
+                "key": "2",
+                "name": "Object"
+              },
+              "JSONObjectEntry": [
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "3",
+                    "name": "messages"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  },
+                  "JSONArray": {
+                    "$": {
+                      "elementType": "repeating",
+                      "isMappable": "false",
+                      "isNode": "true",
+                      "key": "4",
+                      "name": "Array"
+                    },
+                    "JSONArrayElement": {
+                      "$": {
+                        "dataType": "character",
+                        "isMappable": "true",
+                        "isNode": "true",
+                        "key": "5",
+                        "maxOccurs": "-1",
+                        "minOccurs": "0",
+                        "name": "ArrayElement1"
+                      },
+                      "DataFormat": {
+                        "ProfileCharacterFormat": ""
+                      },
+                      "JSONObject": {
+                        "$": {
+                          "isMappable": "false",
+                          "isNode": "true",
+                          "key": "6",
+                          "name": "Object"
+                        },
+                        "JSONObjectEntry": [
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "12",
+                              "name": "companyCode",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "32",
+                              "name": "driverId",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "33",
+                              "name": "threshold",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "34",
+                              "name": "rating",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "13",
+                              "name": "ratingYear",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "14",
+                              "name": "ratingMonth",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "15",
+                              "name": "ratingMonthYear",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "number",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "16",
+                              "name": "overallScore",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileNumberFormat": {
+                                "$": {
+                                  "impliedDecimal": "0",
+                                  "numberFormat": "0.##",
+                                  "signedField": "false"
+                                }
+                              }
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "number",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "18",
+                              "name": "behaviourScore",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileNumberFormat": {
+                                "$": {
+                                  "impliedDecimal": "0",
+                                  "numberFormat": "0.##",
+                                  "signedField": "false"
+                                }
+                              }
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "allowEmpty": "false",
+                              "dataType": "number",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "19",
+                              "name": "commissionScore",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileNumberFormat": {
+                                "$": {
+                                  "impliedDecimal": "0",
+                                  "numberFormat": "0.##",
+                                  "signedField": "false"
+                                }
+                              }
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "number",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "20",
+                              "name": "rtaCustomerComplaints",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileNumberFormat": {
+                                "$": {
+                                  "impliedDecimal": "0",
+                                  "numberFormat": "0.##",
+                                  "signedField": "false"
+                                }
+                              }
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "35",
+                              "name": "ftcCustomerComplaints",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "36",
+                              "name": "itcCustomerComplaints",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "number",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "21",
+                              "name": "redAccidentsCount",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileNumberFormat": {
+                                "$": {
+                                  "impliedDecimal": "0",
+                                  "numberFormat": "0.##",
+                                  "signedField": "false"
+                                }
+                              }
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "number",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "22",
+                              "name": "trafficFines",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileNumberFormat": {
+                                "$": {
+                                  "impliedDecimal": "0",
+                                  "numberFormat": "0.##",
+                                  "signedField": "false"
+                                }
+                              }
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "number",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "23",
+                              "name": "rtaQualityAndInternalFines",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileNumberFormat": {
+                                "$": {
+                                  "impliedDecimal": "0",
+                                  "numberFormat": "0.##",
+                                  "signedField": "false"
+                                }
+                              }
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "37",
+                              "name": "ftcQualityFines",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "38",
+                              "name": "itcQualityFines",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "number",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "24",
+                              "name": "revenueKilometerPercentage",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileNumberFormat": {
+                                "$": {
+                                  "impliedDecimal": "0",
+                                  "numberFormat": "0.##",
+                                  "signedField": "false"
+                                }
+                              }
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "number",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "25",
+                              "name": "loggedOffKilometerPercentage",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileNumberFormat": {
+                                "$": {
+                                  "impliedDecimal": "0",
+                                  "numberFormat": "0.##",
+                                  "signedField": "false"
+                                }
+                              }
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "number",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "26",
+                              "name": "unauthorizedLeaves",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileNumberFormat": {
+                                "$": {
+                                  "impliedDecimal": "0",
+                                  "numberFormat": "0.##",
+                                  "signedField": "false"
+                                }
+                              }
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "39",
+                              "name": "itcAcceptanceRate",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "number",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "27",
+                              "name": "outstanding",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileNumberFormat": {
+                                "$": {
+                                  "impliedDecimal": "0",
+                                  "numberFormat": "0.##",
+                                  "signedField": "false"
+                                }
+                              }
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "number",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "28",
+                              "name": "missedDeposits",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileNumberFormat": {
+                                "$": {
+                                  "impliedDecimal": "0",
+                                  "numberFormat": "0.##",
+                                  "signedField": "false"
+                                }
+                              }
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "number",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "29",
+                              "name": "halaAcceptanceRate",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileNumberFormat": {
+                                "$": {
+                                  "impliedDecimal": "0",
+                                  "numberFormat": "0.##",
+                                  "signedField": "false"
+                                }
+                              }
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "number",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "30",
+                              "name": "halaOnlineRate",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileNumberFormat": {
+                                "$": {
+                                  "impliedDecimal": "0",
+                                  "numberFormat": "0.##",
+                                  "signedField": "false"
+                                }
+                              }
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "number",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "31",
+                              "name": "customerFeedback",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileNumberFormat": {
+                                "$": {
+                                  "impliedDecimal": "0",
+                                  "numberFormat": "0.##",
+                                  "signedField": "false"
+                                }
+                              }
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "40",
+                              "name": "PersonalHygiene",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "41",
+                              "name": "carCleanliness",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "42",
+                              "name": "behaviourWithCustomer",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          },
+                          {
+                            "$": {
+                              "allowEmpty": "false",
+                              "dataType": "character",
+                              "isMappable": "true",
+                              "isNode": "true",
+                              "key": "43",
+                              "name": "redSignalCrossing",
+                              "validateData": "false"
+                            },
+                            "DataFormat": {
+                              "ProfileCharacterFormat": ""
+                            },
+                            "Qualifiers": {
+                              "QualifierList": ""
+                            }
+                          }
+                        ]
+                      },
+                      "Qualifiers": {
+                        "QualifierList": ""
+                      }
+                    }
+                  },
+                  "Qualifiers": {
+                    "QualifierList": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "9",
+                    "name": "success",
+                    "validateData": "false"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  },
+                  "Qualifiers": {
+                    "QualifierList": ""
+                  }
+                },
+                {
+                  "$": {
+                    "dataType": "character",
+                    "isMappable": "true",
+                    "isNode": "true",
+                    "key": "10",
+                    "name": "message",
+                    "validateData": "false"
+                  },
+                  "DataFormat": {
+                    "ProfileCharacterFormat": ""
+                  },
+                  "Qualifiers": {
+                    "QualifierList": ""
+                  }
+                }
+              ]
+            },
+            "Qualifiers": {
+              "QualifierList": ""
+            }
+          }
+        },
+        "tagLists": ""
+      }
+    }
+  }
+}
