@@ -1,0 +1,14 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.fsi.co.uk/services/evolution/04/09" xmlns:fsi="http://schemas.datacontract.org/2004/07/Fsi.Platform.Contracts.ServiceModel" xmlns:fsi1="http://schemas.datacontract.org/2004/07/Fsi.Concept.Events.Contracts.Entities">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ns:CreateEvent>
+         <ns:sessionId>{{SessionId}}</ns:sessionId>
+          <ns:dto>
+          <fsi1:EV_COMMENTS>{{Comments}}</fsi1:EV_COMMENTS>
+            <fsi1:EV_EVENT># Recurring Task</fsi1:EV_EVENT>
+            <fsi1:EV_FKEY_TA_SEQ>{{TaskId}}</fsi1:EV_FKEY_TA_SEQ>
+            <fsi1:EV_LOGGED_BY>EQARCOM+</fsi1:EV_LOGGED_BY>
+        </ns:dto>
+      </ns:CreateEvent>
+   </soapenv:Body>
+</soapenv:Envelope>
