@@ -1,0 +1,9 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.fsi.co.uk/services/evolution/04/09">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ns:Authenticate>
+         <ns:loginName>{{Username}}</ns:loginName>
+         <ns:password>{{Password}}</ns:password>
+      </ns:Authenticate>
+   </soapenv:Body>
+</soapenv:Envelope>
