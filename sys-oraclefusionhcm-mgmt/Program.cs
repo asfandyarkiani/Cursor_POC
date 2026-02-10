@@ -41,10 +41,7 @@ builder.Logging.AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Inform
 builder.Services.Configure<AppConfigs>(builder.Configuration.GetSection(AppConfigs.SectionName));
 builder.Services.Configure<KeyVaultConfigs>(builder.Configuration.GetSection(KeyVaultConfigs.SectionName));
 
-// 4. Configure Functions Web Application
-builder.ConfigureFunctionsWebApplication();
-
-// 5. HTTP Client
+// 4. HTTP Client
 builder.Services.AddHttpClient<CustomHTTPClient>();
 
 // 6. JSON Options
@@ -92,9 +89,12 @@ builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(sp =>
     return Policy.WrapAsync(retryPolicy, timeoutPolicy);
 });
 
-// 14. Middleware (STRICT ORDER)
-builder.UseMiddleware<ExecutionTimingMiddleware>();
-builder.UseMiddleware<ExceptionHandlerMiddleware>();
+// 14. Configure Functions Web Application with Middleware
+builder.ConfigureFunctionsWebApplication(app =>
+{
+    app.UseMiddleware<ExecutionTimingMiddleware>();
+    app.UseMiddleware<ExceptionHandlerMiddleware>();
+});
 
 // 15. Service Locator
 ServiceLocator.ServiceProvider = builder.Services.BuildServiceProvider();
