@@ -89,8 +89,8 @@ builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(sp =>
     return Policy.WrapAsync(retryPolicy, timeoutPolicy);
 });
 
-// 14. Configure Functions Web Application with Middleware
-builder.ConfigureFunctionsWebApplication(app =>
+// 14. Configure Middleware (Azure Functions Worker v2.0.0 pattern)
+builder.ConfigureFunctionsWorkerDefaults(app =>
 {
     app.UseMiddleware<ExecutionTimingMiddleware>();
     app.UseMiddleware<ExceptionHandlerMiddleware>();
