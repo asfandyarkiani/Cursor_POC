@@ -1,4 +1,3 @@
-using Cache.Extensions;
 using Core.DI;
 using Core.Middlewares;
 using Core.SystemLayer.Middlewares;
@@ -71,8 +70,8 @@ builder.Services.AddScoped<CreateLeaveHandler>();
 // 11. Atomic Handlers (CONCRETE)
 builder.Services.AddScoped<CreateLeaveAtomicHandler>();
 
-// 12. Redis Cache
-builder.Services.AddRedisCacheLibrary(builder.Configuration);
+// 12. Redis Cache (commented out - Cache framework not used due to private NuGet dependency)
+// builder.Services.AddRedisCacheLibrary(builder.Configuration);
 
 // 13. Polly Policies
 builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(sp =>
