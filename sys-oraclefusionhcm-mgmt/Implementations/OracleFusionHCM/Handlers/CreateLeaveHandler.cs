@@ -81,9 +81,7 @@ namespace OracleFusionHCMSystem.Implementations.OracleFusionHCM.Handlers
                 AbsenceStatusCd = request.AbsenceStatusCode,
                 ApprovalStatusCd = request.ApprovalStatusCode,
                 StartDateDuration = request.StartDateDuration,
-                EndDateDuration = request.EndDateDuration,
-                Username = string.Empty,
-                Password = string.Empty
+                EndDateDuration = request.EndDateDuration
             };
 
             return await _createLeaveAtomicHandler.Handle(atomicRequest);

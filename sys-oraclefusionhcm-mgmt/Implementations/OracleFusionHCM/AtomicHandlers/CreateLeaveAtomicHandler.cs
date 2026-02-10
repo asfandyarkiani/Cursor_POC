@@ -41,6 +41,19 @@ namespace OracleFusionHCMSystem.Implementations.OracleFusionHCM.AtomicHandlers
 
             requestDTO.ValidateDownStreamRequestParameters();
 
+            string username = _appConfigs.OracleFusionUsername;
+            string password = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(_appConfigs.OracleFusionPassword))
+            {
+                _logger.Info("Fetching Oracle Fusion password from KeyVault");
+                password = await _keyVaultReader.GetSecretAsync("OracleFusionPassword");
+            }
+            else
+            {
+                password = _appConfigs.OracleFusionPassword;
+            }
+
             string apiUrl = RestApiHelper.BuildUrl(
                 _appConfigs.OracleFusionBaseUrl,
                 new List<string> { _appConfigs.LeaveResourcePath }
@@ -53,8 +66,8 @@ namespace OracleFusionHCMSystem.Implementations.OracleFusionHCM.AtomicHandlers
                 apiUrl: apiUrl,
                 httpMethod: HttpMethod.Post,
                 contentFactory: () => CustomRestClient.CreateJsonContent(requestBody),
-                username: requestDTO.Username,
-                password: requestDTO.Password,
+                username: username,
+                password: password,
                 queryParameters: null,
                 customHeaders: null
             );
