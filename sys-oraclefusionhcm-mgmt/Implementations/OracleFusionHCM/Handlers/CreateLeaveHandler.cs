@@ -1,7 +1,6 @@
 using Core.DTOs;
 using Core.Exceptions;
 using Core.Extensions;
-using Core.Helpers;
 using Core.SystemLayer.Exceptions;
 using Core.SystemLayer.Handlers;
 using Core.SystemLayer.Middlewares;
@@ -12,6 +11,7 @@ using OracleFusionHCMSystem.DTO.CreateLeaveDTO;
 using OracleFusionHCMSystem.DTO.DownstreamDTOs;
 using OracleFusionHCMSystem.Implementations.OracleFusionHCM.AtomicHandlers;
 using System.Net;
+using System.Text.Json;
 
 namespace OracleFusionHCMSystem.Implementations.OracleFusionHCM.Handlers
 {
@@ -46,7 +46,10 @@ namespace OracleFusionHCMSystem.Implementations.OracleFusionHCM.Handlers
             }
             else
             {
-                CreateLeaveApiResDTO? apiResponse = RestApiHelper.DeserializeJsonResponse<CreateLeaveApiResDTO>(response.Content!);
+                CreateLeaveApiResDTO? apiResponse = JsonSerializer.Deserialize<CreateLeaveApiResDTO>(
+                    response.Content!,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
 
                 if (apiResponse == null || apiResponse.PersonAbsenceEntryId == null || apiResponse.PersonAbsenceEntryId == 0)
                 {

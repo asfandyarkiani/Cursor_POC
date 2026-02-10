@@ -1,5 +1,4 @@
 using Core.Extensions;
-using Core.Helpers;
 using Core.Middlewares;
 using Core.SystemLayer.DTOs;
 using Core.SystemLayer.Handlers;
@@ -54,10 +53,7 @@ namespace OracleFusionHCMSystem.Implementations.OracleFusionHCM.AtomicHandlers
                 password = _appConfigs.OracleFusionPassword;
             }
 
-            string apiUrl = RestApiHelper.BuildUrl(
-                _appConfigs.OracleFusionBaseUrl,
-                new List<string> { _appConfigs.LeaveResourcePath }
-            );
+            string apiUrl = $"{_appConfigs.OracleFusionBaseUrl.TrimEnd('/')}/{_appConfigs.LeaveResourcePath.TrimStart('/')}";
 
             object requestBody = MapDtoToRequestBody(requestDTO);
 
