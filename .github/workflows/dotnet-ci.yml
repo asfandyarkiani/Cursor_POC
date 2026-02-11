@@ -15,11 +15,14 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Restore
-        run: dotnet restore
+      - name: Restore Core Framework
+        run: dotnet restore Framework/Core/Core.sln
 
-      - name: Build
-        run: dotnet build --no-restore -c Release
+      - name: Build Core Framework
+        run: dotnet build Framework/Core/Core.sln --no-restore -c Release
 
-      - name: Test
-        run: dotnet test --no-build -c Release
+      - name: Test Core Framework
+        run: dotnet test Framework/Core/Core.sln --no-build -c Release
+      
+      # Note: Cache Framework build is skipped as it requires private Azure DevOps NuGet feed credentials
+      # Cache project depends on: https://pkgs.dev.azure.com/AGDigitalEngineering/.../AGI.ApiEcoSys.Core/nuget/v3/index.json
