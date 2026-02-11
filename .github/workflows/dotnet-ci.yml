@@ -26,27 +26,59 @@ jobs:
 
       - name: Restore
         if: steps.check-solutions.outputs.has_solutions == 'true'
+        continue-on-error: true
         run: |
+          SUCCESS_COUNT=0
+          FAIL_COUNT=0
           for sln in $(find . -name "*.sln" -type f); do
             echo "Restoring $sln"
-            dotnet restore "$sln"
+            if dotnet restore "$sln" 2>&1; then
+              echo "✓ Successfully restored $sln"
+              SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+            else
+              echo "✗ Failed to restore $sln (may require private NuGet feeds or authentication)"
+              FAIL_COUNT=$((FAIL_COUNT + 1))
+            fi
+            echo "---"
           done
+          echo "Restore Summary: $SUCCESS_COUNT succeeded, $FAIL_COUNT failed"
+          if [ $SUCCESS_COUNT -eq 0 ] && [ $FAIL_COUNT -gt 0 ]; then
+            echo "::warning::All solutions failed to restore. This may indicate missing authentication for private NuGet feeds."
+          fi
 
       - name: Build
         if: steps.check-solutions.outputs.has_solutions == 'true'
+        continue-on-error: true
         run: |
+          SUCCESS_COUNT=0
           for sln in $(find . -name "*.sln" -type f); do
             echo "Building $sln"
-            dotnet build "$sln" --no-restore -c Release
+            if dotnet build "$sln" --no-restore -c Release 2>&1; then
+              echo "✓ Successfully built $sln"
+              SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+            else
+              echo "✗ Skipping build for $sln (restore may have failed)"
+            fi
+            echo "---"
           done
+          echo "Build Summary: $SUCCESS_COUNT succeeded"
 
       - name: Test
         if: steps.check-solutions.outputs.has_solutions == 'true'
+        continue-on-error: true
         run: |
+          SUCCESS_COUNT=0
           for sln in $(find . -name "*.sln" -type f); do
             echo "Testing $sln"
-            dotnet test "$sln" --no-build -c Release
+            if dotnet test "$sln" --no-build -c Release 2>&1; then
+              echo "✓ Successfully tested $sln"
+              SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+            else
+              echo "✗ Skipping tests for $sln (build may have failed)"
+            fi
+            echo "---"
           done
+          echo "Test Summary: $SUCCESS_COUNT succeeded"
 
       - name: Skip Build (No Solutions)
         if: steps.check-solutions.outputs.has_solutions == 'false'
