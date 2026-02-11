@@ -1,0 +1,8 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.fsi.co.uk/services/evolution/04/09">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ns:LogOut>
+         <ns:sessionId>{{SessionId}}</ns:sessionId>
+      </ns:LogOut>
+   </soapenv:Body>
+</soapenv:Envelope>
