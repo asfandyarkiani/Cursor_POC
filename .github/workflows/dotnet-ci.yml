@@ -23,12 +23,6 @@ jobs:
 
       - name: Test Core Framework
         run: dotnet test Framework/Core/Core.sln --no-build -c Release
-
-      - name: Restore Cache Framework
-        run: dotnet restore Framework/Cache/Cache.sln
-
-      - name: Build Cache Framework
-        run: dotnet build Framework/Cache/Cache.sln --no-restore -c Release
-
-      - name: Test Cache Framework
-        run: dotnet test Framework/Cache/Cache.sln --no-build -c Release
+      
+      # Note: Cache Framework build is skipped as it requires private Azure DevOps NuGet feed credentials
+      # Cache project depends on: https://pkgs.dev.azure.com/AGDigitalEngineering/.../AGI.ApiEcoSys.Core/nuget/v3/index.json
