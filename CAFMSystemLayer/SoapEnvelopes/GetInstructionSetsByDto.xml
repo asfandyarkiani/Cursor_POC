@@ -1,0 +1,12 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.fsi.co.uk/services/evolution/04/09">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ns:GetInstructionSetsByDto>
+         <ns:sessionId>{{SessionId}}</ns:sessionId>
+         <ns:dto>
+            <ns:categoryName>{{CategoryName}}</ns:categoryName>
+            <ns:subCategory>{{SubCategory}}</ns:subCategory>
+         </ns:dto>
+      </ns:GetInstructionSetsByDto>
+   </soapenv:Body>
+</soapenv:Envelope>
