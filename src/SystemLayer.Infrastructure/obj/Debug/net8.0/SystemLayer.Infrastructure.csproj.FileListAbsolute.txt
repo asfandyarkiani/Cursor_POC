@@ -1,0 +1,16 @@
+/workspace/src/SystemLayer.Infrastructure/obj/Debug/net8.0/SystemLayer.Infrastructure.csproj.AssemblyReference.cache
+/workspace/src/SystemLayer.Infrastructure/obj/Debug/net8.0/SystemLayer.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+/workspace/src/SystemLayer.Infrastructure/obj/Debug/net8.0/SystemLayer.Infrastructure.AssemblyInfoInputs.cache
+/workspace/src/SystemLayer.Infrastructure/obj/Debug/net8.0/SystemLayer.Infrastructure.AssemblyInfo.cs
+/workspace/src/SystemLayer.Infrastructure/obj/Debug/net8.0/SystemLayer.Infrastructure.csproj.CoreCompileInputs.cache
+/workspace/src/SystemLayer.Infrastructure/obj/Debug/net8.0/SystemLayer.Infrastructure.sourcelink.json
+/workspace/src/SystemLayer.Infrastructure/bin/Debug/net8.0/SystemLayer.Infrastructure.deps.json
+/workspace/src/SystemLayer.Infrastructure/bin/Debug/net8.0/SystemLayer.Infrastructure.dll
+/workspace/src/SystemLayer.Infrastructure/bin/Debug/net8.0/SystemLayer.Infrastructure.pdb
+/workspace/src/SystemLayer.Infrastructure/bin/Debug/net8.0/SystemLayer.Application.dll
+/workspace/src/SystemLayer.Infrastructure/bin/Debug/net8.0/SystemLayer.Application.pdb
+/workspace/src/SystemLayer.Infrastructure/obj/Debug/net8.0/SystemLa.6DF53B71.Up2Date
+/workspace/src/SystemLayer.Infrastructure/obj/Debug/net8.0/SystemLayer.Infrastructure.dll
+/workspace/src/SystemLayer.Infrastructure/obj/Debug/net8.0/refint/SystemLayer.Infrastructure.dll
+/workspace/src/SystemLayer.Infrastructure/obj/Debug/net8.0/SystemLayer.Infrastructure.pdb
+/workspace/src/SystemLayer.Infrastructure/obj/Debug/net8.0/ref/SystemLayer.Infrastructure.dll
