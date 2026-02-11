@@ -16,10 +16,16 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Restore
-        run: dotnet restore
+        run: |
+          dotnet restore Framework/Core/Core.sln
+          dotnet restore Framework/Cache/Cache.sln
 
       - name: Build
-        run: dotnet build --no-restore -c Release
+        run: |
+          dotnet build Framework/Core/Core.sln --no-restore -c Release
+          dotnet build Framework/Cache/Cache.sln --no-restore -c Release
 
       - name: Test
-        run: dotnet test --no-build -c Release
+        run: |
+          dotnet test Framework/Core/Core.sln --no-build -c Release
+          dotnet test Framework/Cache/Cache.sln --no-build -c Release
