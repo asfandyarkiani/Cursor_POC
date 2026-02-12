@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+  <soap:Header/>
+  <soap:Body>
+    <tem:Login>
+      <tem:Username>{{Username}}</tem:Username>
+      <tem:Password>{{Password}}</tem:Password>
+      <tem:ContractId>{{ContractId}}</tem:ContractId>
+    </tem:Login>
+  </soap:Body>
+</soap:Envelope>

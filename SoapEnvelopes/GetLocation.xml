@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+  <soap:Header>
+    <tem:SessionHeader>
+      <tem:SessionId>{{SessionId}}</tem:SessionId>
+    </tem:SessionHeader>
+  </soap:Header>
+  <soap:Body>
+    <tem:GetLocation>
+      <tem:LocationRequest>
+        <tem:ContractId>{{ContractId}}</tem:ContractId>
+        <tem:LocationId>{{LocationId}}</tem:LocationId>
+        <tem:LocationCode>{{LocationCode}}</tem:LocationCode>
+        <tem:BuildingId>{{BuildingId}}</tem:BuildingId>
+        <tem:FloorId>{{FloorId}}</tem:FloorId>
+        <tem:IncludeHierarchy>{{IncludeHierarchy}}</tem:IncludeHierarchy>
+      </tem:LocationRequest>
+    </tem:GetLocation>
+  </soap:Body>
+</soap:Envelope>
