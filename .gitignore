@@ -1,0 +1,76 @@
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio files
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vspscc
+*.vssscc
+
+# Rider files
+.idea/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+
+# The packages folder can be ignored
+**/packages/*
+
+# Build results of an idenitcal publish
+publish/
+
+# Azure Functions
+local.settings.json
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# Node
+node_modules/
+
+# Misc
+*.log
+*.tmp
+*.temp
