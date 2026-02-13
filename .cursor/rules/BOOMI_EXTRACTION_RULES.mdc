@@ -1,6 +1,6 @@
 ---
 description: "Always apply. Non-negotiable Boomi extraction rules for this repo."
-alwaysApply: true
+alwaysApply: false
 ---
 
 # BOOMI PROCESS EXTRACTION RULES
