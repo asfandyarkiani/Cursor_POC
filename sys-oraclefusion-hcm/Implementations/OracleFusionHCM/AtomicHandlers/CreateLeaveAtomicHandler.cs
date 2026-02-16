@@ -42,13 +42,17 @@ namespace sys_oraclefusion_hcm.Implementations.OracleFusionHCM.AtomicHandlers
 
             object requestBody = MapDtoToRequestBody(requestDTO);
 
+            // Read credentials from AppConfigs (CRITICAL: All AppConfigs reading MUST be in Atomic Handlers)
+            string username = _appConfigs.OracleFusionUsername;
+            string password = _appConfigs.OracleFusionPassword;
+
             HttpResponseSnapshot response = await _customRestClient.ExecuteCustomRestRequestAsync(
                 operationName: OperationNames.CREATE_LEAVE,
                 apiUrl: fullUrl,
                 httpMethod: HttpMethod.Post,
                 contentFactory: () => CustomRestClient.CreateJsonContent(requestBody),
-                username: requestDTO.Username,
-                password: requestDTO.Password,
+                username: username,
+                password: password,
                 queryParameters: null,
                 customHeaders: null
             );
