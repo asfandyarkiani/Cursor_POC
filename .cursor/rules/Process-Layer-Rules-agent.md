@@ -1,3 +1,13 @@
+---
+description: Always apply. Non-negotiable rules for Process Layer boundaries in this repo.
+alwaysApply: false
+---
+# Process Layer – Architecture & Coding Guidelines
+
+---
+
+
+
 # Process Layer – Architecture & Coding Guidelines
 
 ---
