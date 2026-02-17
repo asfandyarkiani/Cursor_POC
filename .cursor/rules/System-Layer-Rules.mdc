@@ -1,6 +1,6 @@
 ---
 description: "Always apply. Non-negotiable System Layer rules for this repo."
-alwaysApply: true
+alwaysApply: false
 ---
 
 ---
