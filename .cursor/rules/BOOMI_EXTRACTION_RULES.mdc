@@ -296,9 +296,11 @@ OUTPUT: Complete input structure analysis with field mapping table
 - [ ] Array cardinality documented (minOccurs, maxOccurs)
 - [ ] ALL fields extracted (including nested)
 - [ ] Field paths documented (full Boomi paths)
-- [ ] Field mapping table generated (Boomi → Azure DTO)
+- [ ] **Request field mapping table generated (Boomi → Azure DTO) - MANDATORY TABLE FORMAT**
 - [ ] Document processing behavior determined
 - [ ] Input structure documented in Phase 1 document
+
+**🔴 CRITICAL RULE:** Section 2 (Input Structure Analysis) MUST include a **Request Field Mapping table** with columns: Boomi Field Path | Boomi Field Name | Data Type | Required | Azure DTO Property | Notes. This table is MANDATORY (not optional) and must list ALL request fields with their mappings, just like Section 3 has Response Field Mapping table. Missing this table = incomplete Phase 1.
 
 ### STEP 1b: Response Structure Analysis (MANDATORY - CONTRACT VERIFICATION)
 
@@ -3223,6 +3225,108 @@ Before creating section 8 (Sequence Diagram), you MUST verify:
 - [ ] Process Layer response JSON examples provided (all return paths)
 - [ ] Downstream System Layer request JSON examples provided (all operations)
 - [ ] Downstream System Layer response JSON examples provided (all operations - success and error)
+
+**🚨 CRITICAL RULE: Complete Downstream Request Documentation**
+
+**MANDATORY:** For ALL downstream operations (SOAP or JSON), you MUST document complete request samples with ALL relevant information needed for implementation.
+
+**For SOAP Operations:**
+- **MUST include:** Complete XML SOAP request envelope (with all namespaces, element names, and field mappings)
+- **MUST include:** SOAP Action URL (from operation configuration or message shapes)
+- **MUST include:** SOAP Endpoint URL (from operation configuration or message shapes)
+- **MUST include:** HTTP method (typically POST for SOAP)
+- **MUST include:** Request headers (Content-Type, SOAPAction header value)
+- **RULE:** Every SOAP operation MUST have a complete request sample - NO exceptions
+
+**For JSON/REST Operations:**
+- **MUST include:** Complete JSON request body (with all required and optional fields)
+- **MUST include:** API endpoint URL (from operation configuration)
+- **MUST include:** HTTP method (GET, POST, PUT, DELETE, etc.)
+- **MUST include:** Request headers (Content-Type, Authorization, etc. if applicable)
+- **MUST include:** Query parameters (if applicable)
+- **RULE:** Every JSON/REST operation MUST have a complete request sample - NO exceptions
+
+**ENFORCEMENT:** If ANY downstream operation is missing complete request documentation (SOAP or JSON), Section 17 is NOT complete → **CANNOT PROCEED TO PHASE 2**
+
+**EXAMPLE FORMAT:**
+
+**For SOAP Operations:**
+```markdown
+**Operation: [Operation Name]**
+
+**SOAP Endpoint URL:** https://api.example.com/soap/service
+**SOAP Action URL:** http://www.example.com/services/OperationName
+**HTTP Method:** POST
+**Request Headers:**
+- Content-Type: text/xml; charset=utf-8
+- SOAPAction: "http://www.example.com/services/OperationName"
+
+**Request SOAP:**
+```xml
+[Complete SOAP envelope with all namespaces and fields]
+```
+
+**Response SOAP (Success - HTTP 200):**
+```xml
+[Complete SOAP response]
+```
+
+**Response SOAP (Error - HTTP 400):**
+```xml
+[Complete SOAP error response]
+```
+```
+
+**For JSON/REST Operations:**
+```markdown
+**Operation: [Operation Name]**
+
+**API Endpoint URL:** https://api.example.com/v1/entities
+**HTTP Method:** POST
+**Request Headers:**
+- Content-Type: application/json
+- Authorization: Bearer {token}
+- X-API-Key: {apiKey} (if applicable)
+
+**Query Parameters (if applicable):**
+- ?filter=status:active
+- ?page=1&limit=10
+
+**Request JSON:**
+```json
+{
+  "entityId": "12345",
+  "entityName": "Example Entity",
+  "status": "Active",
+  "details": {
+    "field1": "value1",
+    "field2": "value2"
+  }
+}
+```
+
+**Response JSON (Success - HTTP 200):**
+```json
+{
+  "entityId": "12345",
+  "entityName": "Example Entity",
+  "status": "Created",
+  "createdAt": "2024-01-15T10:30:00Z"
+}
+```
+
+**Response JSON (Error - HTTP 400):**
+```json
+{
+  "errorCode": "VALIDATION_ERROR",
+  "message": "Invalid entity data",
+  "details": {
+    "field": "entityName",
+    "issue": "Required field is missing"
+  }
+}
+```
+```
 
 ---
 

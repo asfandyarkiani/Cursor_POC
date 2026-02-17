@@ -6808,6 +6808,10 @@ CacheKey cacheKey = CacheKey.CreateCacheKey(..., _cacheKeySettings: new CacheKey
 - **Why:** Each operation may have different error email configuration from Phase 1. Operation-specific properties ensure correct values are used per operation and maintain Boomi parity.
 - **Verification:** Check Phase 1 Section 2 (Process Properties Analysis) for each operation's `process.DPP_File_Name` and `process.DPP_HasAttachment` values. If values differ, operation-specific properties are REQUIRED.
 
+**🔴 CRITICAL RULE: NO Hardcoded Values in Downstream Requests**
+
+**MANDATORY:** ALL properties sent in downstream requests (System Layer or Process Layer calls) MUST be configured in AppConfigs/appsettings.json - NEVER hardcode values in code. If a value is found hardcoded (e.g., ContractId = "1"), first check Boomi JSON files (operation/map/profile) to extract the actual value, then add it to AppConfigs with the extracted value. If value doesn't exist in Boomi files, add placeholder in AppConfigs (e.g., ContractId = "") for environment-specific configuration. This ensures environment-specific values can be configured without code changes.
+
 ---
 
 ## 14. Constants Rules
