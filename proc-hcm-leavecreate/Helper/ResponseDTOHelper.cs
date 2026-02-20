@@ -12,10 +12,10 @@ namespace ProcHcmLeaveCreate.Helper
             
             if (docDict != null)
             {
-                dto.Status = docDict.ToStringValue("Status");
-                dto.Message = docDict.ToStringValue("Message");
                 dto.PersonAbsenceEntryId = docDict.ToLongValue("PersonAbsenceEntryId");
-                dto.Success = docDict.ToStringValue("Success");
+                dto.Status = "success";
+                dto.Message = "Data successfully sent to Oracle Fusion";
+                dto.Success = "true";
             }
         }
     }

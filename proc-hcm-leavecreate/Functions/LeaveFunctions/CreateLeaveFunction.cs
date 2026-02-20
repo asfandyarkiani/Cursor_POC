@@ -50,8 +50,6 @@ namespace ProcHcmLeaveCreate.Functions.LeaveFunctions
 
             if (response.IsSuccessStatusCode)
             {
-                string responseContent = await response.Content.ReadAsStringAsync();
-                
                 BaseResponseDTO? systemLayerResponse = await response.ExtractBaseResponseAsync();
                 
                 if (systemLayerResponse?.Data != null)
