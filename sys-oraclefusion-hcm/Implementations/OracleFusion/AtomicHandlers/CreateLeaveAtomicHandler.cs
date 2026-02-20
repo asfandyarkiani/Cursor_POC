@@ -38,6 +38,8 @@ namespace OracleFusionHcm.Implementations.OracleFusion.AtomicHandlers
             requestDTO.ValidateDownStreamRequestParameters();
 
             string apiUrl = $"{_appConfigs.BaseApiUrl}/{_appConfigs.ResourcePath}";
+            string username = _appConfigs.Username;
+            string password = _appConfigs.Password;
 
             object requestBody = MapDtoToRequestBody(requestDTO);
 
@@ -46,8 +48,8 @@ namespace OracleFusionHcm.Implementations.OracleFusion.AtomicHandlers
                 apiUrl: apiUrl,
                 httpMethod: HttpMethod.Post,
                 contentFactory: () => CustomRestClient.CreateJsonContent(requestBody),
-                username: requestDTO.Username,
-                password: requestDTO.Password,
+                username: username,
+                password: password,
                 queryParameters: null,
                 customHeaders: null
             );

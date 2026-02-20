@@ -14,8 +14,6 @@ namespace OracleFusionHcm.DTO.AtomicHandlerDTOs
         public string ApprovalStatusCd { get; set; } = string.Empty;
         public int StartDateDuration { get; set; }
         public int EndDateDuration { get; set; }
-        public string Username { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
 
         public void ValidateDownStreamRequestParameters()
         {
@@ -47,9 +45,6 @@ namespace OracleFusionHcm.DTO.AtomicHandlerDTOs
 
             if (EndDateDuration <= 0)
                 errors.Add("EndDateDuration must be greater than 0.");
-
-            if (string.IsNullOrWhiteSpace(Username))
-                errors.Add("Username is required.");
 
             if (errors.Count > 0)
                 throw new RequestValidationFailureException(
