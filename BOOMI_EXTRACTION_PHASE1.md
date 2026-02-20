@@ -1,10 +1,12 @@
-# BOOMI EXTRACTION PHASE 1 - HCM Leave Create
+# BOOMI EXTRACTION PHASE 1: HCM Leave Create Process
 
 **Process Name:** HCM_Leave Create  
 **Process ID:** ca69f858-785f-4565-ba1f-b4edc6cca05b  
+**Version:** 29  
 **Description:** This Process will sync the Leave data between D365 and Oracle HCM  
-**Analysis Date:** 2026-02-20  
-**Business Domain:** Human Resource (HCM)
+**Business Domain:** Human Resources (HCM)  
+**Last Modified:** 2024-11-04T08:54:39Z  
+**Modified By:** Rajesh.Muppala@al-ghurair.com
 
 ---
 
@@ -12,46 +14,46 @@
 
 ### Main Process Operations
 
-| Operation ID | Operation Name | Type | SubType | Purpose |
+| Operation ID | Operation Name | Type | Sub-Type | Purpose |
 |---|---|---|---|---|
-| 8f709c2b-e63f-4d5f-9374-2932ed70415d | Create Leave Oracle Fusion OP | connector-action | wss | Web Service Server Listen - Entry point |
+| 8f709c2b-e63f-4d5f-9374-2932ed70415d | Create Leave Oracle Fusion OP | connector-action | wss | Entry point - Web Service Server Listen operation |
 | 6e8920fd-af5a-430b-a1d9-9fde7ac29a12 | Leave Oracle Fusion Create | connector-action | http | HTTP POST to Oracle Fusion HCM API |
-| af07502a-fafd-4976-a691-45d51a33b549 | Email w Attachment | connector-action | mail | Send email with attachment |
-| 15a72a21-9b57-49a1-a8ed-d70367146644 | Email W/O Attachment | connector-action | mail | Send email without attachment |
+| af07502a-fafd-4976-a691-45d51a33b549 | Email w Attachment | connector-action | mail | Send email with attachment (subprocess) |
+| 15a72a21-9b57-49a1-a8ed-d70367146644 | Email W/O Attachment | connector-action | mail | Send email without attachment (subprocess) |
 
 ### Subprocess Operations
 
 **Subprocess ID:** a85945c5-3004-42b9-80b1-104f465cd1fb  
 **Subprocess Name:** (Sub) Office 365 Email  
-**Purpose:** Email notification subprocess for error handling
+**Purpose:** Email notification handler with attachment logic
 
 ---
 
 ## 2. Input Structure Analysis (Step 1a)
 
-### Entry Point Identification
+### Entry Point Operation
 
-**Entry Operation:** shape1 (START shape)  
 **Operation ID:** 8f709c2b-e63f-4d5f-9374-2932ed70415d  
 **Operation Name:** Create Leave Oracle Fusion OP  
-**Operation Type:** connector-action (wss - Web Services Server)  
-**JSON Reference:** Lines 46-56 in process_root_ca69f858-785f-4565-ba1f-b4edc6cca05b.json
+**Operation Type:** connector-action (wss - Web Service Server)  
+**Action Type:** Listen  
+**Input Type:** singlejson  
+**Output Type:** singlejson
 
 ### Request Profile Structure
 
 **Profile ID:** febfa3e1-f719-4ee8-ba57-cdae34137ab3  
 **Profile Name:** D365 Leave Create JSON Profile  
 **Profile Type:** profile.json  
-**Input Type:** singlejson  
-**JSON Reference:** Line 38 in operation_8f709c2b-e63f-4d5f-9374-2932ed70415d.json
+**Root Element:** Root  
+**Structure Path:** Root/Object/...
 
-### Profile Structure Analysis
+### Array Detection
 
-**Root Structure:** Root/Object  
-**Array Detection:** ❌ NO - Single object structure  
-**Array Cardinality:** N/A (not an array)
+**Is Array:** ❌ NO - Single object structure  
+**Array Cardinality:** N/A (single object)
 
-### Input JSON Structure
+### Input Format (JSON Structure)
 
 ```json
 {
@@ -67,29 +69,42 @@
 }
 ```
 
-### Complete Field Inventory
-
-| Key | Field Name | Full Path | Data Type | Required | Mappable |
-|---|---|---|---|---|---|
-| 3 | employeeNumber | Root/Object/employeeNumber | number | Yes | Yes |
-| 4 | absenceType | Root/Object/absenceType | character | Yes | Yes |
-| 5 | employer | Root/Object/employer | character | Yes | Yes |
-| 6 | startDate | Root/Object/startDate | character | Yes | Yes |
-| 7 | endDate | Root/Object/endDate | character | Yes | Yes |
-| 8 | absenceStatusCode | Root/Object/absenceStatusCode | character | Yes | Yes |
-| 9 | approvalStatusCode | Root/Object/approvalStatusCode | character | Yes | Yes |
-| 10 | startDateDuration | Root/Object/startDateDuration | number | Yes | Yes |
-| 11 | endDateDuration | Root/Object/endDateDuration | number | Yes | Yes |
-
-**Total Fields:** 9 fields (all flat structure, no nested objects)
-
 ### Document Processing Behavior
 
-**Input Type:** singlejson  
-**Structure Type:** Single object (not array)  
-**Processing Behavior:** Single document processing  
-**Execution Pattern:** One execution per request  
+**Behavior:** Single document processing  
+**Description:** Boomi processes single leave request document per execution  
+**Execution Pattern:** Single execution per request  
 **Session Management:** One session per execution
+
+### Request Fields Inventory
+
+| Field Name | Field Path | Data Type | Required | Mappable | Notes |
+|---|---|---|---|---|---|
+| employeeNumber | Root/Object/employeeNumber | number | Yes | Yes | Tracked field (hr_employee_id) |
+| absenceType | Root/Object/absenceType | character | Yes | Yes | Leave type (Sick Leave, Annual Leave, etc.) |
+| employer | Root/Object/employer | character | Yes | Yes | Legal entity name |
+| startDate | Root/Object/startDate | character | Yes | Yes | Leave start date (YYYY-MM-DD) |
+| endDate | Root/Object/endDate | character | Yes | Yes | Leave end date (YYYY-MM-DD) |
+| absenceStatusCode | Root/Object/absenceStatusCode | character | Yes | Yes | Status code (SUBMITTED, APPROVED, etc.) |
+| approvalStatusCode | Root/Object/approvalStatusCode | character | Yes | Yes | Approval status code |
+| startDateDuration | Root/Object/startDateDuration | number | Yes | Yes | Duration for start date (0-1) |
+| endDateDuration | Root/Object/endDateDuration | number | Yes | Yes | Duration for end date (0-1) |
+
+**Total Fields:** 9 fields
+
+### Field Mapping (Boomi → Azure DTO)
+
+| Boomi Field Path | Boomi Field Name | Data Type | Azure DTO Property | Notes |
+|---|---|---|---|---|
+| Root/Object/employeeNumber | employeeNumber | number | EmployeeNumber | Used in map to personNumber |
+| Root/Object/absenceType | absenceType | character | AbsenceType | Direct mapping |
+| Root/Object/employer | employer | character | Employer | Direct mapping |
+| Root/Object/startDate | startDate | character | StartDate | Date format YYYY-MM-DD |
+| Root/Object/endDate | endDate | character | EndDate | Date format YYYY-MM-DD |
+| Root/Object/absenceStatusCode | absenceStatusCode | character | AbsenceStatusCode | Maps to absenceStatusCd |
+| Root/Object/approvalStatusCode | approvalStatusCode | character | ApprovalStatusCode | Maps to approvalStatusCd |
+| Root/Object/startDateDuration | startDateDuration | number | StartDateDuration | Numeric (0-1) |
+| Root/Object/endDateDuration | endDateDuration | number | EndDateDuration | Numeric (0-1) |
 
 ---
 
@@ -100,32 +115,39 @@
 **Profile ID:** f4ca3a70-114a-4601-bad8-44a3eb20e2c0  
 **Profile Name:** Leave D365 Response  
 **Profile Type:** profile.json  
-**Output Type:** singlejson  
-**JSON Reference:** Operation configuration does not specify explicit response profile, but maps target this profile
+**Root Element:** leaveResponse  
+**Structure Path:** leaveResponse/Object/...
 
-### Response JSON Structure
+### Response Format (JSON Structure)
 
 ```json
 {
-  "leaveResponse": {
-    "status": "success",
-    "message": "Data successfully sent to Oracle Fusion",
-    "personAbsenceEntryId": 12345,
-    "success": "true"
-  }
+  "status": "success",
+  "message": "Data successfully sent to Oracle Fusion",
+  "personAbsenceEntryId": 12345,
+  "success": "true"
 }
 ```
 
-### Complete Response Field Inventory
+### Response Fields Inventory
 
-| Key | Field Name | Full Path | Data Type | Mappable |
+| Field Name | Field Path | Data Type | Mappable | Notes |
 |---|---|---|---|---|
-| 4 | status | leaveResponse/Object/status | character | Yes |
-| 5 | message | leaveResponse/Object/message | character | Yes |
-| 6 | personAbsenceEntryId | leaveResponse/Object/personAbsenceEntryId | number | Yes |
-| 7 | success | leaveResponse/Object/success | character | Yes |
+| status | leaveResponse/Object/status | character | Yes | Success/failure indicator |
+| message | leaveResponse/Object/message | character | Yes | Response message |
+| personAbsenceEntryId | leaveResponse/Object/personAbsenceEntryId | number | Yes | Oracle HCM absence entry ID |
+| success | leaveResponse/Object/success | character | Yes | Boolean flag (true/false) |
 
-**Total Response Fields:** 4 fields
+**Total Fields:** 4 fields
+
+### Response Field Mapping (Boomi → Azure DTO)
+
+| Boomi Field Path | Boomi Field Name | Data Type | Azure DTO Property | Notes |
+|---|---|---|---|---|
+| leaveResponse/Object/status | status | character | Status | "success" or "failure" |
+| leaveResponse/Object/message | message | character | Message | Descriptive message |
+| leaveResponse/Object/personAbsenceEntryId | personAbsenceEntryId | number | PersonAbsenceEntryId | Oracle HCM ID |
+| leaveResponse/Object/success | success | character | Success | "true" or "false" |
 
 ---
 
@@ -134,65 +156,40 @@
 ### Operation: Leave Oracle Fusion Create (6e8920fd-af5a-430b-a1d9-9fde7ac29a12)
 
 **Operation Type:** HTTP POST  
-**Response Profile:** NONE (responseProfileType: "NONE")  
-**Return Responses:** true  
+**Response Profile:** NONE (responseProfileType: NONE)  
 **Return Errors:** true  
-**JSON Reference:** Lines 32-42 in operation_6e8920fd-af5a-430b-a1d9-9fde7ac29a12.json
+**Return Responses:** true  
+**Data Content Type:** application/json
 
 **Response Header Mapping:**
-- Header Field: "Content-Encoding"
-- Target Property: "DDP_RespHeader" (Dynamic Document Property)
-- JSON Reference: Lines 54-62 in operation_6e8920fd-af5a-430b-a1d9-9fde7ac29a12.json
+- Header: Content-Encoding
+- Target Property: DDP_RespHeader (dynamic document property)
 
 **Extracted Fields:**
-- **DDP_RespHeader** (from HTTP response header "Content-Encoding")
-  - Extracted by: Operation configuration (automatic header mapping)
-  - Written to: dynamicdocument.DDP_RespHeader
-  - Consumers: shape44 (Decision: Check Response Content Type)
+- **DDP_RespHeader** - Extracted from HTTP response header "Content-Encoding"
+  - Written by: Response header mapping (automatic)
+  - Used by: Decision shape2 (checks if response is gzip compressed)
 
-**Track Properties Available After Operation:**
-- **meta.base.applicationstatuscode** - HTTP status code from Oracle Fusion API
-  - Consumers: shape2 (Decision: HTTP Status 20 check)
-- **meta.base.applicationstatusmessage** - HTTP response message
-  - Consumers: shape39, shape46 (Error message extraction)
+**Response Data:**
+- Profile ID: 316175c7-0e45-4869-9ac6-5f9d69882a62 (Oracle Fusion Leave Response JSON Profile)
+- Response contains: personAbsenceEntryId, absenceStatusCd, approvalStatusCd, and many other Oracle HCM fields
+- **Track Property:** meta.base.applicationstatuscode (HTTP status code from response)
+  - Used by: Decision shape2 (checks if status code matches "20*")
 
-**Business Logic Implications:**
-- Operation produces HTTP status code → Decision shape2 checks if status is 20* (success)
-- Operation produces response header → Decision shape44 checks if Content-Encoding is "gzip"
-- If status is NOT 20*, error path is triggered
-- If Content-Encoding is "gzip", response must be decompressed
+**Consumers:**
+1. **Decision shape2** - Checks meta.base.applicationstatuscode (HTTP status code)
+   - Data Source: TRACK_PROPERTY (from operation response)
+   - Dependency: shape33 (Operation) MUST execute BEFORE shape2 (Decision)
 
-**Data Flow:**
-```
-Operation (Leave Oracle Fusion Create)
-  ↓ Produces
-  - meta.base.applicationstatuscode (HTTP status)
-  - meta.base.applicationstatusmessage (HTTP message)
-  - dynamicdocument.DDP_RespHeader (Content-Encoding header)
-  - Response body (JSON from Oracle Fusion)
-  ↓ Consumed by
-  - shape2 (Decision: HTTP Status 20 check) - Reads meta.base.applicationstatuscode
-  - shape44 (Decision: Check Response Content Type) - Reads dynamicdocument.DDP_RespHeader
-  - shape39, shape46 (Error handling) - Reads meta.base.applicationstatusmessage
-```
+2. **Decision shape44** - Checks dynamicdocument.DDP_RespHeader (Content-Encoding header)
+   - Data Source: TRACK_PROPERTY (from operation response header)
+   - Dependency: shape33 (Operation) MUST execute BEFORE shape44 (Decision)
 
-### Operation: Email w Attachment (af07502a-fafd-4976-a691-45d51a33b549)
-
-**Operation Type:** Mail Send  
-**Response Profile:** NONE  
-**Purpose:** Send error notification email with payload attachment  
-**JSON Reference:** Lines 24-42 in operation_af07502a-fafd-4976-a691-45d51a33b549.json
-
-**No response data extracted** - Mail operations do not return data
-
-### Operation: Email W/O Attachment (15a72a21-9b57-49a1-a8ed-d70367146644)
-
-**Operation Type:** Mail Send  
-**Response Profile:** NONE  
-**Purpose:** Send error notification email without attachment  
-**JSON Reference:** Lines 24-42 in operation_15a72a21-9b57-49a1-a8ed-d70367146644.json
-
-**No response data extracted** - Mail operations do not return data
+**Business Logic:**
+- Operation executes HTTP POST to Oracle Fusion HCM
+- Response includes HTTP status code and Content-Encoding header
+- Decisions check response metadata to determine success/failure path
+- **CRITICAL:** Operation MUST execute FIRST, then decisions check response
 
 ---
 
@@ -203,50 +200,55 @@ Operation (Leave Oracle Fusion Create)
 | Map ID | Map Name | From Profile | To Profile | Type |
 |---|---|---|---|---|
 | c426b4d6-2aff-450e-b43b-59956c4dbc96 | Leave Create Map | febfa3e1-f719-4ee8-ba57-cdae34137ab3 | a94fa205-c740-40a5-9fda-3d018611135a | Request transformation |
-| e4fd3f59-edb5-43a1-aeae-143b600a064e | Oracle Fusion Leave Response Map | 316175c7-0e45-4869-9ac6-5f9d69882a62 | f4ca3a70-114a-4601-bad8-44a3eb20e2c0 | Response transformation |
-| f46b845a-7d75-41b5-b0ad-c41a6a8e9b12 | Leave Error Map | 23d7a2e9-5cb0-4e9c-9e4b-3154834bad0d | f4ca3a70-114a-4601-bad8-44a3eb20e2c0 | Error response transformation |
+| e4fd3f59-edb5-43a1-aeae-143b600a064e | Oracle Fusion Leave Response Map | 316175c7-0e45-4869-9ac6-5f9d69882a62 | f4ca3a70-114a-4601-bad8-44a3eb20e2c0 | Success response |
+| f46b845a-7d75-41b5-b0ad-c41a6a8e9b12 | Leave Error Map | 23d7a2e9-5cb0-4e9c-9e4b-3154834bad0d | f4ca3a70-114a-4601-bad8-44a3eb20e2c0 | Error response |
 
-### Map 1: Leave Create Map (c426b4d6-2aff-450e-b43b-59956c4dbc96)
+### Map: Leave Create Map (c426b4d6-2aff-450e-b43b-59956c4dbc96)
 
-**Purpose:** Transform D365 request to Oracle Fusion HCM request format  
 **From Profile:** febfa3e1-f719-4ee8-ba57-cdae34137ab3 (D365 Leave Create JSON Profile)  
 **To Profile:** a94fa205-c740-40a5-9fda-3d018611135a (HCM Leave Create JSON Profile)  
-**Type:** HTTP Request Transformation (NOT SOAP - this is REST API)
+**Type:** HTTP Request transformation (D365 → Oracle HCM)
+
+**Purpose:** Transform D365 leave request to Oracle Fusion HCM format
 
 **Field Mappings:**
 
 | Source Field | Source Path | Target Field | Target Path | Transformation |
 |---|---|---|---|---|
-| employeeNumber | Root/Object/employeeNumber | personNumber | Root/Object/personNumber | Direct mapping (field name change) |
+| employeeNumber | Root/Object/employeeNumber | personNumber | Root/Object/personNumber | Direct mapping |
 | absenceType | Root/Object/absenceType | absenceType | Root/Object/absenceType | Direct mapping |
 | employer | Root/Object/employer | employer | Root/Object/employer | Direct mapping |
 | startDate | Root/Object/startDate | startDate | Root/Object/startDate | Direct mapping |
 | endDate | Root/Object/endDate | endDate | Root/Object/endDate | Direct mapping |
-| absenceStatusCode | Root/Object/absenceStatusCode | absenceStatusCd | Root/Object/absenceStatusCd | Direct mapping (field name change) |
-| approvalStatusCode | Root/Object/approvalStatusCode | approvalStatusCd | Root/Object/approvalStatusCd | Direct mapping (field name change) |
+| absenceStatusCode | Root/Object/absenceStatusCode | absenceStatusCd | Root/Object/absenceStatusCd | Field name change |
+| approvalStatusCode | Root/Object/approvalStatusCode | approvalStatusCd | Root/Object/approvalStatusCd | Field name change |
 | startDateDuration | Root/Object/startDateDuration | startDateDuration | Root/Object/startDateDuration | Direct mapping |
 | endDateDuration | Root/Object/endDateDuration | endDateDuration | Root/Object/endDateDuration | Direct mapping |
 
 **Profile vs Map Field Name Comparison:**
 
-| D365 Field Name (Source) | Oracle Fusion Field Name (Target) | Authority | Notes |
+| Source Profile Field | Target Profile Field | Map Target Field | Discrepancy? |
 |---|---|---|---|
-| employeeNumber | personNumber | ✅ MAP | Field name changed for Oracle Fusion API |
-| absenceStatusCode | absenceStatusCd | ✅ MAP | Field name abbreviated |
-| approvalStatusCode | approvalStatusCd | ✅ MAP | Field name abbreviated |
+| absenceStatusCode | absenceStatusCd | absenceStatusCd | ✅ Match |
+| approvalStatusCode | approvalStatusCd | approvalStatusCd | ✅ Match |
 
-**Scripting Functions:** None  
-**Static Values:** None  
-**Process Properties Used:** None
+**Scripting Functions:** None
 
-**CRITICAL RULE:** This is a REST API (not SOAP), so no SOAP envelope is required. The map transforms JSON to JSON.
+**Static Values:** None
 
-### Map 2: Oracle Fusion Leave Response Map (e4fd3f59-edb5-43a1-aeae-143b600a064e)
+**Process Property Mappings:** None
 
-**Purpose:** Transform Oracle Fusion response to D365 response format  
+**Element Names:** Standard JSON object structure (no SOAP elements)
+
+**Authority:** Map field names are AUTHORITATIVE for HTTP request body
+
+### Map: Oracle Fusion Leave Response Map (e4fd3f59-edb5-43a1-aeae-143b600a064e)
+
 **From Profile:** 316175c7-0e45-4869-9ac6-5f9d69882a62 (Oracle Fusion Leave Response JSON Profile)  
 **To Profile:** f4ca3a70-114a-4601-bad8-44a3eb20e2c0 (Leave D365 Response)  
-**Type:** Success Response Transformation
+**Type:** Success response transformation
+
+**Purpose:** Transform Oracle Fusion HCM response to D365 response format
 
 **Field Mappings:**
 
@@ -254,278 +256,440 @@ Operation (Leave Oracle Fusion Create)
 |---|---|---|---|---|
 | personAbsenceEntryId | Root/Object/personAbsenceEntryId | personAbsenceEntryId | leaveResponse/Object/personAbsenceEntryId | Direct mapping |
 
-**Default Values (Static):**
+**Default Values:**
 
-| Target Field | Target Key | Default Value | Purpose |
-|---|---|---|---|
-| status | 4 | "success" | Success indicator |
-| message | 5 | "Data successfully sent to Oracle Fusion" | Success message |
-| success | 7 | "true" | Boolean success flag |
+| Target Field | Default Value | Purpose |
+|---|---|---|
+| status | "success" | Success indicator |
+| message | "Data successfully sent to Oracle Fusion" | Success message |
+| success | "true" | Boolean success flag |
 
-**JSON Reference:** Lines 47-67 in map_e4fd3f59-edb5-43a1-aeae-143b600a064e.json
+### Map: Leave Error Map (f46b845a-7d75-41b5-b0ad-c41a6a8e9b12)
 
-### Map 3: Leave Error Map (f46b845a-7d75-41b5-b0ad-c41a6a8e9b12)
-
-**Purpose:** Transform error details to D365 error response format  
 **From Profile:** 23d7a2e9-5cb0-4e9c-9e4b-3154834bad0d (Dummy FF Profile)  
 **To Profile:** f4ca3a70-114a-4601-bad8-44a3eb20e2c0 (Leave D365 Response)  
-**Type:** Error Response Transformation
+**Type:** Error response transformation
+
+**Purpose:** Transform error information to D365 error response format
 
 **Field Mappings:**
 
-| Source | Source Type | Target Field | Target Path | Transformation |
+| Source Type | Source | Target Field | Target Path | Transformation |
 |---|---|---|---|---|
-| DPP_ErrorMessage | Process Property (Function) | message | leaveResponse/Object/message | Get process property value |
+| function | PropertyGet(DPP_ErrorMessage) | message | leaveResponse/Object/message | Get error message from process property |
 
 **Function Analysis:**
 
-| Function Key | Function Type | Input | Output | Logic |
+**Function 1: PropertyGet**
+- **Type:** PropertyGet (Get Dynamic Process Property)
+- **Input:** Property Name = "DPP_ErrorMessage"
+- **Output:** Result (error message text)
+- **Purpose:** Retrieve error message from process property DPP_ErrorMessage
+
+**Default Values:**
+
+| Target Field | Default Value | Purpose |
+|---|---|---|
+| status | "failure" | Failure indicator |
+| success | "false" | Boolean failure flag |
+
+**Authority:** Map uses process property DPP_ErrorMessage for error message content
+
+---
+
+## 6. HTTP Status Codes and Return Path Responses (Step 1e)
+
+### Return Path Inventory
+
+| Return Shape ID | Return Label | User Label | HTTP Status Code | Path Type |
 |---|---|---|---|---|
-| 1 | PropertyGet | Property Name: "DPP_ErrorMessage" | Result | Retrieves error message from process property |
+| shape35 | Success Response | Success Response | 200 | Success |
+| shape36 | Error Response | Error Response | 400 | Error (HTTP failure) |
+| shape43 | Error Response | Error Response | 500 | Error (Try/Catch exception) |
+| shape48 | Error Response | Error Response | 400 | Error (GZIP decompression failure) |
 
-**JSON Reference:** Lines 45-88 in map_f46b845a-7d75-41b5-b0ad-c41a6a8e9b12.json
+### Return Path 1: Success Response (shape35)
 
-**Default Values (Static):**
+**Return Label:** "Success Response"  
+**Return Shape ID:** shape35  
+**HTTP Status Code:** 200  
+**Path Type:** Success
 
-| Target Field | Target Key | Default Value | Purpose |
+**Decision Conditions Leading to Return:**
+- Decision shape2: meta.base.applicationstatuscode matches "20*" → TRUE path
+
+**Populated Response Fields:**
+
+| Field Name | Field Path | Source | Populated By | Value Type |
+|---|---|---|---|---|
+| status | leaveResponse/Object/status | map_default | Map e4fd3f59 | Static: "success" |
+| message | leaveResponse/Object/message | map_default | Map e4fd3f59 | Static: "Data successfully sent to Oracle Fusion" |
+| personAbsenceEntryId | leaveResponse/Object/personAbsenceEntryId | operation_response | Operation 6e8920fd (Oracle HCM API) | Dynamic from Oracle response |
+| success | leaveResponse/Object/success | map_default | Map e4fd3f59 | Static: "true" |
+
+**Response JSON Example:**
+
+```json
+{
+  "status": "success",
+  "message": "Data successfully sent to Oracle Fusion",
+  "personAbsenceEntryId": 300100123456789,
+  "success": "true"
+}
+```
+
+### Return Path 2: Error Response - HTTP Failure (shape36)
+
+**Return Label:** "Error Response"  
+**Return Shape ID:** shape36  
+**HTTP Status Code:** 400  
+**Path Type:** Error
+
+**Decision Conditions Leading to Return:**
+- Decision shape2: meta.base.applicationstatuscode does NOT match "20*" → FALSE path
+- Decision shape44: dynamicdocument.DDP_RespHeader does NOT equal "gzip" → FALSE path
+
+**Populated Response Fields:**
+
+| Field Name | Field Path | Source | Populated By | Value Type |
+|---|---|---|---|---|
+| status | leaveResponse/Object/status | map_default | Map f46b845a | Static: "failure" |
+| message | leaveResponse/Object/message | process_property | DPP_ErrorMessage (from track property) | Dynamic from meta.base.applicationstatusmessage |
+| success | leaveResponse/Object/success | map_default | Map f46b845a | Static: "false" |
+
+**Response JSON Example:**
+
+```json
+{
+  "status": "failure",
+  "message": "HTTP 400: Bad Request - Invalid absence type",
+  "success": "false"
+}
+```
+
+### Return Path 3: Error Response - Try/Catch Exception (shape43)
+
+**Return Label:** "Error Response"  
+**Return Shape ID:** shape43  
+**HTTP Status Code:** 500  
+**Path Type:** Error
+
+**Decision Conditions Leading to Return:**
+- Try/Catch shape17: Exception caught in Try block → Catch path (shape20 branch path 2)
+
+**Populated Response Fields:**
+
+| Field Name | Field Path | Source | Populated By | Value Type |
+|---|---|---|---|---|
+| status | leaveResponse/Object/status | map_default | Map f46b845a | Static: "failure" |
+| message | leaveResponse/Object/message | process_property | DPP_ErrorMessage (from catch error) | Dynamic from meta.base.catcherrorsmessage |
+| success | leaveResponse/Object/success | map_default | Map f46b845a | Static: "false" |
+
+**Response JSON Example:**
+
+```json
+{
+  "status": "failure",
+  "message": "Connection timeout to Oracle Fusion HCM API",
+  "success": "false"
+}
+```
+
+### Return Path 4: Error Response - GZIP Decompression Failure (shape48)
+
+**Return Label:** "Error Response"  
+**Return Shape ID:** shape48  
+**HTTP Status Code:** 400  
+**Path Type:** Error
+
+**Decision Conditions Leading to Return:**
+- Decision shape2: meta.base.applicationstatuscode matches "20*" → TRUE path
+- Decision shape44: dynamicdocument.DDP_RespHeader equals "gzip" → TRUE path
+- Data process shape45: GZIP decompression executed
+- Document properties shape46: Error message captured from meta.base.applicationstatusmessage
+
+**Populated Response Fields:**
+
+| Field Name | Field Path | Source | Populated By | Value Type |
+|---|---|---|---|---|
+| status | leaveResponse/Object/status | map_default | Map f46b845a | Static: "failure" |
+| message | leaveResponse/Object/message | process_property | DPP_ErrorMessage (from decompression error) | Dynamic from meta.base.applicationstatusmessage |
+| success | leaveResponse/Object/success | map_default | Map f46b845a | Static: "false" |
+
+**Response JSON Example:**
+
+```json
+{
+  "status": "failure",
+  "message": "Failed to decompress GZIP response from Oracle Fusion",
+  "success": "false"
+}
+```
+
+### Downstream Operations HTTP Status Codes
+
+#### Operation: Leave Oracle Fusion Create (6e8920fd-af5a-430b-a1d9-9fde7ac29a12)
+
+**Expected Success Codes:** 200, 201  
+**Error Status Codes:** 400, 401, 403, 404, 500, 502, 503, 504  
+**Error Handling Strategy:** Return error response to caller with error message
+
+**Success Scenario (HTTP 20*):**
+- Status Code: 200 or 201
+- Response may be GZIP compressed (Content-Encoding: gzip)
+- Response body contains Oracle HCM absence entry details
+
+**Error Scenarios:**
+- **HTTP 400:** Bad Request - Invalid input data
+- **HTTP 401:** Unauthorized - Authentication failure
+- **HTTP 403:** Forbidden - Insufficient permissions
+- **HTTP 404:** Not Found - Resource not found
+- **HTTP 500:** Internal Server Error - Oracle HCM system error
+- **HTTP 502/503/504:** Gateway/Service errors
+
+---
+
+## 7. Process Properties Analysis (Steps 2-3)
+
+### Property WRITES
+
+| Property Name | Property ID | Written By Shape(s) | Source | Value Type |
+|---|---|---|---|---|
+| DPP_Process_Name | process.DPP_Process_Name | shape38 | Execution property | Process Name |
+| DPP_AtomName | process.DPP_AtomName | shape38 | Execution property | Atom Name |
+| DPP_Payload | process.DPP_Payload | shape38 | Current document | Request payload |
+| DPP_ExecutionID | process.DPP_ExecutionID | shape38 | Execution property | Execution Id |
+| DPP_File_Name | process.DPP_File_Name | shape38 | Concatenation | ProcessName + Timestamp + ".txt" |
+| DPP_Subject | process.DPP_Subject | shape38 | Concatenation | AtomName + " (" + ProcessName + " ) has errors to report" |
+| To_Email | process.To_Email | shape38 | Defined parameter | Email recipient address |
+| DPP_HasAttachment | process.DPP_HasAttachment | shape38 | Defined parameter | "Y" or "N" |
+| DPP_ErrorMessage | process.DPP_ErrorMessage | shape19, shape39, shape46 | Track property | Error message from catch/response |
+| dynamicdocument.URL | dynamicdocument.URL | shape8 | Defined parameter | Oracle Fusion API resource path |
+
+### Property READS
+
+| Property Name | Property ID | Read By Shape(s) | Usage Context |
 |---|---|---|---|
-| status | 4 | "failure" | Failure indicator |
-| success | 7 | "false" | Boolean failure flag |
+| dynamicdocument.URL | dynamicdocument.URL | shape33 (operation) | HTTP request path element |
+| DPP_ErrorMessage | process.DPP_ErrorMessage | Subprocess shape21 (via map f46b845a) | Error message in response |
+| DPP_Process_Name | process.DPP_Process_Name | Subprocess shape21 | Email body content |
+| DPP_AtomName | process.DPP_AtomName | Subprocess shape21 | Email body content |
+| DPP_ExecutionID | process.DPP_ExecutionID | Subprocess shape21 | Email body content |
+| DPP_File_Name | process.DPP_File_Name | Subprocess shape21 | Email attachment filename |
+| DPP_Subject | process.DPP_Subject | Subprocess shape21 | Email subject |
+| To_Email | process.To_Email | Subprocess shape21 | Email recipient |
+| DPP_HasAttachment | process.DPP_HasAttachment | Subprocess shape21 (decision shape4) | Attachment decision |
+| DPP_MailBody | process.DPP_MailBody | Subprocess shape21 (shape6, shape20) | Email body content |
+| DPP_Payload | process.DPP_Payload | Subprocess shape21 (shape15) | Email attachment content |
 
-**CRITICAL RULE:** Error map uses process property DPP_ErrorMessage to populate error response message field.
+### Property Dependency Chains
 
----
+**Chain 1: Error Handling Properties**
+- shape38 WRITES DPP_Process_Name, DPP_AtomName, DPP_ExecutionID, DPP_Payload, DPP_File_Name, DPP_Subject, To_Email, DPP_HasAttachment
+- shape19/shape39/shape46 WRITE DPP_ErrorMessage
+- Subprocess shape21 READS all these properties
+- **Dependency:** shape38 and error shapes MUST execute BEFORE subprocess shape21
 
-## 6. Process Properties Analysis (Steps 2-3)
-
-### Property WRITES (Step 2)
-
-| Property Name | Written By Shape | Source Type | Source Value | JSON Reference |
-|---|---|---|---|---|
-| process.DPP_Process_Name | shape38 | execution | Process Name | Lines 514-530 |
-| process.DPP_AtomName | shape38 | execution | Atom Name | Lines 537-555 |
-| process.DPP_Payload | shape38 | current | Current document | Lines 562-574 |
-| process.DPP_ExecutionID | shape38 | execution | Execution Id | Lines 581-598 |
-| process.DPP_File_Name | shape38 | concatenated | Process Name + Timestamp + ".txt" | Lines 605-647 |
-| process.DPP_Subject | shape38 | concatenated | Atom Name + " (" + Process Name + " ) has errors to report" | Lines 653-706 |
-| process.To_Email | shape38 | definedparameter | PP_HCM_LeaveCreate_Properties.To_Email | Lines 713-733 |
-| process.DPP_HasAttachment | shape38 | definedparameter | PP_HCM_LeaveCreate_Properties.DPP_HasAttachment | Lines 739-760 |
-| process.DPP_ErrorMessage | shape19 | track | meta.base.catcherrorsmessage | Lines 239-265 (Try/Catch error path) |
-| process.DPP_ErrorMessage | shape39 | track | meta.base.applicationstatusmessage | Lines 786-813 (HTTP error path) |
-| process.DPP_ErrorMessage | shape46 | current | meta.base.applicationstatusmessage | Lines 976-1000 (GZIP error path) |
-| dynamicdocument.URL | shape8 | definedparameter | PP_HCM_LeaveCreate_Properties.Resource_Path | Lines 146-172 |
-
-### Property READS (Step 3)
-
-| Property Name | Read By Shape | Shape Type | Usage Context | JSON Reference |
-|---|---|---|---|---|
-| dynamicdocument.URL | shape33 (Operation) | connectoraction | HTTP operation URL path element | operation_6e8920fd-af5a-430b-a1d9-9fde7ac29a12.json, lines 45-52 |
-| process.DPP_HasAttachment | shape4 (Subprocess) | decision | Check if email should have attachment | subprocess lines 148-158 |
-| process.To_Email | shape6, shape20 (Subprocess) | documentproperties | Mail To Address | subprocess lines 262-278, 732-748 |
-| process.DPP_Subject | shape6, shape20 (Subprocess) | documentproperties | Mail Subject | subprocess lines 289-318, 760-789 |
-| process.DPP_MailBody | shape6, shape20 (Subprocess) | documentproperties | Mail Body | subprocess lines 326-344, 798-815 |
-| process.DPP_File_Name | shape6 (Subprocess) | documentproperties | Mail File Name | subprocess lines 351-369 |
-| process.DPP_Process_Name | shape11, shape23 (Subprocess) | message | Email body parameter {1} | subprocess lines 493-504, 850-860 |
-| process.DPP_AtomName | shape11, shape23 (Subprocess) | message | Email body parameter {2} | subprocess lines 506-516, 862-872 |
-| process.DPP_ExecutionID | shape11, shape23 (Subprocess) | message | Email body parameter {3} | subprocess lines 518-528, 874-884 |
-| process.DPP_ErrorMessage | shape11, shape23 (Subprocess) | message | Email body parameter {4} | subprocess lines 530-540, 886-896 |
-| process.DPP_Payload | shape15 (Subprocess) | message | Email attachment content {1} | subprocess lines 618-629 |
-
-### Property Dependency Summary
-
-**Properties Written BEFORE Subprocess Call:**
-- process.DPP_Process_Name (shape38)
-- process.DPP_AtomName (shape38)
-- process.DPP_Payload (shape38)
-- process.DPP_ExecutionID (shape38)
-- process.DPP_File_Name (shape38)
-- process.DPP_Subject (shape38)
-- process.To_Email (shape38)
-- process.DPP_HasAttachment (shape38)
-- process.DPP_ErrorMessage (shape19, shape39, or shape46 - depending on error path)
-
-**Properties Read BY Subprocess:**
-- All properties listed above are read by subprocess shapes
-
-**Validation:** ✅ All property reads happen AFTER property writes (shape38 writes before subprocess reads)
+**Chain 2: URL Configuration**
+- shape8 WRITES dynamicdocument.URL
+- shape33 (operation) READS dynamicdocument.URL
+- **Dependency:** shape8 MUST execute BEFORE shape33
 
 ---
 
-## 7. Data Dependency Graph (Step 4)
+## 8. Data Dependency Graph (Step 4)
 
-### Dependency Chains
+### Dependency Relationships
 
-**Chain 1: Input Properties → Try/Catch → Error Handling**
-```
-shape38 (Input_details) WRITES:
-  - process.DPP_Process_Name
-  - process.DPP_AtomName
-  - process.DPP_Payload
-  - process.DPP_ExecutionID
-  - process.DPP_File_Name
-  - process.DPP_Subject
-  - process.To_Email
-  - process.DPP_HasAttachment
-  ↓
-shape17 (Try/Catch) - No dependencies
-  ↓ [Try Path]
-  shape29 (Map) → shape8 (set URL) → shape49 (Notify) → shape33 (HTTP Operation)
-  ↓ [Catch Path]
-  shape20 (Branch) → shape19 (ErrorMsg) or shape41 (Error Map)
-```
+**Dependency 1: URL Configuration → HTTP Operation**
+- **Writer:** shape8 (set URL)
+- **Property:** dynamicdocument.URL
+- **Reader:** shape33 (Leave Oracle Fusion Create operation)
+- **Reasoning:** HTTP operation requires URL to be set before execution
+- **Execution Order:** shape8 → shape33
 
-**Chain 2: HTTP Operation → Status Check → Response/Error Handling**
-```
-shape33 (Leave Oracle Fusion Create) PRODUCES:
-  - meta.base.applicationstatuscode
-  - meta.base.applicationstatusmessage
-  - dynamicdocument.DDP_RespHeader
-  ↓
-shape2 (Decision: HTTP Status 20 check) READS:
-  - meta.base.applicationstatuscode
-  ↓ [TRUE Path]
-  shape34 (Success Map) → shape35 (Success Response)
-  ↓ [FALSE Path]
-  shape44 (Decision: Check Response Content Type) READS:
-    - dynamicdocument.DDP_RespHeader
-    ↓ [TRUE Path - GZIP]
-    shape45 (Decompress) → shape46 (Extract Error) → shape47 (Error Map) → shape48 (Error Response)
-    ↓ [FALSE Path - Not GZIP]
-    shape39 (Extract Error) → shape40 (Error Map) → shape36 (Error Response)
-```
+**Dependency 2: HTTP Operation → Status Check Decision**
+- **Writer:** shape33 (operation response - automatic)
+- **Property:** meta.base.applicationstatuscode (track property)
+- **Reader:** shape2 (HTTP Status 20 check decision)
+- **Reasoning:** Decision checks HTTP status code from operation response
+- **Execution Order:** shape33 → shape2
 
-**Chain 3: Error Properties → Subprocess Email**
-```
-shape19 (ErrorMsg) WRITES:
-  - process.DPP_ErrorMessage (from meta.base.catcherrorsmessage)
-  ↓
-shape21 (Subprocess: Office 365 Email) READS:
-  - process.DPP_ErrorMessage
-  - process.DPP_Process_Name
-  - process.DPP_AtomName
-  - process.DPP_ExecutionID
-  - process.DPP_File_Name
-  - process.DPP_Subject
-  - process.To_Email
-  - process.DPP_HasAttachment
-  - process.DPP_Payload (for attachment)
-```
+**Dependency 3: HTTP Operation → Content-Encoding Check Decision**
+- **Writer:** shape33 (operation response header - automatic)
+- **Property:** dynamicdocument.DDP_RespHeader
+- **Reader:** shape44 (Check Response Content Type decision)
+- **Reasoning:** Decision checks Content-Encoding header from operation response
+- **Execution Order:** shape33 → shape44
 
-**OR**
+**Dependency 4: Error Capture → Error Response**
+- **Writer:** shape19, shape39, shape46 (error message capture)
+- **Property:** process.DPP_ErrorMessage
+- **Reader:** Map f46b845a (Leave Error Map)
+- **Reasoning:** Error map uses DPP_ErrorMessage to populate response message
+- **Execution Order:** shape19/shape39/shape46 → map f46b845a
+
+**Dependency 5: Initial Properties → Subprocess**
+- **Writer:** shape38 (Input_details)
+- **Properties:** DPP_Process_Name, DPP_AtomName, DPP_Payload, DPP_ExecutionID, DPP_File_Name, DPP_Subject, To_Email, DPP_HasAttachment
+- **Reader:** Subprocess shape21 (Office 365 Email)
+- **Reasoning:** Subprocess requires these properties for email notification
+- **Execution Order:** shape38 → shape21 (if error path triggered)
+
+### Dependency Graph Visualization
 
 ```
-shape39 (error msg) WRITES:
-  - process.DPP_ErrorMessage (from meta.base.applicationstatusmessage)
-  ↓
-shape40 (Error Map) READS:
-  - process.DPP_ErrorMessage
-  ↓
-shape36 (Error Response) - Returns error
-```
+shape38 (Input_details)
+ ├─→ WRITES: DPP_Process_Name, DPP_AtomName, DPP_Payload, DPP_ExecutionID, DPP_File_Name, DPP_Subject, To_Email, DPP_HasAttachment
+ └─→ Required by: Subprocess shape21 (if error occurs)
 
-**OR**
+shape8 (set URL)
+ ├─→ WRITES: dynamicdocument.URL
+ └─→ Required by: shape33 (HTTP operation)
 
-```
-shape46 (error msg) WRITES:
-  - process.DPP_ErrorMessage (from meta.base.applicationstatusmessage)
-  ↓
-shape47 (Error Map) READS:
-  - process.DPP_ErrorMessage
-  ↓
-shape48 (Error Response) - Returns error
+shape33 (Leave Oracle Fusion Create - HTTP operation)
+ ├─→ WRITES: meta.base.applicationstatuscode (automatic - track property)
+ ├─→ WRITES: dynamicdocument.DDP_RespHeader (automatic - response header)
+ ├─→ Required by: shape2 (HTTP Status 20 check)
+ └─→ Required by: shape44 (Check Response Content Type)
+
+shape19/shape39/shape46 (ErrorMsg capture)
+ ├─→ WRITES: process.DPP_ErrorMessage
+ └─→ Required by: Map f46b845a (error response)
 ```
 
 ### Independent Operations
 
-**No independent operations** - All operations have dependencies on properties or prior operations.
+- **Subprocess shape21** - Independent (only executes on error paths, uses properties written earlier)
+- **Map operations** - Dependent on data availability
 
-### Critical Dependencies
+### Critical Dependency Chains
 
-1. **shape38 MUST execute BEFORE shape17** - Writes all required properties
-2. **shape33 MUST execute BEFORE shape2** - Produces HTTP status code
-3. **shape2 MUST execute BEFORE shape34 or shape44** - Routes based on status
-4. **shape19 MUST execute BEFORE shape21** - Writes error message for subprocess
-5. **shape39 MUST execute BEFORE shape40** - Writes error message for error map
-6. **shape46 MUST execute BEFORE shape47** - Writes error message for error map
+**Chain 1: Happy Path**
+```
+shape38 → shape8 → shape33 → shape2 → shape34 → shape35
+(Input properties) → (URL setup) → (HTTP call) → (Status check) → (Success map) → (Success return)
+```
+
+**Chain 2: HTTP Error Path**
+```
+shape38 → shape8 → shape33 → shape2 → shape44 → shape39 → shape40 → shape36
+(Input properties) → (URL setup) → (HTTP call) → (Status check FALSE) → (Content check) → (Error capture) → (Error map) → (Error return)
+```
+
+**Chain 3: Try/Catch Error Path**
+```
+shape38 → shape17 (Try) → [Exception] → shape20 (branch) → shape19 → shape21 (subprocess) → shape43
+(Input properties) → (Try/Catch) → (Error) → (Branch) → (Error capture) → (Email notification) → (Error return)
+```
 
 ---
 
-## 8. Control Flow Graph (Step 5)
+## 9. Control Flow Graph (Step 5)
 
-### Control Flow Mapping
+### Control Flow Connections (Main Process)
 
-| From Shape | To Shape | Identifier | Text | JSON Reference |
-|---|---|---|---|---|
-| shape1 (START) | shape38 | default | - | Lines 58-66 |
-| shape38 (Input_details) | shape17 | default | - | Lines 765-772 |
-| shape17 (Try/Catch) | shape29 | default | Try | Lines 205-212 |
-| shape17 (Try/Catch) | shape20 | error | Catch | Lines 215-223 |
-| shape29 (Map) | shape8 | default | - | Lines 388-395 |
-| shape8 (set URL) | shape49 | default | - | Lines 175-182 |
-| shape49 (Notify) | shape33 | default | - | Lines 1134-1141 |
-| shape33 (HTTP Operation) | shape2 | default | - | Lines 423-430 |
-| shape2 (Decision: HTTP Status 20 check) | shape34 | true | True | Lines 112-120 |
-| shape2 (Decision: HTTP Status 20 check) | shape44 | false | False | Lines 122-130 |
-| shape34 (Success Map) | shape35 | default | - | Lines 450-457 |
-| shape35 (Success Response) | - | - | [TERMINAL] | No dragpoints |
-| shape44 (Decision: Check Response Content Type) | shape45 | true | True | Lines 941-949 |
-| shape44 (Decision: Check Response Content Type) | shape39 | false | False | Lines 951-959 |
-| shape45 (Decompress GZIP) | shape46 | default | - | Lines 1045-1052 |
-| shape46 (error msg) | shape47 | default | - | Lines 1003-1010 |
-| shape47 (Error Map) | shape48 | default | - | Lines 1072-1079 |
-| shape48 (Error Response) | - | - | [TERMINAL] | No dragpoints |
-| shape39 (error msg) | shape40 | default | - | Lines 815-822 |
-| shape40 (Error Map) | shape36 | default | - | Lines 842-849 |
-| shape36 (Error Response) | - | - | [TERMINAL] | No dragpoints |
-| shape20 (Branch) | shape19 | 1 | 1 | Lines 296-304 |
-| shape20 (Branch) | shape41 | 2 | 2 | Lines 306-315 |
-| shape19 (ErrorMsg) | shape21 | default | - | Lines 267-274 |
-| shape21 (Subprocess Call) | - | - | [TERMINAL] | No dragpoints |
-| shape41 (Error Map) | shape43 | default | - | Lines 869-876 |
-| shape43 (Error Response) | - | - | [TERMINAL] | No dragpoints |
+**Total Shapes:** 14 shapes in main process  
+**Total Connections:** 17 dragpoint connections
 
-### Connection Summary
+| From Shape | Shape Type | To Shape | Identifier | Text | Purpose |
+|---|---|---|---|---|---|
+| shape1 | start | shape38 | default | - | Entry point to input properties |
+| shape38 | documentproperties | shape17 | default | - | Input properties to Try/Catch |
+| shape17 | catcherrors | shape29 | default | Try | Try path - normal flow |
+| shape17 | catcherrors | shape20 | error | Catch | Catch path - error handling |
+| shape29 | map | shape8 | default | - | Map to URL setup |
+| shape8 | documentproperties | shape49 | default | - | URL setup to notify |
+| shape49 | notify | shape33 | default | - | Notify to HTTP operation |
+| shape33 | connectoraction | shape2 | default | - | HTTP operation to status check |
+| shape2 | decision | shape34 | true | True | HTTP 20* success path |
+| shape2 | decision | shape44 | false | False | HTTP non-20* error path |
+| shape34 | map | shape35 | default | - | Success map to success return |
+| shape44 | decision | shape45 | true | True | GZIP detected path |
+| shape44 | decision | shape39 | false | False | Non-GZIP error path |
+| shape45 | dataprocess | shape46 | default | - | GZIP decompress to error capture |
+| shape46 | documentproperties | shape47 | default | - | Error capture to error map |
+| shape47 | map | shape48 | default | - | Error map to error return |
+| shape39 | documentproperties | shape40 | default | - | Error capture to error map |
+| shape40 | map | shape36 | default | - | Error map to error return |
+| shape20 | branch | shape19 | 1 | 1 | Branch path 1 - error message |
+| shape20 | branch | shape41 | 2 | 2 | Branch path 2 - error response |
+| shape19 | documentproperties | shape21 | default | - | Error message to subprocess |
+| shape41 | map | shape43 | default | - | Error map to error return |
 
-- **Total Shapes:** 14 main process shapes + 1 subprocess
-- **Total Connections:** 21 dragpoint connections
-- **Shapes with Multiple Outgoing Connections:**
-  - shape17 (Try/Catch): 2 paths (Try, Catch)
-  - shape2 (Decision): 2 paths (True, False)
-  - shape44 (Decision): 2 paths (True, False)
-  - shape20 (Branch): 2 paths (1, 2)
+### Control Flow Connections (Subprocess a85945c5)
+
+**Total Shapes:** 10 shapes in subprocess  
+**Total Connections:** 9 dragpoint connections
+
+| From Shape | Shape Type | To Shape | Identifier | Text | Purpose |
+|---|---|---|---|---|---|
+| shape1 | start | shape2 | default | - | Entry point to Try/Catch |
+| shape2 | catcherrors | shape4 | default | Try | Try path - normal flow |
+| shape2 | catcherrors | shape10 | error | Catch | Catch path - throw exception |
+| shape4 | decision | shape11 | true | True | Has attachment = Y |
+| shape4 | decision | shape23 | false | False | Has attachment = N |
+| shape11 | message | shape14 | default | - | Mail body to set mail body property |
+| shape14 | documentproperties | shape15 | default | - | Set mail body to payload message |
+| shape15 | message | shape6 | default | - | Payload to mail properties |
+| shape6 | documentproperties | shape3 | default | - | Mail properties to email operation |
+| shape3 | connectoraction | shape5 | default | - | Email operation to stop |
+| shape23 | message | shape22 | default | - | Mail body to set mail body property |
+| shape22 | documentproperties | shape20 | default | - | Set mail body to mail properties |
+| shape20 | documentproperties | shape7 | default | - | Mail properties to email operation |
+| shape7 | connectoraction | shape9 | default | - | Email operation to stop |
 
 ### Reverse Flow Mapping (Step 6)
 
-| Target Shape | Incoming From Shapes | Convergence Point? |
-|---|---|---|
-| shape38 | shape1 | No |
-| shape17 | shape38 | No |
-| shape29 | shape17 | No |
-| shape8 | shape29 | No |
-| shape49 | shape8 | No |
-| shape33 | shape49 | No |
-| shape2 | shape33 | No |
-| shape34 | shape2 | No |
-| shape35 | shape34 | No (Terminal) |
-| shape44 | shape2 | No |
-| shape45 | shape44 | No |
-| shape46 | shape45 | No |
-| shape47 | shape46 | No |
-| shape48 | shape47 | No (Terminal) |
-| shape39 | shape44 | No |
-| shape40 | shape39 | No |
-| shape36 | shape40 | No (Terminal) |
-| shape20 | shape17 | No |
-| shape19 | shape20 | No |
-| shape21 | shape19 | No (Terminal) |
-| shape41 | shape20 | No |
-| shape43 | shape41 | No (Terminal) |
+**Convergence Points Identified:**
 
-**Convergence Points:** None - All paths lead to terminal points (Return Documents or Subprocess Call)
+**Main Process:**
+- **No convergence points** - All paths lead to terminal shapes (Return Documents)
+
+**Subprocess:**
+- **No convergence points** - Decision paths lead to separate email operations, both terminate at Stop shapes
+
+### Incoming Connections Analysis
+
+| Target Shape | Incoming From | Count | Convergence? |
+|---|---|---|---|
+| shape38 | shape1 | 1 | No |
+| shape17 | shape38 | 1 | No |
+| shape29 | shape17 | 1 | No |
+| shape8 | shape29 | 1 | No |
+| shape49 | shape8 | 1 | No |
+| shape33 | shape49 | 1 | No |
+| shape2 | shape33 | 1 | No |
+| shape34 | shape2 | 1 | No |
+| shape44 | shape2 | 1 | No |
+| shape35 | shape34 | 1 | No (terminal) |
+| shape36 | shape40 | 1 | No (terminal) |
+| shape43 | shape41 | 1 | No (terminal) |
+| shape48 | shape47 | 1 | No (terminal) |
+| shape19 | shape20 | 1 | No |
+| shape41 | shape20 | 1 | No |
+| shape20 | shape17 | 1 | No |
+| shape21 | shape19 | 1 | No (terminal - subprocess) |
+
+**Conclusion:** No convergence points detected. All decision/branch paths lead to independent terminal shapes.
 
 ---
 
-## 9. Decision Shape Analysis (Step 7)
+## 10. Decision Shape Analysis (Step 7)
+
+### Decision Data Source Analysis
+
+✅ **Decision data sources identified: YES**
+
+✅ **Decision types classified: YES**
+
+✅ **Execution order verified: YES**
+
+✅ **All decision paths traced: YES**
+
+✅ **Decision patterns identified: YES**
+
+✅ **Paths traced to termination: YES**
 
 ### Decision Inventory
 
@@ -534,579 +698,473 @@ shape48 (Error Response) - Returns error
 **Shape ID:** shape2  
 **User Label:** "HTTP Status 20 check"  
 **Comparison Type:** wildcard  
-**JSON Reference:** Lines 71-133 in process_root
+**Location:** Main process (after HTTP operation)
 
 **Decision Values:**
 - **Value 1:** meta.base.applicationstatuscode (track property)
-- **Value 2:** "20*" (static - matches any 20x status code)
+  - Type: track
+  - Property: Base - Application Status Code
+- **Value 2:** "20*" (static)
+  - Type: static
+  - Pattern: Wildcard match for HTTP 200-299 status codes
 
-**Data Source Analysis:**
-- **Data Source:** TRACK_PROPERTY (meta.base.applicationstatuscode)
-- **Source Operation:** shape33 (Leave Oracle Fusion Create HTTP operation)
-- **Data Type:** HTTP status code from Oracle Fusion API response
-- **Classification:** POST-OPERATION (checks response from HTTP operation)
+**Data Source:** TRACK_PROPERTY (from operation response)  
+**Data Source Detail:** HTTP status code from shape33 (Leave Oracle Fusion Create operation)  
+**Decision Type:** POST-OPERATION  
+**Reasoning:** Checks response data from HTTP operation, must execute after operation
 
-**Decision Type Classification:**
-- **Type:** POST-OPERATION
-- **Reasoning:** Checks HTTP status code from operation response (meta.base.applicationstatuscode is populated by HTTP connector after operation executes)
-
-**Actual Execution Order:**
+**Actual Execution Order:** 
 ```
-shape33 (HTTP Operation: Leave Oracle Fusion Create)
-  ↓ Produces
-  meta.base.applicationstatuscode (HTTP status code)
-  ↓ Then
-shape2 (Decision: Check if status is 20*)
-  ↓ Routes based on status
-  TRUE → Success path
-  FALSE → Error path
+shape33 (HTTP Operation) → Response (HTTP status code) → shape2 (Decision) → Route based on status
 ```
 
-**Dragpoints:**
-- **TRUE Path:** → shape34 (Success Map)
-- **FALSE Path:** → shape44 (Decision: Check Response Content Type)
+**TRUE Path (HTTP 20*):**
+- **Destination:** shape34 (Oracle Fusion Leave Response Map)
+- **Termination:** shape35 (Success Response - Return Documents)
+- **Type:** Success path
+- **HTTP Status:** 200
 
-**Path Tracing:**
+**FALSE Path (HTTP non-20*):**
+- **Destination:** shape44 (Check Response Content Type decision)
+- **Termination:** shape36 or shape48 (Error Response - Return Documents)
+- **Type:** Error path
+- **HTTP Status:** 400
 
-**TRUE Path Termination:**
-```
-shape34 (Map: Oracle Fusion Leave Response Map)
-  ↓
-shape35 (Return Documents: Success Response)
-  [TERMINAL - Return Documents]
-```
+**Pattern:** Error Check (Success vs Failure based on HTTP status code)
 
-**FALSE Path Termination:**
-```
-shape44 (Decision: Check Response Content Type)
-  ↓ [TRUE - GZIP]
-  shape45 (Decompress) → shape46 (error msg) → shape47 (Error Map) → shape48 (Return Documents: Error Response)
-  [TERMINAL - Return Documents]
-  ↓ [FALSE - Not GZIP]
-  shape39 (error msg) → shape40 (Error Map) → shape36 (Return Documents: Error Response)
-  [TERMINAL - Return Documents]
-```
+**Convergence:** No convergence - paths lead to different terminal shapes
 
-**Pattern Type:** Error Check (Success vs Failure)  
-**Convergence Point:** None (paths terminate separately)  
-**Early Exit:** Both paths terminate (TRUE → Success Return, FALSE → Error Return)
+**Early Exit:** Both paths terminate (TRUE → Success return, FALSE → Error return)
+
+**Business Logic:**
+- If HTTP status is 20* (success) → Map Oracle response to D365 format → Return success
+- If HTTP status is not 20* (error) → Check if response is GZIP compressed → Extract error → Return error
 
 #### Decision 2: shape44 - Check Response Content Type
 
 **Shape ID:** shape44  
 **User Label:** "Check Response Content Type"  
 **Comparison Type:** equals  
-**JSON Reference:** Lines 899-962 in process_root
+**Location:** Main process (FALSE path of shape2)
 
 **Decision Values:**
-- **Value 1:** dynamicdocument.DDP_RespHeader (track property - actually dynamic document property)
+- **Value 1:** dynamicdocument.DDP_RespHeader (track property)
+  - Type: track
+  - Property: Dynamic Document Property - DDP_RespHeader
+  - Source: Content-Encoding HTTP response header
 - **Value 2:** "gzip" (static)
+  - Type: static
+  - Value: "gzip"
 
-**Data Source Analysis:**
-- **Data Source:** TRACK_PROPERTY (dynamicdocument.DDP_RespHeader)
-- **Source Operation:** shape33 (Leave Oracle Fusion Create HTTP operation)
-- **Data Type:** HTTP response header "Content-Encoding"
-- **Classification:** POST-OPERATION (checks response header from HTTP operation)
+**Data Source:** TRACK_PROPERTY (from operation response header)  
+**Data Source Detail:** Content-Encoding header from shape33 (Leave Oracle Fusion Create operation)  
+**Decision Type:** POST-OPERATION  
+**Reasoning:** Checks response header from HTTP operation, must execute after operation
 
-**Decision Type Classification:**
-- **Type:** POST-OPERATION
-- **Reasoning:** Checks HTTP response header value (DDP_RespHeader is populated by HTTP connector's responseHeaderMapping after operation executes)
-
-**Actual Execution Order:**
+**Actual Execution Order:** 
 ```
-shape33 (HTTP Operation: Leave Oracle Fusion Create)
-  ↓ Produces
-  dynamicdocument.DDP_RespHeader (Content-Encoding header)
-  ↓ Then
-shape2 (Decision: Check HTTP status)
-  ↓ FALSE Path (status NOT 20*)
-shape44 (Decision: Check if Content-Encoding is "gzip")
-  ↓ Routes based on encoding
-  TRUE → Decompress GZIP response
-  FALSE → Use response as-is
+shape33 (HTTP Operation) → Response (Content-Encoding header) → shape44 (Decision) → Route based on encoding
 ```
 
-**Dragpoints:**
-- **TRUE Path:** → shape45 (Decompress GZIP)
-- **FALSE Path:** → shape39 (Extract error message)
+**TRUE Path (Content-Encoding = gzip):**
+- **Destination:** shape45 (GZIP decompression data process)
+- **Termination:** shape48 (Error Response - Return Documents)
+- **Type:** GZIP decompression path
+- **HTTP Status:** 400
 
-**Path Tracing:**
+**FALSE Path (Content-Encoding ≠ gzip):**
+- **Destination:** shape39 (error msg - capture error message)
+- **Termination:** shape36 (Error Response - Return Documents)
+- **Type:** Direct error path
+- **HTTP Status:** 400
 
-**TRUE Path Termination:**
+**Pattern:** Conditional Logic (GZIP decompression vs direct error)
+
+**Convergence:** No convergence - paths lead to different terminal shapes
+
+**Early Exit:** Both paths terminate with error returns
+
+**Business Logic:**
+- If response is GZIP compressed → Decompress → Extract error message → Return error
+- If response is not GZIP → Extract error message directly → Return error
+
+#### Decision 3: shape4 - Attachment_Check (Subprocess)
+
+**Shape ID:** shape4 (in subprocess a85945c5)  
+**User Label:** "Attachment_Check"  
+**Comparison Type:** equals  
+**Location:** Subprocess (Office 365 Email)
+
+**Decision Values:**
+- **Value 1:** DPP_HasAttachment (process property)
+  - Type: process
+  - Property: process.DPP_HasAttachment
+- **Value 2:** "Y" (static)
+  - Type: static
+  - Value: "Y"
+
+**Data Source:** PROCESS_PROPERTY (from main process)  
+**Data Source Detail:** DPP_HasAttachment written by shape38 in main process  
+**Decision Type:** PRE-FILTER  
+**Reasoning:** Checks input parameter to determine email operation type
+
+**Actual Execution Order:** 
 ```
-shape45 (Data Process: Decompress GZIP)
-  ↓
-shape46 (Extract error message from decompressed response)
-  ↓
-shape47 (Map: Leave Error Map)
-  ↓
-shape48 (Return Documents: Error Response)
-  [TERMINAL - Return Documents]
+Main process shape38 writes DPP_HasAttachment → Subprocess reads property → shape4 (Decision) → Route to appropriate email operation
 ```
 
-**FALSE Path Termination:**
-```
-shape39 (Extract error message from response)
-  ↓
-shape40 (Map: Leave Error Map)
-  ↓
-shape36 (Return Documents: Error Response)
-  [TERMINAL - Return Documents]
-```
+**TRUE Path (Has attachment = Y):**
+- **Destination:** shape11 (Mail_Body message with attachment)
+- **Termination:** shape5 (Stop with continue=true)
+- **Type:** Email with attachment path
+- **Operations:** shape3 (Email w Attachment operation)
 
-**Pattern Type:** Conditional Logic (Data Processing - Handle GZIP compression)  
-**Convergence Point:** None (both paths terminate at different Return Documents shapes)  
-**Early Exit:** Both paths terminate with error response
+**FALSE Path (Has attachment ≠ Y):**
+- **Destination:** shape23 (Mail_Body message without attachment)
+- **Termination:** shape9 (Stop with continue=true)
+- **Type:** Email without attachment path
+- **Operations:** shape7 (Email W/O Attachment operation)
 
-### Decision Patterns Summary
+**Pattern:** Conditional Logic (Optional Processing - attachment vs no attachment)
 
-1. **Error Check Pattern** (shape2): Check HTTP status code → Success or Error
-2. **Conditional Processing Pattern** (shape44): Check response encoding → Decompress if GZIP
+**Convergence:** No convergence - paths lead to separate Stop shapes (both continue=true)
 
-### Self-Check Results
+**Early Exit:** No early exit - both paths complete successfully
 
-- ✅ **Decision data sources identified:** YES
-  - shape2: TRACK_PROPERTY (meta.base.applicationstatuscode)
-  - shape44: TRACK_PROPERTY (dynamicdocument.DDP_RespHeader)
+**Business Logic:**
+- If attachment required (Y) → Build email with attachment → Send via shape3
+- If no attachment (N) → Build email without attachment → Send via shape7
 
-- ✅ **Decision types classified:** YES
-  - shape2: POST-OPERATION (checks HTTP response status)
-  - shape44: POST-OPERATION (checks HTTP response header)
+### Decision Pattern Summary
 
-- ✅ **Execution order verified:** YES
-  - shape2 executes AFTER shape33 (HTTP operation)
-  - shape44 executes AFTER shape2 (in FALSE path)
-
-- ✅ **All decision paths traced:** YES
-  - shape2: TRUE → shape34 → shape35 (Success Return)
-  - shape2: FALSE → shape44 → [shape45 → shape46 → shape47 → shape48] OR [shape39 → shape40 → shape36] (Error Returns)
-  - shape44: TRUE → shape45 → shape46 → shape47 → shape48 (Error Return with GZIP decompression)
-  - shape44: FALSE → shape39 → shape40 → shape36 (Error Return without decompression)
-
-- ✅ **Decision patterns identified:** YES
-  - Error Check (Success vs Failure)
-  - Conditional Processing (GZIP handling)
-
-- ✅ **Paths traced to termination:** YES
-  - All paths terminate at Return Documents shapes
+| Decision | Pattern Type | Data Source | Execution Type | Early Exit? |
+|---|---|---|---|---|
+| shape2 | Error Check | TRACK_PROPERTY | POST-OPERATION | Yes (both paths terminate) |
+| shape44 | Conditional Logic | TRACK_PROPERTY | POST-OPERATION | Yes (both paths terminate) |
+| shape4 | Conditional Logic | PROCESS_PROPERTY | PRE-FILTER | No (both paths continue) |
 
 ---
 
-## 10. Branch Shape Analysis (Step 8)
+## 11. Branch Shape Analysis (Step 8)
 
-### Branch: shape20 - Error Handling Branch
+### Branch Shape Inventory
+
+**Total Branch Shapes:** 1 (shape20 in main process)
+
+✅ **Classification completed: YES**
+
+✅ **Assumption check: NO (analyzed dependencies)**
+
+✅ **Properties extracted: YES**
+
+✅ **Dependency graph built: YES**
+
+✅ **Topological sort applied: N/A (no dependencies between paths)**
+
+### Branch: shape20 (Error Handler Branch)
 
 **Shape ID:** shape20  
-**Number of Paths:** 2  
-**Location:** Catch path of Try/Catch (shape17)  
-**JSON Reference:** Lines 279-317 in process_root
+**User Label:** (none)  
+**Location:** Main process - Catch path of Try/Catch shape17  
+**Number of Paths:** 2
+
+**Path 1 (identifier "1"):**
+- **Start Shape:** shape19 (ErrorMsg - document properties)
+- **Path Sequence:** shape19 → shape21 (subprocess)
+- **Terminal:** shape21 (subprocess - no explicit return, subprocess handles termination)
+
+**Path 2 (identifier "2"):**
+- **Start Shape:** shape41 (map)
+- **Path Sequence:** shape41 → shape43 (Return Documents)
+- **Terminal:** shape43 (Error Response - Return Documents)
 
 ### Step 1: Properties Analysis
 
-**Path 1 (Branch identifier "1" → shape19):**
-- **Reads:** 
-  - meta.base.catcherrorsmessage (track property - from Try/Catch)
-- **Writes:**
-  - process.DPP_ErrorMessage (shape19)
+**Path 1 Properties:**
+- **READS:**
+  - process.DPP_ErrorMessage (read by subprocess via map)
+  - process.DPP_Process_Name (read by subprocess)
+  - process.DPP_AtomName (read by subprocess)
+  - process.DPP_ExecutionID (read by subprocess)
+  - process.DPP_File_Name (read by subprocess)
+  - process.DPP_Subject (read by subprocess)
+  - process.To_Email (read by subprocess)
+  - process.DPP_HasAttachment (read by subprocess)
+  - process.DPP_Payload (read by subprocess)
+  - process.DPP_MailBody (read by subprocess)
+- **WRITES:**
+  - process.DPP_ErrorMessage (written by shape19)
 
-**Path 2 (Branch identifier "2" → shape41):**
-- **Reads:**
-  - process.DPP_ErrorMessage (used by map function in shape41's map)
-- **Writes:**
+**Path 2 Properties:**
+- **READS:**
+  - process.DPP_ErrorMessage (read by map f46b845a)
+- **WRITES:**
   - None
 
-**JSON Proof:**
-- Path 1 reads: Lines 255-261 in shape19 configuration
-- Path 1 writes: Lines 246 in shape19 configuration
-- Path 2 reads: Lines 31-37 in map_f46b845a-7d75-41b5-b0ad-c41a6a8e9b12.json (map function reads DPP_ErrorMessage)
+### Step 2: Dependency Graph Between Paths
 
-### Step 2: Dependency Graph
+**Path Dependencies:**
+- Path 2 reads process.DPP_ErrorMessage
+- Path 1 writes process.DPP_ErrorMessage (via shape19)
+- **Dependency:** Path 1 MUST execute BEFORE Path 2
 
+**Dependency Proof:**
 ```
 Path 1 (shape19) WRITES process.DPP_ErrorMessage
-  ↓
-Path 2 (shape41) READS process.DPP_ErrorMessage
+Path 2 (shape41 → map f46b845a) READS process.DPP_ErrorMessage
+Therefore: Path 1 → Path 2 (sequential execution)
 ```
-
-**Dependency:** Path 2 depends on Path 1 (reads property that Path 1 writes)
 
 ### Step 3: Classification
 
-**Classification:** SEQUENTIAL  
-**Reasoning:** Path 2 reads process.DPP_ErrorMessage which Path 1 writes, therefore Path 2 depends on Path 1
+**Classification:** SEQUENTIAL
+
+**Reasoning:**
+1. Path 2 depends on Path 1 (reads property written by Path 1)
+2. Path 1 contains subprocess call (shape21) which is an operation
+3. **CRITICAL:** Branch does NOT contain API calls in Path 2, but has data dependency
+4. Data dependency requires sequential execution
 
 **API Call Detection:**
-- Path 1: No API calls (documentproperties shape only)
-- Path 2: No API calls (map shape only)
-- **Result:** No API calls, but data dependency exists
+- Path 1: Contains subprocess shape21 (which internally has email operations)
+- Path 2: No API calls (only map and return)
+- **Result:** Data dependency enforces sequential execution
 
 ### Step 4: Topological Sort Order
 
-**Dependency Graph:**
-```
-Path 1 (shape19) → Path 2 (shape41)
-```
+**Dependency Order:** Path 1 → Path 2
 
 **Topological Sort:**
-1. Path 1 (shape19) - No incoming dependencies
-2. Path 2 (shape41) - Depends on Path 1
+1. Path 1 has no incoming dependencies (writes DPP_ErrorMessage)
+2. Path 2 depends on Path 1 (reads DPP_ErrorMessage)
+3. Sorted order: [Path 1, Path 2]
 
-**Execution Order:** Path 1 → Path 2
+**Execution Sequence:**
+```
+1. Execute Path 1: shape19 → shape21 (subprocess)
+2. Execute Path 2: shape41 → shape43 (error return)
+```
 
 ### Step 5: Path Termination
 
 **Path 1 Termination:**
-```
-shape19 (ErrorMsg)
-  ↓
-shape21 (Subprocess Call: Office 365 Email)
-  [TERMINAL - Subprocess execution, no return to main process]
-```
+- **Terminal Shape:** shape21 (subprocess call)
+- **Terminal Type:** Subprocess (no explicit return in main process)
+- **Subprocess Termination:** Stop shapes (shape5, shape9) with continue=true
 
 **Path 2 Termination:**
-```
-shape41 (Error Map)
-  ↓
-shape43 (Return Documents: Error Response)
-  [TERMINAL - Return Documents]
-```
+- **Terminal Shape:** shape43 (Return Documents)
+- **Terminal Type:** Return Documents (Error Response)
 
 ### Step 6: Convergence Points
 
-**Convergence Points:** None - Each path terminates independently
+**Convergence Analysis:**
+- Path 1 terminates at subprocess (no return to main process after subprocess)
+- Path 2 terminates at Return Documents
+- **Convergence:** None - paths do not rejoin
 
 ### Step 7: Execution Continuation
 
-**Execution Continues From:** None - Both paths terminate (subprocess call or return documents)
+**Execution Continues From:** None
 
-### Step 8: Complete Analysis Documentation
+**Reasoning:**
+- Path 1 calls subprocess which terminates with Stop (continue=true), but main process does not continue after subprocess in this error path
+- Path 2 terminates with Return Documents
+- Both paths are terminal error handlers
 
-**Branch Analysis Summary:**
-- **Shape ID:** shape20
-- **Number of Paths:** 2
+### Step 8: Complete Branch Analysis Summary
+
+**Branch shape20 Analysis:**
 - **Classification:** SEQUENTIAL
 - **Dependency Order:** Path 1 → Path 2
-- **Path 1 Terminal:** Subprocess call (shape21)
-- **Path 2 Terminal:** Return Documents (shape43)
-- **Convergence Points:** None
-- **Execution Continuation:** None (both paths terminate)
+- **Path 1:** Error message capture → Email notification (subprocess)
+- **Path 2:** Error response mapping → Return error
+- **Convergence:** None
+- **Continuation:** None (both paths terminate)
+- **Purpose:** Error handling with dual response (email notification + error return)
 
-### Self-Check Results
-
-- ✅ **Classification completed:** YES - SEQUENTIAL
-- ✅ **Assumption check:** NO (analyzed dependencies) - Did NOT assume parallel
-- ✅ **Properties extracted:** YES
-  - Path 1 reads: meta.base.catcherrorsmessage
-  - Path 1 writes: process.DPP_ErrorMessage
-  - Path 2 reads: process.DPP_ErrorMessage
-- ✅ **Dependency graph built:** YES - Path 2 depends on Path 1
-- ✅ **Topological sort applied:** YES - Path 1 → Path 2
-
----
-
-## 11. Subprocess Analysis (Step 7a)
-
-### Subprocess: (Sub) Office 365 Email (a85945c5-3004-42b9-80b1-104f465cd1fb)
-
-**Called By:** shape21 (main process, catch error path)  
-**Purpose:** Send error notification email via Office 365
-
-### Internal Flow Analysis
-
-**Subprocess Shapes:**
-
-| Shape ID | Shape Type | User Label | Purpose |
-|---|---|---|---|
-| shape1 | start | Email content | Entry point |
-| shape2 | catcherrors | - | Try/Catch wrapper |
-| shape4 | decision | Attachment_Check | Check if email should have attachment |
-| shape11 | message | Mail_Body | Build email body HTML (with attachment) |
-| shape14 | documentproperties | set_MailBody | Store email body in property |
-| shape15 | message | payload | Create attachment content |
-| shape6 | documentproperties | set_Mail_Properties | Set mail properties (with attachment) |
-| shape3 | connectoraction | Email | Send email with attachment |
-| shape5 | stop | - | Success return (continue=true) |
-| shape23 | message | Mail_Body | Build email body HTML (without attachment) |
-| shape22 | documentproperties | set_MailBody | Store email body in property |
-| shape20 | documentproperties | set_Mail_Properties | Set mail properties (without attachment) |
-| shape7 | connectoraction | Email | Send email without attachment |
-| shape9 | stop | - | Success return (continue=true) |
-| shape10 | exception | - | Throw exception on error |
-
-### Subprocess Control Flow
-
-```
-START (shape1)
-  ↓
-Try/Catch (shape2)
-  ↓ [Try Path]
-  Decision (shape4): DPP_HasAttachment equals "Y"?
-    ↓ [TRUE - Has Attachment]
-    shape11 (Build Email Body HTML)
-      ↓
-    shape14 (Store Email Body in process.DPP_MailBody)
-      ↓
-    shape15 (Create Attachment from process.DPP_Payload)
-      ↓
-    shape6 (Set Mail Properties: From, To, Subject, Body, FileName)
-      ↓
-    shape3 (Send Email with Attachment)
-      ↓
-    shape5 (Stop: continue=true) [SUCCESS RETURN]
-    
-    ↓ [FALSE - No Attachment]
-    shape23 (Build Email Body HTML)
-      ↓
-    shape22 (Store Email Body in process.DPP_MailBody)
-      ↓
-    shape20 (Set Mail Properties: From, To, Subject, Body)
-      ↓
-    shape7 (Send Email without Attachment)
-      ↓
-    shape9 (Stop: continue=true) [SUCCESS RETURN]
-  
-  ↓ [Catch Path]
-  shape10 (Exception: Throw error with meta.base.catcherrorsmessage) [ERROR RETURN]
-```
-
-### Return Paths
-
-| Return Label | Return Type | Shape ID | Condition | Path |
-|---|---|---|---|---|
-| SUCCESS | Stop (continue=true) | shape5 | Email with attachment sent successfully | Try → TRUE → shape3 → shape5 |
-| SUCCESS | Stop (continue=true) | shape9 | Email without attachment sent successfully | Try → FALSE → shape7 → shape9 |
-| ERROR | Exception | shape10 | Any error in Try block | Catch → shape10 |
-
-**Main Process Mapping:**
-- Subprocess has NO explicit returnpaths configuration (Lines 335-336: returnpaths is empty)
-- Subprocess uses Stop(continue=true) for success returns
-- Subprocess uses Exception for error returns
-
-### Properties Read by Subprocess (from Main Process)
-
-| Property Name | Read By Shapes | Usage |
-|---|---|---|---|
-| process.DPP_HasAttachment | shape4 | Decision: Check if attachment needed |
-| process.To_Email | shape6, shape20 | Mail To Address |
-| process.DPP_Subject | shape6, shape20 | Mail Subject |
-| process.DPP_MailBody | shape6, shape20 | Mail Body (after being set by shape14/shape22) |
-| process.DPP_File_Name | shape6 | Mail File Name (attachment) |
-| process.DPP_Process_Name | shape11, shape23 | Email body parameter {1} |
-| process.DPP_AtomName | shape11, shape23 | Email body parameter {2} |
-| process.DPP_ExecutionID | shape11, shape23 | Email body parameter {3} |
-| process.DPP_ErrorMessage | shape11, shape23 | Email body parameter {4} |
-| process.DPP_Payload | shape15 | Attachment content {1} |
-
-### Properties Written by Subprocess
-
-| Property Name | Written By Shape | Source |
-|---|---|---|---|
-| process.DPP_MailBody | shape14, shape22 | Current document (HTML email body) |
-
-**Note:** process.DPP_MailBody is written and read within subprocess (internal property)
-
-### Subprocess Execution Pattern
-
-**Execution:** Synchronous (wait=true, abort=true)  
-**Return Behavior:**
-- Success: Stop(continue=true) - Subprocess completes, main process does NOT continue (no dragpoints from shape21)
-- Error: Exception thrown - Propagates to main process
+**Critical Note:** This branch is unusual - Path 1 calls subprocess for email notification, Path 2 returns error response. Both paths execute sequentially, suggesting Path 1 sends notification, then Path 2 returns error to caller.
 
 ---
 
 ## 12. Execution Order (Step 9)
 
-### Step 0: Business Logic Verification (MUST DO FIRST)
+### Business Logic Verification (Step 0 - MANDATORY FIRST)
 
-#### Business Logic Flow Analysis
+✅ **Business logic verified FIRST: YES**
 
-**Operation 1: shape33 - Leave Oracle Fusion Create (HTTP POST)**
+✅ **Operation analysis complete: YES**
 
-**Purpose:** Create leave/absence record in Oracle Fusion HCM system  
-**What it does:** Sends leave request data to Oracle Fusion REST API  
+✅ **Business logic execution order identified: YES**
+
+✅ **Data dependencies checked FIRST: YES**
+
+✅ **Operation response analysis used: YES** (Reference: Section 4 - Operation Response Analysis)
+
+✅ **Decision analysis used: YES** (Reference: Section 10 - Decision Shape Analysis)
+
+✅ **Dependency graph used: YES** (Reference: Section 8 - Data Dependency Graph)
+
+✅ **Branch analysis used: YES** (Reference: Section 11 - Branch Shape Analysis)
+
+✅ **Property dependency verification: YES** (All reads happen after writes)
+
+✅ **Topological sort applied: YES** (For branch shape20)
+
+### Business Logic Flow Analysis
+
+#### Operation 1: shape33 (Leave Oracle Fusion Create)
+
+**Purpose:** Create leave/absence entry in Oracle Fusion HCM system
+
+**What it does:**
+- Sends HTTP POST request to Oracle Fusion HCM REST API
+- Endpoint: hcmRestApi/resources/11.13.18.05/absences
+- Request body: Transformed leave data (personNumber, absenceType, dates, durations, etc.)
+- Authentication: Basic Auth (INTEGRATION.USER@al-ghurair.com)
+
 **What it produces:**
 - HTTP status code (meta.base.applicationstatuscode)
-- HTTP response message (meta.base.applicationstatusmessage)
-- HTTP response header Content-Encoding (dynamicdocument.DDP_RespHeader)
-- Response body (JSON with personAbsenceEntryId if successful)
+- Response header Content-Encoding (dynamicdocument.DDP_RespHeader)
+- Response body (Oracle HCM absence entry details)
 
 **Dependent Operations:**
-- shape2 (Decision: HTTP Status 20 check) - Reads meta.base.applicationstatuscode
-- shape44 (Decision: Check Response Content Type) - Reads dynamicdocument.DDP_RespHeader
-- shape39, shape46 (Error message extraction) - Reads meta.base.applicationstatusmessage
+- Decision shape2 (checks HTTP status code)
+- Decision shape44 (checks Content-Encoding header)
 
-**Business Flow:**
-```
-1. Receive leave request from D365 (shape1 START)
-2. Capture execution context (shape38 - process name, execution ID, payload)
-3. Transform D365 format to Oracle Fusion format (shape29 - map)
-4. Set Oracle Fusion API URL (shape8)
-5. Log request (shape49 - notify)
-6. Call Oracle Fusion API to create leave (shape33 - HTTP POST)
-7. Check if API call succeeded (shape2 - check status 20*)
-   - If SUCCESS (20*): Transform response and return success
-   - If FAILURE (not 20*): Check if response is compressed, extract error, return error
-```
+**Business Flow Position:** MUST execute FIRST (produces data needed by all subsequent decisions)
 
-**Operation 2: shape21 - Office 365 Email Subprocess**
+**Proof:** 
+- shape2 reads meta.base.applicationstatuscode → shape33 writes this (automatic track property)
+- shape44 reads dynamicdocument.DDP_RespHeader → shape33 writes this (response header mapping)
+- Therefore: shape33 MUST execute BEFORE shape2 and shape44
 
-**Purpose:** Send error notification email to support team  
-**What it does:** Sends email with error details and optional payload attachment  
-**What it produces:** None (email sent, no data returned to main process)  
-**Dependent Operations:** None (terminal operation)
+#### Operation 2: Subprocess shape21 (Office 365 Email)
 
-**Business Flow:**
-```
-1. Receive error context from main process (properties)
-2. Check if attachment needed (shape4 - decision)
-3. Build email body with error details (shape11 or shape23)
-4. Set mail properties (shape6 or shape20)
-5. Send email (shape3 or shape7)
-6. Complete (shape5 or shape9 - stop continue=true)
-```
+**Purpose:** Send error notification email to integration team
+
+**What it does:**
+- Sends email via Office 365 SMTP
+- Email contains: Process name, environment, execution ID, error details
+- Conditional: With or without attachment based on DPP_HasAttachment
+
+**What it produces:**
+- Email sent to recipients
+- No data returned to main process (Stop with continue=true)
+
+**Dependent Operations:**
+- None (terminal operation in error path)
+
+**Business Flow Position:** Executes ONLY on error path (Try/Catch exception)
+
+**Proof:**
+- Subprocess is called from shape21 in branch path 1 (error handler)
+- Subprocess reads properties written by shape38 (DPP_Process_Name, DPP_AtomName, etc.)
+- Subprocess terminates with Stop (continue=true) - no return to main process
 
 ### Operations That MUST Execute First
 
-1. **shape38 (Input_details) MUST execute FIRST**
-   - Produces: All execution context properties required by subprocess
-   - Reason: Subprocess reads these properties, so they must be written first
+1. **shape38 (Input_details)** - MUST execute FIRST
+   - Writes ALL process properties needed by subprocess and operations
+   - No dependencies on other operations
 
-2. **shape33 (HTTP Operation) MUST execute BEFORE shape2**
-   - Produces: meta.base.applicationstatuscode
-   - Reason: shape2 decision checks this status code
+2. **shape8 (set URL)** - MUST execute BEFORE shape33
+   - Writes dynamicdocument.URL needed by HTTP operation
 
-3. **shape2 (Decision) MUST execute BEFORE shape44**
-   - Reason: shape44 is in FALSE path of shape2
+3. **shape33 (Leave Oracle Fusion Create)** - MUST execute BEFORE decisions
+   - Produces HTTP status code and response headers needed by shape2 and shape44
 
-4. **shape19 (ErrorMsg) MUST execute BEFORE shape21**
-   - Produces: process.DPP_ErrorMessage
-   - Reason: Subprocess reads this property in email body
+### Execution Order Derivation
 
-### Actual Business Flow
+**Based on dependency graph (Section 8), decision analysis (Section 10), and branch analysis (Section 11):**
 
-```
-Main Process Business Flow:
-1. START → Receive leave request from D365
-2. Capture execution context (properties)
-3. Try/Catch wrapper begins
-4. [Try Path]:
-   a. Transform request (D365 → Oracle Fusion format)
-   b. Set Oracle Fusion API URL
-   c. Log request
-   d. Call Oracle Fusion API (HTTP POST)
-   e. Check HTTP status code
-      - If 20* (Success): Transform response → Return success
-      - If NOT 20* (Error): Check response encoding → Extract error → Return error
-5. [Catch Path]:
-   a. Branch to handle error
-      - Path 1: Extract error message → Send email notification (subprocess)
-      - Path 2: Map error → Return error response
-```
-
-### Self-Check Results
-
-- ✅ **Business logic verified FIRST:** YES
-  - Documented operation purposes, outputs, and dependencies above
-
-- ✅ **Operation analysis complete:** YES
-  - shape33: Creates leave in Oracle Fusion, produces HTTP status/headers/response
-  - shape21: Sends error notification email, no return data
-
-- ✅ **Business logic execution order identified:** YES
-  - shape38 MUST execute FIRST (produces properties)
-  - shape33 MUST execute BEFORE shape2 (produces status code)
-  - shape19 MUST execute BEFORE shape21 (produces error message)
-
-- ✅ **Data dependencies checked FIRST:** YES
-  - Verified in Step 4 (Data Dependency Graph)
-
-- ✅ **Operation response analysis used:** YES
-  - Referenced Step 1c for operation outputs
-
-- ✅ **Decision analysis used:** YES
-  - Referenced Step 7 for decision execution order
-
-- ✅ **Dependency graph used:** YES
-  - Referenced Step 4 for property dependencies
-
-- ✅ **Branch analysis used:** YES
-  - Referenced Step 8 for branch path execution order
-
-- ✅ **Property dependency verification:** YES
-  - All property reads happen after property writes:
-    - shape38 writes properties → subprocess reads properties ✅
-    - shape33 produces status → shape2 reads status ✅
-    - shape19 writes DPP_ErrorMessage → shape21 reads DPP_ErrorMessage ✅
-
-- ✅ **Topological sort applied:** YES
-  - Branch shape20: Path 1 → Path 2 (sequential execution)
-
-### Execution Order List
-
-**Based on dependency graph (Step 4), control flow (Step 5), decision analysis (Step 7), and branch analysis (Step 8):**
+#### Main Flow (Happy Path)
 
 ```
-1. shape1 (START) - Entry point
-2. shape38 (Input_details) - WRITES all execution context properties
-3. shape17 (Try/Catch) - Wrapper for error handling
-4. [Try Path]:
-   4a. shape29 (Map: Leave Create Map) - Transform D365 → Oracle Fusion format
-   4b. shape8 (set URL) - WRITES dynamicdocument.URL
-   4c. shape49 (Notify) - Log request
-   4d. shape33 (HTTP Operation: Leave Oracle Fusion Create) - PRODUCES status/headers/response
-   4e. shape2 (Decision: HTTP Status 20 check) - READS meta.base.applicationstatuscode
-       [TRUE Path - Success]:
-       4e1. shape34 (Map: Oracle Fusion Leave Response Map) - Transform response
-       4e2. shape35 (Return Documents: Success Response) [TERMINAL]
-       [FALSE Path - Error]:
-       4e3. shape44 (Decision: Check Response Content Type) - READS dynamicdocument.DDP_RespHeader
-            [TRUE Path - GZIP]:
-            4e3a. shape45 (Decompress GZIP)
-            4e3b. shape46 (error msg) - WRITES process.DPP_ErrorMessage
-            4e3c. shape47 (Error Map) - READS process.DPP_ErrorMessage
-            4e3d. shape48 (Return Documents: Error Response) [TERMINAL]
-            [FALSE Path - Not GZIP]:
-            4e3e. shape39 (error msg) - WRITES process.DPP_ErrorMessage
-            4e3f. shape40 (Error Map) - READS process.DPP_ErrorMessage
-            4e3g. shape36 (Return Documents: Error Response) [TERMINAL]
-5. [Catch Path]:
-   5a. shape20 (Branch) - 2 paths, SEQUENTIAL execution
-       [Path 1]:
-       5a1. shape19 (ErrorMsg) - WRITES process.DPP_ErrorMessage
-       5a2. shape21 (Subprocess: Office 365 Email) - READS all properties, sends email [TERMINAL]
-       [Path 2]:
-       5a3. shape41 (Error Map) - READS process.DPP_ErrorMessage
-       5a4. shape43 (Return Documents: Error Response) [TERMINAL]
+1. shape1 (START)
+2. shape38 (Input_details) - WRITES: DPP_Process_Name, DPP_AtomName, DPP_Payload, DPP_ExecutionID, DPP_File_Name, DPP_Subject, To_Email, DPP_HasAttachment
+3. shape17 (Try/Catch) - TRY path
+4. shape29 (Leave Create Map) - Transform D365 → Oracle HCM format
+5. shape8 (set URL) - WRITES: dynamicdocument.URL
+6. shape49 (notify) - Log request payload
+7. shape33 (Leave Oracle Fusion Create - HTTP POST) - WRITES: meta.base.applicationstatuscode, dynamicdocument.DDP_RespHeader
+8. shape2 (HTTP Status 20 check) - READS: meta.base.applicationstatuscode
+   - IF TRUE (HTTP 20*):
+     9a. shape34 (Oracle Fusion Leave Response Map)
+     10a. shape35 (Success Response - Return Documents) [HTTP 200] [SUCCESS]
+   - IF FALSE (HTTP non-20*):
+     9b. shape44 (Check Response Content Type) - READS: dynamicdocument.DDP_RespHeader
+       - IF TRUE (gzip):
+         10b. shape45 (GZIP decompression)
+         11b. shape46 (error msg) - WRITES: DPP_ErrorMessage
+         12b. shape47 (Leave Error Map) - READS: DPP_ErrorMessage
+         13b. shape48 (Error Response - Return Documents) [HTTP 400] [ERROR]
+       - IF FALSE (not gzip):
+         10c. shape39 (error msg) - WRITES: DPP_ErrorMessage
+         11c. shape40 (Leave Error Map) - READS: DPP_ErrorMessage
+         12c. shape36 (Error Response - Return Documents) [HTTP 400] [ERROR]
+```
+
+#### Error Flow (Try/Catch Exception)
+
+```
+1. shape1 (START)
+2. shape38 (Input_details) - WRITES: DPP_Process_Name, DPP_AtomName, DPP_Payload, DPP_ExecutionID, DPP_File_Name, DPP_Subject, To_Email, DPP_HasAttachment
+3. shape17 (Try/Catch) - CATCH path (exception occurred)
+4. shape20 (Branch - 2 paths) - SEQUENTIAL execution
+   - Path 1 (identifier "1"):
+     5a. shape19 (ErrorMsg) - WRITES: DPP_ErrorMessage (from meta.base.catcherrorsmessage)
+     6a. shape21 (Subprocess: Office 365 Email) - READS: All DPP properties
+         SUBPROCESS INTERNAL FLOW:
+         - shape1 (START)
+         - shape2 (Try/Catch)
+         - shape4 (Attachment_Check) - READS: DPP_HasAttachment
+           - IF TRUE (Y):
+             - shape11 (Mail_Body with attachment)
+             - shape14 (set_MailBody) - WRITES: DPP_MailBody
+             - shape15 (payload) - READS: DPP_Payload
+             - shape6 (set_Mail_Properties) - READS: To_Email, DPP_Subject, DPP_MailBody, DPP_File_Name
+             - shape3 (Email w Attachment)
+             - shape5 (Stop continue=true)
+           - IF FALSE (N):
+             - shape23 (Mail_Body without attachment)
+             - shape22 (set_MailBody) - WRITES: DPP_MailBody
+             - shape20 (set_Mail_Properties) - READS: To_Email, DPP_Subject, DPP_MailBody
+             - shape7 (Email W/O Attachment)
+             - shape9 (Stop continue=true)
+   - Path 2 (identifier "2"):
+     5b. shape41 (Leave Error Map) - READS: DPP_ErrorMessage
+     6b. shape43 (Error Response - Return Documents) [HTTP 500] [ERROR]
 ```
 
 ### Dependency Verification
 
 **Reference to Step 4 (Data Dependency Graph):**
 
-1. **shape38 → subprocess (shape21)**
-   - shape38 writes: process.DPP_Process_Name, process.DPP_AtomName, process.DPP_Payload, etc.
-   - subprocess reads: All these properties
-   - **Verified:** shape38 executes BEFORE subprocess ✅
+1. **shape8 → shape33:**
+   - shape33 reads dynamicdocument.URL
+   - shape8 writes dynamicdocument.URL
+   - ✅ Verified: shape8 executes BEFORE shape33
 
-2. **shape33 → shape2**
-   - shape33 produces: meta.base.applicationstatuscode
-   - shape2 reads: meta.base.applicationstatuscode
-   - **Verified:** shape33 executes BEFORE shape2 ✅
+2. **shape33 → shape2:**
+   - shape2 reads meta.base.applicationstatuscode
+   - shape33 writes meta.base.applicationstatuscode (automatic)
+   - ✅ Verified: shape33 executes BEFORE shape2
 
-3. **shape19 → shape21**
-   - shape19 writes: process.DPP_ErrorMessage
-   - shape21 reads: process.DPP_ErrorMessage
-   - **Verified:** shape19 executes BEFORE shape21 ✅
+3. **shape33 → shape44:**
+   - shape44 reads dynamicdocument.DDP_RespHeader
+   - shape33 writes dynamicdocument.DDP_RespHeader (automatic)
+   - ✅ Verified: shape33 executes BEFORE shape44
 
-4. **shape39 → shape40**
-   - shape39 writes: process.DPP_ErrorMessage
-   - shape40 reads: process.DPP_ErrorMessage
-   - **Verified:** shape39 executes BEFORE shape40 ✅
+4. **shape19 → shape41 (branch path dependency):**
+   - shape41 (map) reads process.DPP_ErrorMessage
+   - shape19 writes process.DPP_ErrorMessage
+   - ✅ Verified: shape19 (Path 1) executes BEFORE shape41 (Path 2)
 
-5. **shape46 → shape47**
-   - shape46 writes: process.DPP_ErrorMessage
-   - shape47 reads: process.DPP_ErrorMessage
-   - **Verified:** shape46 executes BEFORE shape47 ✅
+5. **shape38 → subprocess shape21:**
+   - Subprocess reads DPP_Process_Name, DPP_AtomName, DPP_ExecutionID, DPP_Payload, DPP_File_Name, DPP_Subject, To_Email, DPP_HasAttachment
+   - shape38 writes all these properties
+   - ✅ Verified: shape38 executes BEFORE subprocess shape21
 
 ### Branch Execution Order
 
@@ -1114,388 +1172,689 @@ Main Process Business Flow:
 
 **Branch shape20:**
 - Classification: SEQUENTIAL
-- Execution Order: Path 1 (shape19 → shape21) → Path 2 (shape41 → shape43)
-- Reasoning: Path 2 reads process.DPP_ErrorMessage which Path 1 writes
+- Dependency Order: Path 1 → Path 2
+- Reasoning: Path 2 reads DPP_ErrorMessage written by Path 1
+- Execution: Path 1 (error notification) → Path 2 (error return)
 
-**Note:** However, upon closer inspection of the control flow, Path 1 and Path 2 actually terminate independently:
-- Path 1 → shape19 → shape21 (subprocess call, no return)
-- Path 2 → shape41 → shape43 (return documents)
+### Decision Path Execution
 
-**Correction:** These paths execute in parallel (no actual data dependency between them in execution, as shape21 is terminal and doesn't affect Path 2). The dependency graph shows Path 2 could read DPP_ErrorMessage, but since Path 1 terminates at subprocess call, they don't actually execute sequentially in practice.
-
-**Revised Classification:** PARALLEL (both paths terminate independently, no actual execution dependency)
-
-### Decision Path Tracing
+**Reference to Step 7 (Decision Analysis):**
 
 **Decision shape2 (HTTP Status 20 check):**
-- **TRUE Path:** shape34 → shape35 (Success Response) [TERMINAL]
-- **FALSE Path:** shape44 → [shape45 → shape46 → shape47 → shape48] OR [shape39 → shape40 → shape36] (Error Response) [TERMINAL]
+- TRUE path: shape34 → shape35 (success return)
+- FALSE path: shape44 → (shape45 → shape46 → shape47 → shape48) OR (shape39 → shape40 → shape36)
+- No convergence - paths terminate independently
 
 **Decision shape44 (Check Response Content Type):**
-- **TRUE Path:** shape45 → shape46 → shape47 → shape48 (Error Response with GZIP decompression) [TERMINAL]
-- **FALSE Path:** shape39 → shape40 → shape36 (Error Response without decompression) [TERMINAL]
+- TRUE path: shape45 → shape46 → shape47 → shape48 (GZIP decompression error)
+- FALSE path: shape39 → shape40 → shape36 (direct error)
+- No convergence - paths terminate independently
 
-**Convergence Points:** None - All paths terminate at Return Documents
+**Decision shape4 (Attachment_Check - subprocess):**
+- TRUE path: shape11 → shape14 → shape15 → shape6 → shape3 → shape5 (email with attachment)
+- FALSE path: shape23 → shape22 → shape20 → shape7 → shape9 (email without attachment)
+- No convergence - paths terminate at separate Stop shapes
+
+### Complete Execution Order
+
+**Main Process Flow:**
+
+```
+START (shape1)
+ ↓
+Input_details (shape38) [WRITES: All DPP properties]
+ ↓
+Try/Catch (shape17)
+ ├─→ TRY PATH:
+ |    ↓
+ |   Leave Create Map (shape29) [Transform D365 → Oracle HCM]
+ |    ↓
+ |   set URL (shape8) [WRITES: dynamicdocument.URL]
+ |    ↓
+ |   notify (shape49) [Log payload]
+ |    ↓
+ |   Leave Oracle Fusion Create (shape33) [HTTP POST - Downstream]
+ |   [WRITES: meta.base.applicationstatuscode, dynamicdocument.DDP_RespHeader]
+ |    ↓
+ |   HTTP Status 20 check (shape2) [READS: meta.base.applicationstatuscode]
+ |    ├─→ IF TRUE (HTTP 20*):
+ |    |    ↓
+ |    |   Oracle Fusion Leave Response Map (shape34)
+ |    |    ↓
+ |    |   Success Response (shape35) [HTTP 200] [SUCCESS RETURN]
+ |    |
+ |    └─→ IF FALSE (HTTP non-20*):
+ |         ↓
+ |        Check Response Content Type (shape44) [READS: dynamicdocument.DDP_RespHeader]
+ |         ├─→ IF TRUE (gzip):
+ |         |    ↓
+ |         |   GZIP decompression (shape45)
+ |         |    ↓
+ |         |   error msg (shape46) [WRITES: DPP_ErrorMessage]
+ |         |    ↓
+ |         |   Leave Error Map (shape47) [READS: DPP_ErrorMessage]
+ |         |    ↓
+ |         |   Error Response (shape48) [HTTP 400] [ERROR RETURN]
+ |         |
+ |         └─→ IF FALSE (not gzip):
+ |              ↓
+ |             error msg (shape39) [WRITES: DPP_ErrorMessage]
+ |              ↓
+ |             Leave Error Map (shape40) [READS: DPP_ErrorMessage]
+ |              ↓
+ |             Error Response (shape36) [HTTP 400] [ERROR RETURN]
+ |
+ └─→ CATCH PATH (Exception):
+      ↓
+     Branch (shape20) [SEQUENTIAL: Path 1 → Path 2]
+      ├─→ Path 1:
+      |    ↓
+      |   ErrorMsg (shape19) [WRITES: DPP_ErrorMessage from meta.base.catcherrorsmessage]
+      |    ↓
+      |   Subprocess: Office 365 Email (shape21) [READS: All DPP properties]
+      |   [Email notification sent to integration team]
+      |
+      └─→ Path 2:
+           ↓
+          Leave Error Map (shape41) [READS: DPP_ErrorMessage]
+           ↓
+          Error Response (shape43) [HTTP 500] [ERROR RETURN]
+```
+
+### Execution Order Summary
+
+**Sequence:**
+1. START → Input properties setup
+2. Try/Catch wrapper
+3. TRY: Map → URL setup → Notify → HTTP operation → Status decision → Success/Error response
+4. CATCH: Branch (sequential) → Error notification (subprocess) → Error response
+
+**Critical Dependencies:**
+- shape8 MUST execute BEFORE shape33 (URL required for HTTP call)
+- shape33 MUST execute BEFORE shape2 (status code required for decision)
+- shape33 MUST execute BEFORE shape44 (response header required for decision)
+- shape19 MUST execute BEFORE shape41 (error message required for error map)
+
+**Parallel Execution:** None - all operations execute sequentially
+
+**Sequential Execution:** All paths are sequential due to data dependencies and API calls
 
 ---
 
 ## 13. Sequence Diagram (Step 10)
 
-**📋 NOTE:** This diagram shows the technical execution flow. Detailed request/response JSON examples are documented in Section 16 (HTTP Status Codes and Return Path Responses) and Section 17 (Request/Response JSON Examples).
+**Based on:**
+- Dependency graph in Step 4 (Section 8)
+- Decision analysis in Step 7 (Section 10)
+- Control flow graph in Step 5 (Section 9)
+- Branch analysis in Step 8 (Section 11)
+- Execution order in Step 9 (Section 12)
 
-**References:**
-- Based on dependency graph in Step 4 (Data Dependency Graph)
-- Based on control flow graph in Step 5 (Control Flow Graph)
-- Based on decision analysis in Step 7 (Decision Shape Analysis)
-- Based on branch analysis in Step 8 (Branch Shape Analysis)
-- Based on execution order in Step 9 (Execution Order)
+**📋 NOTE:** Detailed request/response JSON examples are documented in:
+- **Section 6: HTTP Status Codes and Return Path Responses** - For response JSON with populated fields for return paths
+- **Section 17: Request/Response JSON Examples** - For detailed request/response JSON examples
+
+### Main Process Sequence
 
 ```
 START (shape1)
  |
- ├─→ shape38: Input_details (Document Properties)
- |   └─→ WRITES: [process.DPP_Process_Name, process.DPP_AtomName, process.DPP_Payload, 
- |                 process.DPP_ExecutionID, process.DPP_File_Name, process.DPP_Subject,
- |                 process.To_Email, process.DPP_HasAttachment, dynamicdocument.URL]
+ ├─→ Input_details (shape38)
+ |    └─→ WRITES: [process.DPP_Process_Name, process.DPP_AtomName, process.DPP_Payload, 
+ |                  process.DPP_ExecutionID, process.DPP_File_Name, process.DPP_Subject, 
+ |                  process.To_Email, process.DPP_HasAttachment]
+ |    └─→ SOURCE: [Execution properties, current document, defined parameters]
  |
- ├─→ shape17: Try/Catch Wrapper
- |   |
- |   ├─→ [TRY PATH]:
- |   |   |
- |   |   ├─→ shape29: Map (Leave Create Map)
- |   |   |   └─→ Transform: D365 format → Oracle Fusion format
- |   |   |   └─→ Field mappings: employeeNumber→personNumber, absenceStatusCode→absenceStatusCd, etc.
- |   |   |
- |   |   ├─→ shape8: set URL (Document Properties)
- |   |   |   └─→ WRITES: [dynamicdocument.URL = "hcmRestApi/resources/11.13.18.05/absences"]
- |   |   |
- |   |   ├─→ shape49: Notify (Log request)
- |   |   |   └─→ INFO: Log current document
- |   |   |
- |   |   ├─→ shape33: Leave Oracle Fusion Create (Downstream HTTP POST)
- |   |   |   └─→ READS: [dynamicdocument.URL, current document (transformed request)]
- |   |   |   └─→ WRITES: [meta.base.applicationstatuscode, meta.base.applicationstatusmessage,
- |   |   |                 dynamicdocument.DDP_RespHeader, response body]
- |   |   |   └─→ HTTP: POST to Oracle Fusion HCM API
- |   |   |   └─→ Endpoint: https://iaaxey-dev3.fa.ocs.oraclecloud.com:443/hcmRestApi/resources/11.13.18.05/absences
- |   |   |   └─→ Expected: [200, 201], Error: [400, 401, 404, 500]
- |   |   |
- |   |   ├─→ shape2: Decision - HTTP Status 20 check
- |   |   |   └─→ READS: [meta.base.applicationstatuscode]
- |   |   |   └─→ Condition: meta.base.applicationstatuscode wildcard matches "20*"?
- |   |   |   |
- |   |   |   ├─→ IF TRUE (Status 20* - Success):
- |   |   |   |   |
- |   |   |   |   ├─→ shape34: Map (Oracle Fusion Leave Response Map)
- |   |   |   |   |   └─→ Transform: Oracle Fusion response → D365 response format
- |   |   |   |   |   └─→ Extract: personAbsenceEntryId
- |   |   |   |   |   └─→ Set defaults: status="success", message="Data successfully sent to Oracle Fusion", success="true"
- |   |   |   |   |
- |   |   |   |   └─→ shape35: Return Documents [HTTP: 200] [SUCCESS]
- |   |   |   |       └─→ Response: {"leaveResponse": {"status": "success", "message": "...", "personAbsenceEntryId": 12345, "success": "true"}}
- |   |   |   |
- |   |   |   └─→ IF FALSE (Status NOT 20* - Error):
- |   |   |       |
- |   |   |       ├─→ shape44: Decision - Check Response Content Type
- |   |   |           └─→ READS: [dynamicdocument.DDP_RespHeader]
- |   |   |           └─→ Condition: dynamicdocument.DDP_RespHeader equals "gzip"?
- |   |   |           |
- |   |   |           ├─→ IF TRUE (GZIP compressed):
- |   |   |           |   |
- |   |   |           |   ├─→ shape45: Data Process (Decompress GZIP)
- |   |   |           |   |   └─→ Groovy script: Decompress GZIP response
- |   |   |           |   |
- |   |   |           |   ├─→ shape46: error msg (Document Properties)
- |   |   |           |   |   └─→ WRITES: [process.DPP_ErrorMessage]
- |   |   |           |   |   └─→ READS: [meta.base.applicationstatusmessage]
- |   |   |           |   |
- |   |   |           |   ├─→ shape47: Map (Leave Error Map)
- |   |   |           |   |   └─→ READS: [process.DPP_ErrorMessage]
- |   |   |           |   |   └─→ Set: status="failure", success="false", message=DPP_ErrorMessage
- |   |   |           |   |
- |   |   |           |   └─→ shape48: Return Documents [HTTP: 400/500] [ERROR] [EARLY EXIT]
- |   |   |           |       └─→ Response: {"leaveResponse": {"status": "failure", "message": "...", "success": "false"}}
- |   |   |           |
- |   |   |           └─→ IF FALSE (Not GZIP):
- |   |   |               |
- |   |   |               ├─→ shape39: error msg (Document Properties)
- |   |   |               |   └─→ WRITES: [process.DPP_ErrorMessage]
- |   |   |               |   └─→ READS: [meta.base.applicationstatusmessage]
- |   |   |               |
- |   |   |               ├─→ shape40: Map (Leave Error Map)
- |   |   |               |   └─→ READS: [process.DPP_ErrorMessage]
- |   |   |               |   └─→ Set: status="failure", success="false", message=DPP_ErrorMessage
- |   |   |               |
- |   |   |               └─→ shape36: Return Documents [HTTP: 400/500] [ERROR] [EARLY EXIT]
- |   |   |                   └─→ Response: {"leaveResponse": {"status": "failure", "message": "...", "success": "false"}}
- |   |
- |   └─→ [CATCH PATH]:
- |       |
- |       ├─→ shape20: Branch (2 paths - PARALLEL execution)
- |           |
- |           ├─→ [Path 1]:
- |           |   |
- |           |   ├─→ shape19: ErrorMsg (Document Properties)
- |           |   |   └─→ WRITES: [process.DPP_ErrorMessage]
- |           |   |   └─→ READS: [meta.base.catcherrorsmessage]
- |           |   |
- |           |   └─→ shape21: ProcessCall - Office 365 Email Subprocess
- |           |       └─→ READS: [process.DPP_ErrorMessage, process.DPP_Process_Name, process.DPP_AtomName,
- |           |                   process.DPP_ExecutionID, process.DPP_File_Name, process.DPP_Subject,
- |           |                   process.To_Email, process.DPP_HasAttachment, process.DPP_Payload]
- |           |       |
- |           |       └─→ SUBPROCESS INTERNAL FLOW:
- |           |           |
- |           |           ├─→ START (shape1)
- |           |           |
- |           |           ├─→ Try/Catch (shape2)
- |           |           |   |
- |           |           |   ├─→ [Try Path]:
- |           |           |   |   |
- |           |           |   |   ├─→ shape4: Decision - Attachment_Check
- |           |           |   |   |   └─→ READS: [process.DPP_HasAttachment]
- |           |           |   |   |   └─→ Condition: process.DPP_HasAttachment equals "Y"?
- |           |           |   |   |   |
- |           |           |   |   |   ├─→ IF TRUE (Has Attachment):
- |           |           |   |   |   |   |
- |           |           |   |   |   |   ├─→ shape11: Message (Build Email Body HTML)
- |           |           |   |   |   |   |   └─→ READS: [process.DPP_Process_Name, process.DPP_AtomName,
- |           |           |   |   |   |   |               process.DPP_ExecutionID, process.DPP_ErrorMessage]
- |           |           |   |   |   |   |
- |           |           |   |   |   |   ├─→ shape14: set_MailBody (Document Properties)
- |           |           |   |   |   |   |   └─→ WRITES: [process.DPP_MailBody]
- |           |           |   |   |   |   |
- |           |           |   |   |   |   ├─→ shape15: Message (Create Attachment)
- |           |           |   |   |   |   |   └─→ READS: [process.DPP_Payload]
- |           |           |   |   |   |   |
- |           |           |   |   |   |   ├─→ shape6: set_Mail_Properties (Document Properties)
- |           |           |   |   |   |   |   └─→ WRITES: [connector.mail.fromAddress, connector.mail.toAddress,
- |           |           |   |   |   |   |                 connector.mail.subject, connector.mail.body, connector.mail.filename]
- |           |           |   |   |   |   |   └─→ READS: [process.To_Email, process.DPP_Subject, process.DPP_MailBody, process.DPP_File_Name]
- |           |           |   |   |   |   |
- |           |           |   |   |   |   ├─→ shape3: Email (Send Email with Attachment)
- |           |           |   |   |   |   |   └─→ Operation: af07502a-fafd-4976-a691-45d51a33b549
- |           |           |   |   |   |   |
- |           |           |   |   |   |   └─→ shape5: Stop (continue=true) [SUCCESS RETURN]
- |           |           |   |   |   |
- |           |           |   |   |   └─→ IF FALSE (No Attachment):
- |           |           |   |   |       |
- |           |           |   |   |       ├─→ shape23: Message (Build Email Body HTML)
- |           |           |   |   |       |   └─→ READS: [process.DPP_Process_Name, process.DPP_AtomName,
- |           |           |   |   |       |               process.DPP_ExecutionID, process.DPP_ErrorMessage]
- |           |           |   |   |       |
- |           |           |   |   |       ├─→ shape22: set_MailBody (Document Properties)
- |           |           |   |   |       |   └─→ WRITES: [process.DPP_MailBody]
- |           |           |   |   |       |
- |           |           |   |   |       ├─→ shape20: set_Mail_Properties (Document Properties)
- |           |           |   |   |       |   └─→ WRITES: [connector.mail.fromAddress, connector.mail.toAddress,
- |           |           |   |   |       |                 connector.mail.subject, connector.mail.body]
- |           |           |   |   |       |   └─→ READS: [process.To_Email, process.DPP_Subject, process.DPP_MailBody]
- |           |           |   |   |       |
- |           |           |   |   |       ├─→ shape7: Email (Send Email without Attachment)
- |           |           |   |   |       |   └─→ Operation: 15a72a21-9b57-49a1-a8ed-d70367146644
- |           |           |   |   |       |
- |           |           |   |   |       └─→ shape9: Stop (continue=true) [SUCCESS RETURN]
- |           |           |   |
- |           |           |   └─→ [Catch Path]:
- |           |           |       |
- |           |           |       └─→ shape10: Exception (Throw error)
- |           |           |           └─→ READS: [meta.base.catcherrorsmessage]
- |           |           |           └─→ [ERROR RETURN]
- |           |           |
- |           |           └─→ END SUBPROCESS
- |           |
- |           └─→ [Path 2]:
- |               |
- |               ├─→ shape41: Map (Leave Error Map)
- |               |   └─→ READS: [process.DPP_ErrorMessage]
- |               |   └─→ Set: status="failure", success="false", message=DPP_ErrorMessage
- |               |
- |               └─→ shape43: Return Documents [HTTP: 400/500] [ERROR] [EARLY EXIT]
- |                   └─→ Response: {"leaveResponse": {"status": "failure", "message": "...", "success": "false"}}
+ ├─→ Try/Catch (shape17)
+ |    |
+ |    ├─→ TRY PATH:
+ |    |    |
+ |    |    ├─→ Leave Create Map (shape29)
+ |    |    |    └─→ Transform: D365 format → Oracle HCM format
+ |    |    |    └─→ Field mappings: employeeNumber→personNumber, absenceStatusCode→absenceStatusCd, etc.
+ |    |    |
+ |    |    ├─→ set URL (shape8)
+ |    |    |    └─→ WRITES: [dynamicdocument.URL]
+ |    |    |    └─→ VALUE: "hcmRestApi/resources/11.13.18.05/absences"
+ |    |    |
+ |    |    ├─→ notify (shape49)
+ |    |    |    └─→ Log request payload (INFO level)
+ |    |    |
+ |    |    ├─→ Operation: Leave Oracle Fusion Create (shape33) [Downstream - Oracle Fusion HCM]
+ |    |    |    └─→ READS: [dynamicdocument.URL]
+ |    |    |    └─→ WRITES: [meta.base.applicationstatuscode, dynamicdocument.DDP_RespHeader]
+ |    |    |    └─→ HTTP: POST {URL}/hcmRestApi/resources/11.13.18.05/absences
+ |    |    |    └─→ AUTH: Basic (INTEGRATION.USER@al-ghurair.com)
+ |    |    |    └─→ Expected: [200, 201]
+ |    |    |    └─→ Error: [400, 401, 403, 404, 500, 502, 503, 504]
+ |    |    |
+ |    |    ├─→ Decision: HTTP Status 20 check (shape2)
+ |    |    |    └─→ READS: [meta.base.applicationstatuscode]
+ |    |    |    └─→ CONDITION: applicationstatuscode matches "20*"?
+ |    |    |    |
+ |    |    |    ├─→ IF TRUE (HTTP 20* - Success):
+ |    |    |    |    |
+ |    |    |    |    ├─→ Oracle Fusion Leave Response Map (shape34)
+ |    |    |    |    |    └─→ READS: [personAbsenceEntryId from Oracle response]
+ |    |    |    |    |    └─→ WRITES: [status="success", message="Data successfully sent to Oracle Fusion", success="true"]
+ |    |    |    |    |
+ |    |    |    |    └─→ Success Response (shape35) [HTTP 200] [SUCCESS RETURN]
+ |    |    |    |         └─→ Response: {"status": "success", "message": "Data successfully sent to Oracle Fusion", 
+ |    |    |    |                        "personAbsenceEntryId": 300100123456789, "success": "true"}
+ |    |    |    |
+ |    |    |    └─→ IF FALSE (HTTP non-20* - Error):
+ |    |    |         |
+ |    |    |         └─→ Decision: Check Response Content Type (shape44)
+ |    |    |              └─→ READS: [dynamicdocument.DDP_RespHeader]
+ |    |    |              └─→ CONDITION: DDP_RespHeader equals "gzip"?
+ |    |    |              |
+ |    |    |              ├─→ IF TRUE (Response is GZIP compressed):
+ |    |    |              |    |
+ |    |    |              |    ├─→ GZIP decompression (shape45)
+ |    |    |              |    |    └─→ Decompress GZIP response using Groovy script
+ |    |    |              |    |
+ |    |    |              |    ├─→ error msg (shape46)
+ |    |    |              |    |    └─→ WRITES: [process.DPP_ErrorMessage]
+ |    |    |              |    |    └─→ SOURCE: meta.base.applicationstatusmessage
+ |    |    |              |    |
+ |    |    |              |    ├─→ Leave Error Map (shape47)
+ |    |    |              |    |    └─→ READS: [process.DPP_ErrorMessage]
+ |    |    |              |    |    └─→ WRITES: [status="failure", success="false"]
+ |    |    |              |    |
+ |    |    |              |    └─→ Error Response (shape48) [HTTP 400] [ERROR RETURN]
+ |    |    |              |         └─→ Response: {"status": "failure", "message": "<error from Oracle>", "success": "false"}
+ |    |    |              |
+ |    |    |              └─→ IF FALSE (Response is NOT GZIP):
+ |    |    |                   |
+ |    |    |                   ├─→ error msg (shape39)
+ |    |    |                   |    └─→ WRITES: [process.DPP_ErrorMessage]
+ |    |    |                   |    └─→ SOURCE: meta.base.applicationstatusmessage
+ |    |    |                   |
+ |    |    |                   ├─→ Leave Error Map (shape40)
+ |    |    |                   |    └─→ READS: [process.DPP_ErrorMessage]
+ |    |    |                   |    └─→ WRITES: [status="failure", success="false"]
+ |    |    |                   |
+ |    |    |                   └─→ Error Response (shape36) [HTTP 400] [ERROR RETURN]
+ |    |    |                        └─→ Response: {"status": "failure", "message": "<error from Oracle>", "success": "false"}
+ |    |
+ |    └─→ CATCH PATH (Exception in Try block):
+ |         |
+ |         └─→ Branch (shape20) [SEQUENTIAL: Path 1 → Path 2]
+ |              |
+ |              ├─→ Path 1 (identifier "1"):
+ |              |    |
+ |              |    ├─→ ErrorMsg (shape19)
+ |              |    |    └─→ WRITES: [process.DPP_ErrorMessage]
+ |              |    |    └─→ SOURCE: meta.base.catcherrorsmessage
+ |              |    |
+ |              |    └─→ Subprocess: Office 365 Email (shape21)
+ |              |         └─→ READS: [process.DPP_Process_Name, process.DPP_AtomName, 
+ |              |                     process.DPP_ExecutionID, process.DPP_ErrorMessage,
+ |              |                     process.DPP_File_Name, process.DPP_Subject, 
+ |              |                     process.To_Email, process.DPP_HasAttachment,
+ |              |                     process.DPP_Payload]
+ |              |         └─→ SUBPROCESS INTERNAL FLOW:
+ |              |              |
+ |              |              ├─→ START (shape1)
+ |              |              |
+ |              |              ├─→ Try/Catch (shape2)
+ |              |              |    |
+ |              |              |    ├─→ TRY PATH:
+ |              |              |    |    |
+ |              |              |    |    └─→ Decision: Attachment_Check (shape4)
+ |              |              |    |         └─→ READS: [process.DPP_HasAttachment]
+ |              |              |    |         └─→ CONDITION: DPP_HasAttachment equals "Y"?
+ |              |              |    |         |
+ |              |              |    |         ├─→ IF TRUE (Has attachment):
+ |              |              |    |         |    |
+ |              |              |    |         |    ├─→ Mail_Body (shape11)
+ |              |              |    |         |    |    └─→ Build HTML email body with execution details
+ |              |              |    |         |    |    └─→ READS: [process.DPP_Process_Name, process.DPP_AtomName, 
+ |              |              |    |         |    |                process.DPP_ExecutionID, process.DPP_ErrorMessage]
+ |              |              |    |         |    |
+ |              |              |    |         |    ├─→ set_MailBody (shape14)
+ |              |              |    |         |    |    └─→ WRITES: [process.DPP_MailBody]
+ |              |              |    |         |    |    └─→ SOURCE: Current document (HTML email body)
+ |              |              |    |         |    |
+ |              |              |    |         |    ├─→ payload (shape15)
+ |              |              |    |         |    |    └─→ READS: [process.DPP_Payload]
+ |              |              |    |         |    |    └─→ Set current document to payload (attachment)
+ |              |              |    |         |    |
+ |              |              |    |         |    ├─→ set_Mail_Properties (shape6)
+ |              |              |    |         |    |    └─→ WRITES: [connector.mail.fromAddress, connector.mail.toAddress,
+ |              |              |    |         |    |                  connector.mail.subject, connector.mail.body,
+ |              |              |    |         |    |                  connector.mail.filename]
+ |              |              |    |         |    |    └─→ READS: [process.To_Email, process.DPP_Subject, 
+ |              |              |    |         |    |                 process.DPP_MailBody, process.DPP_File_Name]
+ |              |              |    |         |    |
+ |              |              |    |         |    ├─→ Operation: Email w Attachment (shape3) [Downstream - Office 365]
+ |              |              |    |         |    |    └─→ READS: [connector.mail.* properties]
+ |              |              |    |         |    |    └─→ Send email with attachment
+ |              |              |    |         |    |
+ |              |              |    |         |    └─→ Stop (shape5) [continue=true] [SUBPROCESS SUCCESS RETURN]
+ |              |              |    |         |
+ |              |              |    |         └─→ IF FALSE (No attachment):
+ |              |              |    |              |
+ |              |              |    |              ├─→ Mail_Body (shape23)
+ |              |              |    |              |    └─→ Build HTML email body with execution details
+ |              |              |    |              |    └─→ READS: [process.DPP_Process_Name, process.DPP_AtomName,
+ |              |              |    |              |                process.DPP_ExecutionID, process.DPP_ErrorMessage]
+ |              |              |    |              |
+ |              |              |    |              ├─→ set_MailBody (shape22)
+ |              |              |    |              |    └─→ WRITES: [process.DPP_MailBody]
+ |              |              |    |              |    └─→ SOURCE: Current document (HTML email body)
+ |              |              |    |              |
+ |              |              |    |              ├─→ set_Mail_Properties (shape20)
+ |              |              |    |              |    └─→ WRITES: [connector.mail.fromAddress, connector.mail.toAddress,
+ |              |              |    |              |                  connector.mail.subject, connector.mail.body]
+ |              |              |    |              |    └─→ READS: [process.To_Email, process.DPP_Subject, process.DPP_MailBody]
+ |              |              |    |              |
+ |              |              |    |              ├─→ Operation: Email W/O Attachment (shape7) [Downstream - Office 365]
+ |              |              |    |              |    └─→ READS: [connector.mail.* properties]
+ |              |              |    |              |    └─→ Send email without attachment
+ |              |              |    |              |
+ |              |              |    |              └─→ Stop (shape9) [continue=true] [SUBPROCESS SUCCESS RETURN]
+ |              |              |    |
+ |              |              |    └─→ CATCH PATH:
+ |              |              |         |
+ |              |              |         └─→ Exception (shape10) [SUBPROCESS EXCEPTION]
+ |              |              |              └─→ Throw exception with catch error message
+ |              |              |
+ |              |              └─→ END SUBPROCESS
+ |              |
+ |              └─→ Path 2 (identifier "2"):
+ |                   |
+ |                   ├─→ Leave Error Map (shape41)
+ |                   |    └─→ READS: [process.DPP_ErrorMessage]
+ |                   |    └─→ WRITES: [status="failure", success="false"]
+ |                   |
+ |                   └─→ Error Response (shape43) [HTTP 500] [ERROR RETURN]
+ |                        └─→ Response: {"status": "failure", "message": "<exception message>", "success": "false"}
  |
- └─→ END
+ └─→ END PROCESS
 ```
 
-**Note:** Detailed request/response JSON examples for all operations and return paths are documented in Section 16 (HTTP Status Codes and Return Path Responses) and Section 17 (Request/Response JSON Examples).
+### Critical Flow Patterns
+
+**Pattern 1: Try/Catch Error Handling**
+- Try block wraps main business logic (map → HTTP operation → response handling)
+- Catch block handles exceptions (connection errors, timeouts, etc.)
+- Catch path: Send email notification → Return error response
+
+**Pattern 2: HTTP Status Code Routing**
+- Decision shape2 checks HTTP status code from operation response
+- TRUE path (20*): Success flow → Return success response
+- FALSE path (non-20*): Error flow → Check GZIP → Extract error → Return error response
+
+**Pattern 3: GZIP Response Handling**
+- Decision shape44 checks if error response is GZIP compressed
+- TRUE path: Decompress GZIP → Extract error → Return error
+- FALSE path: Extract error directly → Return error
+
+**Pattern 4: Sequential Branch Error Handling**
+- Branch shape20 has 2 sequential paths
+- Path 1: Send email notification (subprocess)
+- Path 2: Return error response to caller
+- Both paths execute sequentially (notification first, then return)
 
 ---
 
-## 14. HTTP Status Codes and Return Path Responses (Step 1e)
+## 14. Subprocess Analysis (Step 7a)
 
-### Return Path Analysis
+### Subprocess: Office 365 Email (a85945c5-3004-42b9-80b1-104f465cd1fb)
 
-#### Return Path 1: Success Response (shape35)
+**Subprocess ID:** a85945c5-3004-42b9-80b1-104f465cd1fb  
+**Subprocess Name:** (Sub) Office 365 Email  
+**Called By:** shape21 (main process - error path)  
+**Purpose:** Send error notification email via Office 365
 
-**Return Label:** "Success Response"  
-**Return Shape ID:** shape35  
-**HTTP Status Code:** 200  
-**Decision Conditions Leading to Return:**
-- shape2 (HTTP Status 20 check): meta.base.applicationstatuscode matches "20*" → TRUE path
+### Internal Flow
 
-**Populated Response Fields:**
+**Start:** shape1 (start)  
+**End:** shape5 or shape9 (Stop with continue=true)
 
-| Field Name | Field Path | Source | Populated By | Value Origin |
-|---|---|---|---|---|
-| status | leaveResponse/Object/status | static (map default) | shape34 (Map) | Default value: "success" |
-| message | leaveResponse/Object/message | static (map default) | shape34 (Map) | Default value: "Data successfully sent to Oracle Fusion" |
-| personAbsenceEntryId | leaveResponse/Object/personAbsenceEntryId | operation_response | shape33 (HTTP Operation) | Oracle Fusion API response field |
-| success | leaveResponse/Object/success | static (map default) | shape34 (Map) | Default value: "true" |
-
-**Response JSON Example:**
-
-```json
-{
-  "leaveResponse": {
-    "status": "success",
-    "message": "Data successfully sent to Oracle Fusion",
-    "personAbsenceEntryId": 300000123456789,
-    "success": "true"
-  }
-}
+**Flow Sequence:**
+```
+START (shape1)
+ ↓
+Try/Catch (shape2)
+ ├─→ TRY PATH:
+ |    ↓
+ |   Decision: Attachment_Check (shape4)
+ |    ├─→ IF TRUE (DPP_HasAttachment = "Y"):
+ |    |    ↓
+ |    |   Mail_Body (shape11) → set_MailBody (shape14) → payload (shape15) → 
+ |    |   set_Mail_Properties (shape6) → Email w Attachment (shape3) → Stop (shape5)
+ |    |
+ |    └─→ IF FALSE (DPP_HasAttachment ≠ "Y"):
+ |         ↓
+ |        Mail_Body (shape23) → set_MailBody (shape22) → set_Mail_Properties (shape20) → 
+ |        Email W/O Attachment (shape7) → Stop (shape9)
+ |
+ └─→ CATCH PATH:
+      ↓
+     Exception (shape10) [Throw exception]
 ```
 
-#### Return Path 2: Error Response - Not GZIP (shape36)
+### Return Paths
 
-**Return Label:** "Error Response"  
-**Return Shape ID:** shape36  
-**HTTP Status Code:** 400 (client error) or 500 (server error)  
-**Decision Conditions Leading to Return:**
-- shape2 (HTTP Status 20 check): meta.base.applicationstatuscode does NOT match "20*" → FALSE path
-- shape44 (Check Response Content Type): dynamicdocument.DDP_RespHeader does NOT equal "gzip" → FALSE path
+**Return Path 1: Success (implicit)**
+- **Label:** (implicit success - Stop with continue=true)
+- **Shape:** shape5 or shape9 (Stop)
+- **Condition:** Email sent successfully
+- **Main Process Mapping:** No explicit return path mapping (subprocess terminates successfully)
 
-**Populated Response Fields:**
+**Return Path 2: Exception**
+- **Label:** (exception thrown)
+- **Shape:** shape10 (Exception)
+- **Condition:** Error in email sending
+- **Main Process Mapping:** Exception propagates to main process
 
-| Field Name | Field Path | Source | Populated By | Value Origin |
-|---|---|---|---|---|
-| status | leaveResponse/Object/status | static (map default) | shape40 (Map) | Default value: "failure" |
-| message | leaveResponse/Object/message | process_property | shape39 → shape40 (Map) | process.DPP_ErrorMessage (from meta.base.applicationstatusmessage) |
-| success | leaveResponse/Object/success | static (map default) | shape40 (Map) | Default value: "false" |
+### Properties Written by Subprocess
 
-**Response JSON Example:**
+| Property Name | Written By | Source | Value |
+|---|---|---|---|
+| process.DPP_MailBody | shape14, shape22 | current document | HTML email body |
 
-```json
-{
-  "leaveResponse": {
-    "status": "failure",
-    "message": "400 Bad Request - Invalid absence type",
-    "success": "false"
-  }
-}
-```
+### Properties Read by Subprocess (from Main Process)
 
-#### Return Path 3: Error Response - GZIP (shape48)
+| Property Name | Read By | Usage |
+|---|---|---|
+| process.DPP_HasAttachment | shape4 (decision) | Determine email operation type |
+| process.DPP_Process_Name | shape11, shape23 (message) | Email body content |
+| process.DPP_AtomName | shape11, shape23 (message) | Email body content |
+| process.DPP_ExecutionID | shape11, shape23 (message) | Email body content |
+| process.DPP_ErrorMessage | shape11, shape23 (message) | Email body content |
+| process.DPP_Payload | shape15 (message) | Email attachment content |
+| process.To_Email | shape6, shape20 (documentproperties) | Email recipient |
+| process.DPP_Subject | shape6, shape20 (documentproperties) | Email subject |
+| process.DPP_MailBody | shape6, shape20 (documentproperties) | Email body |
+| process.DPP_File_Name | shape6 (documentproperties) | Attachment filename |
 
-**Return Label:** "Error Response"  
-**Return Shape ID:** shape48  
-**HTTP Status Code:** 400 (client error) or 500 (server error)  
-**Decision Conditions Leading to Return:**
-- shape2 (HTTP Status 20 check): meta.base.applicationstatuscode does NOT match "20*" → FALSE path
-- shape44 (Check Response Content Type): dynamicdocument.DDP_RespHeader equals "gzip" → TRUE path
+### Subprocess Operations
 
-**Populated Response Fields:**
+**Operation 1: shape3 (Email w Attachment)**
+- **Operation ID:** af07502a-fafd-4976-a691-45d51a33b549
+- **Type:** connector-action (mail)
+- **Purpose:** Send email with attachment via Office 365
+- **Configuration:**
+  - Body Content Type: text/html
+  - Data Content Type: text/plain
+  - Disposition: attachment
 
-| Field Name | Field Path | Source | Populated By | Value Origin |
-|---|---|---|---|---|
-| status | leaveResponse/Object/status | static (map default) | shape47 (Map) | Default value: "failure" |
-| message | leaveResponse/Object/message | process_property | shape46 → shape47 (Map) | process.DPP_ErrorMessage (from meta.base.applicationstatusmessage, after GZIP decompression) |
-| success | leaveResponse/Object/success | static (map default) | shape47 (Map) | Default value: "false" |
+**Operation 2: shape7 (Email W/O Attachment)**
+- **Operation ID:** 15a72a21-9b57-49a1-a8ed-d70367146644
+- **Type:** connector-action (mail)
+- **Purpose:** Send email without attachment via Office 365
+- **Configuration:**
+  - Body Content Type: text/plain
+  - Data Content Type: text/html
+  - Disposition: inline
 
-**Response JSON Example:**
+### Subprocess Error Handling
 
-```json
-{
-  "leaveResponse": {
-    "status": "failure",
-    "message": "500 Internal Server Error - Service unavailable",
-    "success": "false"
-  }
-}
-```
+**Try/Catch:** shape2 wraps email logic
+- **Try Path:** Build email → Send email → Stop (success)
+- **Catch Path:** shape10 (Exception) - Throw exception with catch error message
 
-#### Return Path 4: Error Response - Catch Path (shape43)
+**Exception Message:** "{1}" (parameter 0 = meta.base.catcherrorsmessage)
 
-**Return Label:** "Error Response"  
-**Return Shape ID:** shape43  
-**HTTP Status Code:** 500 (internal server error)  
-**Decision Conditions Leading to Return:**
-- shape17 (Try/Catch): Exception caught in Try block → Catch path
-- shape20 (Branch): Path 2 executed
+### Main Process Integration
 
-**Populated Response Fields:**
+**Call Site:** shape21 (processcall shape)  
+**Wait:** true (main process waits for subprocess to complete)  
+**Abort:** true (abort main process if subprocess fails)  
+**Return Paths:** None (subprocess terminates with Stop or Exception)
 
-| Field Name | Field Path | Source | Populated By | Value Origin |
-|---|---|---|---|---|
-| status | leaveResponse/Object/status | static (map default) | shape41 (Map) | Default value: "failure" |
-| message | leaveResponse/Object/message | process_property | shape19 → shape41 (Map) | process.DPP_ErrorMessage (from meta.base.catcherrorsmessage) |
-| success | leaveResponse/Object/success | static (map default) | shape41 (Map) | Default value: "false" |
+**Integration Flow:**
+1. Main process calls subprocess shape21
+2. Subprocess executes email notification logic
+3. If successful: Stop (continue=true) - subprocess completes, main process continues (but no dragpoint from shape21, so main process also terminates)
+4. If error: Exception thrown - main process catches exception (but subprocess is called from Catch path, so exception propagates)
 
-**Response JSON Example:**
-
-```json
-{
-  "leaveResponse": {
-    "status": "failure",
-    "message": "Error in Map: Leave Create Map - Invalid field mapping",
-    "success": "false"
-  }
-}
-```
-
-**Note:** Catch path also triggers subprocess email notification (shape21) in parallel with error response return.
-
-### Downstream Operations HTTP Status Codes
-
-#### Operation: Leave Oracle Fusion Create (shape33)
-
-**Operation ID:** 6e8920fd-af5a-430b-a1d9-9fde7ac29a12  
-**Operation Name:** Leave Oracle Fusion Create  
-**Type:** HTTP POST  
-**Endpoint:** https://iaaxey-dev3.fa.ocs.oraclecloud.com:443/hcmRestApi/resources/11.13.18.05/absences
-
-**Expected Success Codes:** 200, 201  
-**Error Codes:** 400, 401, 404, 500
-
-**Error Handling Strategy:**
-- **returnErrors:** true (return error responses to process)
-- **returnResponses:** true (return success responses to process)
-- **Handling:** Check status code with decision shape2, route to success or error path
-
-**HTTP Status Code Routing:**
-- **20* (200, 201, etc.):** Success path → Transform response → Return success
-- **4xx/5xx:** Error path → Check if GZIP → Extract error → Return error
-
-#### Operation: Email w Attachment (shape3 - Subprocess)
-
-**Operation ID:** af07502a-fafd-4976-a691-45d51a33b549  
-**Operation Name:** Email w Attachment  
-**Type:** Mail Send
-
-**Expected Success Codes:** N/A (Mail operation)  
-**Error Codes:** N/A  
-**Error Handling Strategy:** Exception thrown on error (caught by subprocess Try/Catch)
-
-#### Operation: Email W/O Attachment (shape7 - Subprocess)
-
-**Operation ID:** 15a72a21-9b57-49a1-a8ed-d70367146644  
-**Operation Name:** Email W/O Attachment  
-**Type:** Mail Send
-
-**Expected Success Codes:** N/A (Mail operation)  
-**Error Codes:** N/A  
-**Error Handling Strategy:** Exception thrown on error (caught by subprocess Try/Catch)
+**Critical Note:** Subprocess shape21 has no dragpoints in main process, meaning after subprocess completes, main process does not continue. This is expected for error notification - subprocess sends email, then main process terminates via Path 2 of branch shape20.
 
 ---
 
-## 15. Request/Response JSON Examples
+## 15. Critical Patterns Identified
+
+### Pattern 1: Try/Catch with Dual Error Response
+
+**Identification:**
+- Try/Catch shape17 wraps main business logic
+- Catch path leads to branch shape20 with 2 sequential paths
+- Path 1: Send email notification (subprocess)
+- Path 2: Return error response to caller
+
+**Execution Rule:**
+- If exception occurs in Try block → Execute Catch path
+- Catch path: Sequential execution of Path 1 (notification) then Path 2 (return)
+- **CRITICAL:** Path 1 MUST execute BEFORE Path 2 (Path 2 reads error message written by Path 1)
+
+**Business Logic:**
+- Notify integration team of error via email
+- Return error response to caller
+- Both actions occur sequentially
+
+### Pattern 2: HTTP Status Code Decision with GZIP Handling
+
+**Identification:**
+- Decision shape2 checks HTTP status code from operation response
+- FALSE path (non-20*) leads to another decision shape44
+- Decision shape44 checks if error response is GZIP compressed
+- TRUE path: Decompress GZIP → Extract error
+- FALSE path: Extract error directly
+
+**Execution Rule:**
+- HTTP operation MUST execute BEFORE decision shape2
+- Decision shape2 routes based on status code
+- If error (non-20*) → Check GZIP compression
+- Handle GZIP decompression if needed
+
+**Business Logic:**
+- Oracle Fusion HCM may return GZIP compressed error responses
+- Decompress if needed to extract error message
+- Return error message to caller
+
+### Pattern 3: Subprocess with Conditional Email Operations
+
+**Identification:**
+- Subprocess has decision shape4 checking DPP_HasAttachment
+- TRUE path: Email with attachment (operation shape3)
+- FALSE path: Email without attachment (operation shape7)
+- Both paths terminate at Stop (continue=true)
+
+**Execution Rule:**
+- Decision determines which email operation to use
+- Attachment logic: If Y → shape3, else → shape7
+- Both operations send email via Office 365 SMTP
+
+**Business Logic:**
+- Error notification includes execution details
+- Optionally attach payload file
+- Email sent to integration team for troubleshooting
+
+### Pattern 4: Property-Based Configuration
+
+**Identification:**
+- shape38 writes multiple process properties at start
+- Properties used throughout process (URL, email settings, error messages)
+- Defined parameters provide configuration values
+
+**Execution Rule:**
+- shape38 MUST execute FIRST (writes all configuration properties)
+- All subsequent operations depend on these properties
+
+**Business Logic:**
+- Centralized property initialization
+- Configuration-driven execution (URL, email recipients, etc.)
+- Execution metadata captured for troubleshooting
+
+---
+
+## 16. Validation Checklist
+
+### Data Dependencies
+- [x] All property WRITES identified (Section 7)
+- [x] All property READS identified (Section 7)
+- [x] Dependency graph built (Section 8)
+- [x] Execution order satisfies all dependencies (Section 12)
+- [x] No read-before-write violations detected
+
+### Decision Analysis
+- [x] ALL decision shapes inventoried (3 decisions: shape2, shape44, shape4)
+- [x] BOTH TRUE and FALSE paths traced to termination (Section 10)
+- [x] Pattern type identified for each decision (Section 10)
+- [x] Early exits identified and documented (shape2, shape44 - all paths terminate)
+- [x] Convergence points identified (None - Section 9)
+- [x] Decision data sources identified (Section 10)
+- [x] Decision types classified (POST-OPERATION, PRE-FILTER - Section 10)
+- [x] Actual execution order verified (Section 10)
+
+### Branch Analysis
+- [x] Branch classified as sequential (Section 11)
+- [x] API call detection performed (subprocess contains email operations)
+- [x] Self-check: Checked for API calls (Answer: YES)
+- [x] Self-check: Classified, not assumed (Answer: Classified)
+- [x] Dependency order built using topological sort (Section 11)
+- [x] Each path traced to terminal point (Section 11)
+- [x] Convergence points identified (None)
+- [x] Execution continuation point determined (None - paths terminate)
+
+### Sequence Diagram
+- [x] Format follows required structure (Section 13)
+- [x] Each operation shows READS and WRITES (Section 13)
+- [x] Decisions show both TRUE and FALSE paths (Section 13)
+- [x] Early exits marked [ERROR RETURN] or [SUCCESS RETURN] (Section 13)
+- [x] Subprocess internal flows documented (Section 13)
+- [x] Sequence diagram references all prior steps (Section 13)
+
+### Subprocess Analysis
+- [x] Subprocess analyzed (internal flow traced - Section 14)
+- [x] Return paths identified (Stop with continue=true, Exception - Section 14)
+- [x] Properties written by subprocess documented (Section 14)
+- [x] Properties read by subprocess documented (Section 14)
+
+### Property Extraction Completeness
+- [x] All property patterns searched (${}, %%, {}, parameters)
+- [x] Message parameters checked for process properties (Section 7)
+- [x] Operation headers/path parameters checked (Section 4)
+- [x] Decision track properties identified (meta.* - Section 10)
+- [x] Document properties that read other properties identified (Section 7)
+
+### Input/Output Structure Analysis
+- [x] Entry point operation identified (Section 2)
+- [x] Request profile identified and loaded (Section 2)
+- [x] Request profile structure analyzed (JSON - Section 2)
+- [x] Array vs single object detected (Single object - Section 2)
+- [x] ALL request fields extracted (9 fields - Section 2)
+- [x] Request field mapping table generated (Section 2)
+- [x] Response profile identified and loaded (Section 3)
+- [x] Response profile structure analyzed (Section 3)
+- [x] ALL response fields extracted (4 fields - Section 3)
+- [x] Response field mapping table generated (Section 3)
+- [x] Document processing behavior determined (Single document - Section 2)
+
+### HTTP Status Codes and Return Path Responses
+- [x] Section 6 (HTTP Status Codes and Return Path Responses - Step 1e) present
+- [x] All return paths documented with HTTP status codes (4 return paths)
+- [x] Response JSON examples provided for each return path (Section 6)
+- [x] Populated fields documented for each return path (Section 6)
+- [x] Decision conditions leading to each return documented (Section 6)
+- [x] Downstream operation HTTP status codes documented (Section 6)
+
+### Map Analysis
+- [x] ALL map files identified and loaded (3 maps - Section 5)
+- [x] Field mappings extracted from each map (Section 5)
+- [x] Profile vs map field name discrepancies documented (Section 5)
+- [x] Scripting functions analyzed (PropertyGet function - Section 5)
+- [x] Static values identified and documented (Default values - Section 5)
+- [x] Process property mappings documented (Section 5)
+- [x] Map Analysis documented in Phase 1 document (Section 5)
+
+---
+
+## 17. System Layer Identification
+
+### Downstream Systems
+
+#### System 1: Oracle Fusion HCM
+
+**System Name:** Oracle Fusion HCM  
+**Connection ID:** aa1fcb29-d146-4425-9ea6-b9698090f60e  
+**Connection Name:** Oracle Fusion  
+**Connection Type:** HTTP  
+**Authentication:** Basic Auth
+
+**Base URL:** https://iaaxey-dev3.fa.ocs.oraclecloud.com:443  
+**Resource Path:** hcmRestApi/resources/11.13.18.05/absences  
+**Full Endpoint:** https://iaaxey-dev3.fa.ocs.oraclecloud.com:443/hcmRestApi/resources/11.13.18.05/absences
+
+**Operations:**
+- **Operation:** Leave Oracle Fusion Create (6e8920fd-af5a-430b-a1d9-9fde7ac29a12)
+  - Method: POST
+  - Purpose: Create absence/leave entry in Oracle HCM
+  - Request Profile: a94fa205-c740-40a5-9fda-3d018611135a (HCM Leave Create JSON Profile)
+  - Response Profile: 316175c7-0e45-4869-9ac6-5f9d69882a62 (Oracle Fusion Leave Response JSON Profile)
+
+**API Type:** REST API  
+**Data Format:** JSON  
+**Response Handling:** May return GZIP compressed responses
+
+#### System 2: Office 365 Email (SMTP)
+
+**System Name:** Office 365 Email  
+**Connection ID:** 00eae79b-2303-4215-8067-dcc299e42697  
+**Connection Name:** Office 365 Email  
+**Connection Type:** Mail (SMTP)  
+**Authentication:** SMTP AUTH
+
+**SMTP Server:** smtp-mail.outlook.com  
+**Port:** 587  
+**TLS:** true  
+**SSL:** false
+
+**Operations:**
+- **Operation 1:** Email w Attachment (af07502a-fafd-4976-a691-45d51a33b549)
+  - Purpose: Send email with attachment
+  - Body Content Type: text/html
+  - Data Content Type: text/plain
+  - Disposition: attachment
+
+- **Operation 2:** Email W/O Attachment (15a72a21-9b57-49a1-a8ed-d70367146644)
+  - Purpose: Send email without attachment
+  - Body Content Type: text/plain
+  - Data Content Type: text/html
+  - Disposition: inline
+
+**API Type:** SMTP Email  
+**Data Format:** HTML email body, text attachment
+
+### System Layer API Requirements
+
+**System API 1: Oracle Fusion HCM Leave API**
+- **Purpose:** Create leave/absence entries in Oracle Fusion HCM
+- **Endpoint:** POST /hcmRestApi/resources/11.13.18.05/absences
+- **Authentication:** Basic Auth
+- **Request:** JSON (leave details)
+- **Response:** JSON (absence entry details) or GZIP compressed JSON
+
+**System API 2: Office 365 Email API**
+- **Purpose:** Send email notifications via Office 365 SMTP
+- **Protocol:** SMTP over TLS
+- **Authentication:** SMTP AUTH
+- **Request:** Email message (HTML body, optional attachment)
+- **Response:** SMTP status
+
+---
+
+## 18. Request/Response JSON Examples
 
 ### Process Layer Entry Point
 
-**Entry Operation:** Create Leave Oracle Fusion OP (8f709c2b-e63f-4d5f-9374-2932ed70415d)  
-**Method:** Web Service Server Listen (REST API endpoint)  
-**Content Type:** application/json
+**Operation:** Create Leave Oracle Fusion OP (8f709c2b-e63f-4d5f-9374-2932ed70415d)
 
-#### Request JSON Example (D365 Format)
+**Request JSON Example (from D365):**
 
 ```json
 {
@@ -1511,56 +1870,58 @@ START (shape1)
 }
 ```
 
-#### Response JSON Examples
+**Response JSON Examples:**
 
 **Success Response (HTTP 200):**
 
 ```json
 {
-  "leaveResponse": {
-    "status": "success",
-    "message": "Data successfully sent to Oracle Fusion",
-    "personAbsenceEntryId": 300000123456789,
-    "success": "true"
-  }
+  "status": "success",
+  "message": "Data successfully sent to Oracle Fusion",
+  "personAbsenceEntryId": 300100123456789,
+  "success": "true"
 }
 ```
 
-**Error Response - HTTP Error (HTTP 400/500):**
+**Error Response - HTTP Failure (HTTP 400):**
 
 ```json
 {
-  "leaveResponse": {
-    "status": "failure",
-    "message": "400 Bad Request - Invalid absence type",
-    "success": "false"
-  }
+  "status": "failure",
+  "message": "HTTP 400: Bad Request - Invalid absence type code",
+  "success": "false"
 }
 ```
 
-**Error Response - Catch Exception (HTTP 500):**
+**Error Response - Try/Catch Exception (HTTP 500):**
 
 ```json
 {
-  "leaveResponse": {
-    "status": "failure",
-    "message": "Error in Map: Leave Create Map - Invalid field mapping",
-    "success": "false"
-  }
+  "status": "failure",
+  "message": "Connection timeout to Oracle Fusion HCM API",
+  "success": "false"
+}
+```
+
+**Error Response - GZIP Decompression Failure (HTTP 400):**
+
+```json
+{
+  "status": "failure",
+  "message": "Failed to decompress GZIP response from Oracle Fusion",
+  "success": "false"
 }
 ```
 
 ### Downstream System Layer Calls
 
-#### Operation: Leave Oracle Fusion Create (shape33)
+#### Operation: Leave Oracle Fusion Create (6e8920fd-af5a-430b-a1d9-9fde7ac29a12)
 
-**Operation ID:** 6e8920fd-af5a-430b-a1d9-9fde7ac29a12  
-**Method:** POST  
-**Endpoint:** https://iaaxey-dev3.fa.ocs.oraclecloud.com:443/hcmRestApi/resources/11.13.18.05/absences  
-**Content Type:** application/json  
+**System:** Oracle Fusion HCM  
+**Endpoint:** POST https://iaaxey-dev3.fa.ocs.oraclecloud.com:443/hcmRestApi/resources/11.13.18.05/absences  
 **Authentication:** Basic Auth (INTEGRATION.USER@al-ghurair.com)
 
-**Request JSON (Oracle Fusion Format):**
+**Request JSON (after transformation via map c426b4d6):**
 
 ```json
 {
@@ -1580,94 +1941,32 @@ START (shape1)
 
 ```json
 {
-  "absenceCaseId": "ABS-12345",
+  "personAbsenceEntryId": 300100123456789,
+  "absenceCaseId": "ABS-2024-001234",
   "absenceEntryBasicFlag": true,
-  "absencePatternCd": "PATTERN1",
+  "absencePatternCd": "SINGLE_DAY",
   "absenceStatusCd": "SUBMITTED",
   "absenceTypeId": 300000001234567,
-  "absenceTypeReasonId": "300000001234568",
-  "agreementId": "300000001234569",
   "approvalStatusCd": "APPROVED",
-  "authStatusUpdateDate": "2024-03-24T10:30:00Z",
-  "bandDtlId": "300000001234570",
-  "blockedLeaveCandidate": "N",
-  "certificationAuthFlag": "N",
-  "childEventTypeCd": null,
-  "comments": "Sick leave request",
-  "conditionStartDate": "2024-03-24",
-  "confirmedDate": "2024-03-24T10:30:00Z",
-  "consumedByAgreement": "N",
-  "createdBy": "INTEGRATION.USER",
-  "creationDate": "2024-03-24T10:30:00Z",
-  "diseaseCode": null,
-  "duration": 2,
-  "employeeShiftFlag": false,
-  "endDate": "2024-03-25",
-  "endDateDuration": 1,
-  "endDateTime": "2024-03-25T23:59:59Z",
-  "endTime": "23:59:59",
-  "establishmentDate": "2024-03-24",
-  "frequency": "ONCE",
-  "initialReportById": "300000001234571",
-  "initialTimelyNotifyFlag": "Y",
-  "lastUpdateDate": "2024-03-24T10:30:00Z",
-  "lastUpdateLogin": "300000001234572",
-  "lastUpdatedBy": "INTEGRATION.USER",
-  "lateNotifyFlag": "N",
-  "legalEntityId": 300000001234573,
-  "legislationCode": "AE",
-  "legislativeDataGroupId": 300000001234574,
-  "notificationDate": "2024-03-24",
-  "objectVersionNumber": 1,
-  "openEndedFlag": false,
-  "overridden": "N",
-  "personAbsenceEntryId": 300000123456789,
-  "periodOfIncapToWorkFlag": "N",
-  "periodOfServiceId": 300000001234575,
-  "personId": 300000001234576,
-  "plannedEndDate": "2024-03-25",
-  "processingStatus": "COMPLETE",
-  "projectId": null,
-  "singleDayFlag": false,
-  "source": "D365",
-  "splCondition": null,
-  "startDate": "2024-03-24",
-  "startDateDuration": 1,
-  "startDateTime": "2024-03-24T00:00:00Z",
-  "startTime": "00:00:00",
-  "submittedDate": "2024-03-24T10:30:00Z",
-  "timelinessOverrideDate": null,
-  "unitOfMeasure": "D",
-  "userMode": "EMPLOYEE",
+  "personId": 300000009876543,
   "personNumber": "9000604",
   "absenceType": "Sick Leave",
   "employer": "Al Ghurair Investment LLC",
-  "absenceReason": null,
-  "absenceDispStatus": "SUBMITTED",
-  "assignmentId": "300000001234577",
-  "dataSecurityPersonId": 300000001234576,
-  "effectiveEndDate": null,
-  "effectiveStartDate": "2024-03-24",
-  "ObjectVersionNumber": 1,
-  "agreementName": "Standard Agreement",
-  "paymentDetail": null,
-  "assignmentName": "E9000604 Assignment",
-  "assignmentNumber": "E9000604",
-  "unitOfMeasureMeaning": "Days",
-  "formattedDuration": "2 Days",
-  "absenceDispStatusMeaning": "Submitted",
-  "absenceUpdatableFlag": "Y",
-  "ApprovalDatetime": "2024-03-24T10:30:00Z",
-  "allowAssignmentSelectionFlag": false,
+  "startDate": "2024-03-24",
+  "endDate": "2024-03-25",
+  "startDateDuration": 1,
+  "endDateDuration": 1,
+  "duration": 2,
+  "createdBy": "INTEGRATION.USER",
+  "creationDate": "2024-03-24T10:30:00Z",
+  "lastUpdateDate": "2024-03-24T10:30:00Z",
+  "lastUpdatedBy": "INTEGRATION.USER",
   "links": [
     {
       "rel": "self",
-      "href": "https://iaaxey-dev3.fa.ocs.oraclecloud.com:443/hcmRestApi/resources/11.13.18.05/absences/300000123456789",
+      "href": "https://iaaxey-dev3.fa.ocs.oraclecloud.com:443/hcmRestApi/resources/11.13.18.05/absences/300100123456789",
       "name": "absences",
-      "kind": "item",
-      "properties": {
-        "changeIndicator": "ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A65787000000001770400000001737200116A6176612E6C616E672E496E746567657212E2A0A4F781873802000149000576616C7565787200106A6176612E6C616E672E4E756D62657286AC951D0B94E08B02000078700000000178"
-      }
+      "kind": "item"
     }
   ]
 }
@@ -1679,9 +1978,9 @@ START (shape1)
 {
   "title": "Bad Request",
   "status": 400,
-  "detail": "Invalid absence type provided",
-  "o:errorCode": "VALIDATION_ERROR",
-  "o:errorPath": "absenceType"
+  "detail": "Invalid absence type code: Sick Leave",
+  "o:errorCode": "INVALID_ABSENCE_TYPE",
+  "o:errorPath": "/absences"
 }
 ```
 
@@ -1691,7 +1990,8 @@ START (shape1)
 {
   "title": "Unauthorized",
   "status": 401,
-  "detail": "Authentication failed"
+  "detail": "Authentication failed",
+  "o:errorCode": "UNAUTHORIZED"
 }
 ```
 
@@ -1701,637 +2001,423 @@ START (shape1)
 {
   "title": "Internal Server Error",
   "status": 500,
-  "detail": "An unexpected error occurred while processing the request"
+  "detail": "An internal error occurred while processing the request",
+  "o:errorCode": "INTERNAL_ERROR"
 }
 ```
 
-#### Return Path 3: Error Response - GZIP (shape48)
+#### Operation: Email w Attachment (af07502a-fafd-4976-a691-45d51a33b549)
 
-**Return Label:** "Error Response"  
-**Return Shape ID:** shape48  
-**HTTP Status Code:** 400 (client error) or 500 (server error)  
-**Decision Conditions Leading to Return:**
-- shape2 (HTTP Status 20 check): meta.base.applicationstatuscode does NOT match "20*" → FALSE path
-- shape44 (Check Response Content Type): dynamicdocument.DDP_RespHeader equals "gzip" → TRUE path
+**System:** Office 365 Email (SMTP)  
+**Protocol:** SMTP over TLS  
+**Server:** smtp-mail.outlook.com:587  
+**Authentication:** SMTP AUTH
 
-**Populated Response Fields:**
+**Email Content:**
 
-| Field Name | Field Path | Source | Populated By | Value Origin |
-|---|---|---|---|---|
-| status | leaveResponse/Object/status | static (map default) | shape47 (Map) | Default value: "failure" |
-| message | leaveResponse/Object/message | process_property | shape46 → shape47 (Map) | process.DPP_ErrorMessage (from meta.base.applicationstatusmessage, after GZIP decompression) |
-| success | leaveResponse/Object/success | static (map default) | shape47 (Map) | Default value: "false" |
+**From:** Boomi.Dev.failures@al-ghurair.com  
+**To:** BoomiIntegrationTeam@al-ghurair.com  
+**Subject:** DEV Failure : [AtomName] ([ProcessName]) has errors to report
 
-**Response JSON Example:**
+**Body (HTML):**
 
-```json
-{
-  "leaveResponse": {
-    "status": "failure",
-    "message": "400 Bad Request - Invalid absence type (decompressed from GZIP)",
-    "success": "false"
-  }
-}
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html" charset="us-ascii" />
+    <meta name="viewport" content="width=device-width" />
+  </head>
+  <body>
+    <pre>
+      <font color="black">
+        <h1 style="font-size:15px;"><u>Execution Details:</u></h1>
+        <table border="1">
+          <tr>
+            <th scope="row"><b><font size="2">Process Name</font></b></th>
+            <td>HCM_Leave Create</td>
+          </tr>
+          <tr>
+            <th scope="row"><b><font size="2">Environment</font></b></th>
+            <td>DEV</td>
+          </tr>
+          <tr>
+            <th scope="row"><b><font size="2">Execution ID</font></b></th>
+            <td>execution-abc-123-xyz</td>
+          </tr>
+          <tr>
+            <th scope="row"><b><font size="2">Error Details</font></b></th>
+            <td>Connection timeout to Oracle Fusion HCM API</td>
+          </tr>
+        </table>
+      </font>
+    </pre>
+    <text>P.S: This is system generated email.</text>
+  </body>
+</html>
 ```
 
-#### Return Path 5: Error Response - Catch Exception (shape43)
+**Attachment:**
+- **Filename:** HCM_Leave Create_2024-03-24T10:30:00.123Z.txt
+- **Content:** Original request payload (JSON)
 
-**Return Label:** "Error Response"  
-**Return Shape ID:** shape43  
-**HTTP Status Code:** 500 (internal server error)  
-**Decision Conditions Leading to Return:**
-- shape17 (Try/Catch): Exception caught in Try block → Catch path
-- shape20 (Branch): Path 2 executed
+**SMTP Response (Success):**
+- Status: 250 OK (email accepted)
 
-**Populated Response Fields:**
+**SMTP Response (Error):**
+- Status: 550 (mailbox unavailable) or other SMTP error codes
 
-| Field Name | Field Path | Source | Populated By | Value Origin |
-|---|---|---|---|---|
-| status | leaveResponse/Object/status | static (map default) | shape41 (Map) | Default value: "failure" |
-| message | leaveResponse/Object/message | process_property | shape19 → shape41 (Map) | process.DPP_ErrorMessage (from meta.base.catcherrorsmessage) |
-| success | leaveResponse/Object/success | static (map default) | shape41 (Map) | Default value: "false" |
+#### Operation: Email W/O Attachment (15a72a21-9b57-49a1-a8ed-d70367146644)
 
-**Response JSON Example:**
+**System:** Office 365 Email (SMTP)  
+**Protocol:** SMTP over TLS  
+**Server:** smtp-mail.outlook.com:587  
+**Authentication:** SMTP AUTH
 
-```json
-{
-  "leaveResponse": {
-    "status": "failure",
-    "message": "Error in Map: Leave Create Map - Invalid field mapping",
-    "success": "false"
-  }
-}
-```
+**Email Content:** Same as "Email w Attachment" but without attachment file
 
-**Note:** This path also triggers subprocess email notification (shape21 - Path 1 of branch), but subprocess does not return data to main process.
-
-### HTTP Status Code Summary
-
-| Return Path | Shape ID | HTTP Status | Success/Error | Trigger Condition |
-|---|---|---|---|---|
-| Success Response | shape35 | 200 | Success | HTTP status 20* |
-| Error Response (Not GZIP) | shape36 | 400/500 | Error | HTTP status NOT 20* AND Content-Encoding NOT gzip |
-| Error Response (GZIP) | shape48 | 400/500 | Error | HTTP status NOT 20* AND Content-Encoding is gzip |
-| Error Response (Catch) | shape43 | 500 | Error | Exception in Try block |
+**SMTP Response:** Same as "Email w Attachment"
 
 ---
 
-## 16. Field Mapping Analysis
+## 19. Function Exposure Decision Table
 
-### Request Field Mapping (D365 → Oracle Fusion)
+### Process Layer Function Exposure
 
-**Source Profile:** febfa3e1-f719-4ee8-ba57-cdae34137ab3 (D365 Leave Create JSON Profile)  
-**Target Profile:** a94fa205-c740-40a5-9fda-3d018611135a (HCM Leave Create JSON Profile)  
-**Map:** c426b4d6-2aff-450e-b43b-59956c4dbc96 (Leave Create Map)
+**Process Name:** HCM Leave Create  
+**Business Domain:** Human Resources (HCM)  
+**Source System:** D365 (Dynamics 365)  
+**Target System:** Oracle Fusion HCM
 
-| Boomi Field Path (D365) | Boomi Field Name | Data Type | Required | Azure DTO Property | Oracle Fusion Field | Notes |
-|---|---|---|---|---|---|---|
-| Root/Object/employeeNumber | employeeNumber | number | Yes | EmployeeNumber | personNumber | Field name changed |
-| Root/Object/absenceType | absenceType | character | Yes | AbsenceType | absenceType | Direct mapping |
-| Root/Object/employer | employer | character | Yes | Employer | employer | Direct mapping |
-| Root/Object/startDate | startDate | character | Yes | StartDate | startDate | Direct mapping |
-| Root/Object/endDate | endDate | character | Yes | EndDate | endDate | Direct mapping |
-| Root/Object/absenceStatusCode | absenceStatusCode | character | Yes | AbsenceStatusCode | absenceStatusCd | Field name abbreviated |
-| Root/Object/approvalStatusCode | approvalStatusCode | character | Yes | ApprovalStatusCode | approvalStatusCd | Field name abbreviated |
-| Root/Object/startDateDuration | startDateDuration | number | Yes | StartDateDuration | startDateDuration | Direct mapping |
-| Root/Object/endDateDuration | endDateDuration | number | Yes | EndDateDuration | endDateDuration | Direct mapping |
-
-### Response Field Mapping (Oracle Fusion → D365)
-
-**Source Profile:** 316175c7-0e45-4869-9ac6-5f9d69882a62 (Oracle Fusion Leave Response JSON Profile)  
-**Target Profile:** f4ca3a70-114a-4601-bad8-44a3eb20e2c0 (Leave D365 Response)  
-**Map:** e4fd3f59-edb5-43a1-aeae-143b600a064e (Oracle Fusion Leave Response Map)
-
-| Boomi Field Path (Oracle Fusion) | Boomi Field Name | Data Type | Azure DTO Property | D365 Response Field | Notes |
-|---|---|---|---|---|---|
-| Root/Object/personAbsenceEntryId | personAbsenceEntryId | number | PersonAbsenceEntryId | personAbsenceEntryId | Direct mapping |
-| - | - | - | Status | status | Static value: "success" |
-| - | - | - | Message | message | Static value: "Data successfully sent to Oracle Fusion" |
-| - | - | - | Success | success | Static value: "true" |
-
-### Error Response Field Mapping
-
-**Source Profile:** 23d7a2e9-5cb0-4e9c-9e4b-3154834bad0d (Dummy FF Profile)  
-**Target Profile:** f4ca3a70-114a-4601-bad8-44a3eb20e2c0 (Leave D365 Response)  
-**Map:** f46b845a-7d75-41b5-b0ad-c41a6a8e9b12 (Leave Error Map)
-
-| Source | Source Type | Azure DTO Property | D365 Response Field | Notes |
-|---|---|---|---|---|
-| process.DPP_ErrorMessage | Process Property | Message | message | Error message from exception or HTTP error |
-| - | Static | Status | status | Static value: "failure" |
-| - | Static | Success | success | Static value: "false" |
-
----
-
-## 17. Critical Patterns Identified
-
-### Pattern 1: Try/Catch Error Handling
-
-**Location:** shape17 (main process)  
-**Pattern:** Wrap main business logic in Try/Catch, route errors to notification and error response
-
-**Implementation:**
-```
-Try/Catch (shape17)
-  ├─→ [Try Path]: Execute business logic (map, HTTP call, decision, response)
-  └─→ [Catch Path]: Handle errors (branch to email notification and error response)
-```
-
-**Business Rule:** Any exception in Try block triggers:
-1. Email notification to support team (with payload attachment)
-2. Error response to caller
-
-### Pattern 2: HTTP Status Code Routing
-
-**Location:** shape2 (Decision: HTTP Status 20 check)  
-**Pattern:** Check HTTP status code after API call, route to success or error path
-
-**Implementation:**
-```
-HTTP Operation (shape33)
-  ↓ Produces meta.base.applicationstatuscode
-Decision (shape2): Check if status is 20*
-  ├─→ TRUE (20*): Success path → Transform response → Return success
-  └─→ FALSE (not 20*): Error path → Extract error → Return error
-```
-
-**Business Rule:** Only 20x status codes are considered successful, all others are errors
-
-### Pattern 3: GZIP Response Handling
-
-**Location:** shape44 (Decision: Check Response Content Type)  
-**Pattern:** Check if HTTP response is GZIP compressed, decompress if needed before processing
-
-**Implementation:**
-```
-Decision (shape44): Check if Content-Encoding is "gzip"
-  ├─→ TRUE (GZIP): Decompress (shape45) → Extract error → Return error
-  └─→ FALSE (Not GZIP): Extract error directly → Return error
-```
-
-**Business Rule:** Oracle Fusion API may return GZIP compressed error responses, must decompress before extracting error message
-
-### Pattern 4: Dual Error Notification
-
-**Location:** shape20 (Branch in Catch path)  
-**Pattern:** On exception, both send email notification AND return error response
-
-**Implementation:**
-```
-Branch (shape20) - 2 paths execute in parallel:
-  ├─→ Path 1: Extract error → Send email notification (subprocess)
-  └─→ Path 2: Map error → Return error response
-```
-
-**Business Rule:** Errors trigger both user notification (email) and system response (API error response)
-
-### Pattern 5: Subprocess Email Notification
-
-**Location:** shape21 (ProcessCall to Office 365 Email subprocess)  
-**Pattern:** Reusable email notification subprocess with attachment support
-
-**Implementation:**
-```
-Subprocess: Office 365 Email
-  ├─→ Decision: Check if attachment needed (DPP_HasAttachment = "Y")
-  ├─→ TRUE: Build email with attachment → Send
-  └─→ FALSE: Build email without attachment → Send
-```
-
-**Business Rule:** Email notifications include execution details (process name, atom, execution ID, error message) and optional payload attachment
-
----
-
-## 18. System Layer Identification
-
-### Downstream Systems
-
-#### System 1: Oracle Fusion HCM
-
-**System Type:** Oracle Fusion Cloud HCM (Human Capital Management)  
-**Connection:** aa1fcb29-d146-4425-9ea6-b9698090f60e (Oracle Fusion)  
-**Base URL:** https://iaaxey-dev3.fa.ocs.oraclecloud.com:443  
-**Authentication:** Basic Auth (INTEGRATION.USER@al-ghurair.com)  
-**API Type:** REST API
-
-**Operations:**
-- **Leave Oracle Fusion Create** (6e8920fd-af5a-430b-a1d9-9fde7ac29a12)
-  - Method: POST
-  - Endpoint: /hcmRestApi/resources/11.13.18.05/absences
-  - Purpose: Create absence/leave record in Oracle Fusion HCM
-
-**System Layer Classification:** System API (unlocks data from Oracle Fusion HCM system of record)
-
-#### System 2: Office 365 Email (SMTP)
-
-**System Type:** Microsoft Office 365 Email Service  
-**Connection:** 00eae79b-2303-4215-8067-dcc299e42697 (Office 365 Email)  
-**SMTP Host:** smtp-mail.outlook.com  
-**SMTP Port:** 587  
-**Authentication:** SMTP AUTH with TLS (Boomi.Dev.failures@al-ghurair.com)  
-**API Type:** SMTP
-
-**Operations:**
-- **Email w Attachment** (af07502a-fafd-4976-a691-45d51a33b549)
-  - Purpose: Send email with attachment
-- **Email W/O Attachment** (15a72a21-9b57-49a1-a8ed-d70367146644)
-  - Purpose: Send email without attachment
-
-**System Layer Classification:** Notification Service (not a System API, but a support service)
-
-### Process Layer Classification
-
-**Process Name:** HCM_Leave Create  
-**Layer:** Process Layer API  
-**Business Domain:** Human Resource (HCM)  
-**Purpose:** Orchestrate leave creation from D365 to Oracle Fusion HCM
-
-**Responsibilities:**
-1. Accept leave request from D365 (Experience Layer or another Process Layer)
-2. Transform D365 format to Oracle Fusion format
-3. Call Oracle Fusion HCM System API to create leave
-4. Handle success/error responses
-5. Return standardized response to caller
-6. Send error notifications to support team
-
-**API Led Architecture Classification:**
-- **Layer:** Process Layer
-- **Orchestrates:** Oracle Fusion HCM System API
-- **Business Logic:** Leave creation orchestration, error handling, notification
-- **Data Transformation:** D365 format ↔ Oracle Fusion format
-
----
-
-## 19. Validation Checklist
-
-### Data Dependencies
-- ✅ All property WRITES identified (Step 2)
-- ✅ All property READS identified (Step 3)
-- ✅ Dependency graph built (Step 4)
-- ✅ Execution order satisfies all dependencies (no read-before-write) (Step 9)
-
-### Decision Analysis
-- ✅ ALL decision shapes inventoried (2 decisions: shape2, shape44)
-- ✅ BOTH TRUE and FALSE paths traced to termination (Step 7)
-- ✅ Pattern type identified for each decision (Error Check, Conditional Processing)
-- ✅ Early exits identified and documented (All paths terminate at Return Documents)
-- ✅ Convergence points identified (None - all paths terminate separately)
-- ✅ Decision data source analysis complete (Step 7)
-- ✅ Decision type classification complete (Step 7)
-- ✅ Actual execution order verified (Step 7)
-
-### Branch Analysis
-- ✅ Each branch classified as parallel or sequential (shape20: SEQUENTIAL → PARALLEL correction)
-- ✅ API call detection performed (No API calls in branch paths)
-- ✅ Dependency graph built for branch paths (Step 8)
-- ✅ Topological sort applied (Step 8)
-- ✅ Path termination traced (Step 8)
-- ✅ Convergence points identified (None)
-- ✅ Execution continuation point determined (None - paths terminate)
-
-### Sequence Diagram
-- ✅ Format follows required structure (Operation → Decision → Operation)
-- ✅ Each operation shows READS and WRITES
-- ✅ Decisions show both TRUE and FALSE paths
-- ✅ Early exits marked [EARLY EXIT]
-- ✅ Subprocess internal flows documented
-- ✅ Sequence diagram references all prior steps (Steps 4, 5, 7, 8, 9)
-
-### Subprocess Analysis
-- ✅ ALL subprocesses analyzed (1 subprocess: Office 365 Email)
-- ✅ Internal flow traced (Step 7a)
-- ✅ Return paths identified (Success: Stop continue=true, Error: Exception)
-- ✅ Properties written by subprocess documented (process.DPP_MailBody - internal)
-- ✅ Properties read by subprocess from main process documented (Step 7a)
-
-### Property Extraction Completeness
-- ✅ All property patterns searched (${}, %%, {})
-- ✅ Message parameters checked for process properties
-- ✅ Operation headers/path parameters checked
-- ✅ Decision track properties identified (meta.base.applicationstatuscode, dynamicdocument.DDP_RespHeader)
-- ✅ Document properties that read other properties identified
-
-### Input/Output Structure Analysis (CONTRACT VERIFICATION)
-- ✅ Entry point operation identified (8f709c2b-e63f-4d5f-9374-2932ed70415d)
-- ✅ Request profile identified and loaded (febfa3e1-f719-4ee8-ba57-cdae34137ab3)
-- ✅ Request profile structure analyzed (JSON)
-- ✅ Array vs single object detected (Single object)
-- ✅ Array cardinality documented (N/A - not array)
-- ✅ ALL request fields extracted (9 fields)
-- ✅ Request field paths documented (Step 1a)
-- ✅ Request field mapping table generated (Section 16)
-- ✅ Response profile identified and loaded (f4ca3a70-114a-4601-bad8-44a3eb20e2c0)
-- ✅ Response profile structure analyzed (JSON)
-- ✅ ALL response fields extracted (4 fields)
-- ✅ Response field mapping table generated (Section 16)
-- ✅ Document processing behavior determined (Single document processing)
-- ✅ Input/Output structure documented in Phase 1 document (Sections 2, 3)
-
-### HTTP Status Codes and Return Path Responses
-- ✅ Section 14 (HTTP Status Codes and Return Path Responses - Step 1e) present
-- ✅ All return paths documented with HTTP status codes (5 return paths)
-- ✅ Response JSON examples provided for each return path
-- ✅ Populated fields documented for each return path (source and populated by)
-- ✅ Decision conditions leading to each return documented
-- ✅ Error codes and success codes documented for each return path
-- ✅ Downstream operation HTTP status codes documented (shape33: 200/201 success, 400/401/404/500 error)
-- ✅ Error handling strategy documented (returnErrors=true, returnResponses=true)
-
-### Request/Response JSON Examples
-- ✅ Section 15 (Request/Response JSON Examples) present
-- ✅ Process Layer entry point request JSON example provided
-- ✅ Process Layer response JSON examples provided (all 5 return paths)
-- ✅ Downstream System Layer request JSON examples provided (Oracle Fusion API)
-- ✅ Downstream System Layer response JSON examples provided (success and error scenarios)
-
-### Map Analysis
-- ✅ ALL map files identified and loaded (3 maps)
-- ✅ HTTP request maps identified (c426b4d6-2aff-450e-b43b-59956c4dbc96)
-- ✅ Field mappings extracted from each map (Step 1d)
-- ✅ Profile vs map field name discrepancies documented (employeeNumber→personNumber, etc.)
-- ✅ Map field names marked as AUTHORITATIVE for HTTP requests
-- ✅ Scripting functions analyzed (None in this process)
-- ✅ Static values identified and documented (Map defaults: status, message, success)
-- ✅ Process property mappings documented (DPP_ErrorMessage used in error map)
-- ✅ Map Analysis documented in Phase 1 document (Section 5)
-
-### Edge Cases
-- ✅ Nested branches/decisions analyzed (None)
-- ✅ Loops identified (None)
-- ✅ Property chains traced (Step 4)
-- ✅ Circular dependencies detected and resolved (None)
-- ✅ Try/Catch error paths documented (shape17, subprocess shape2)
-
----
-
-## 20. Self-Check Questions (FINAL VALIDATION)
-
-### Extraction Completeness
-
-1. ❓ **Did I analyze ALL map files?** YES
-   - Analyzed 3 maps: c426b4d6-2aff-450e-b43b-59956c4dbc96, e4fd3f59-edb5-43a1-aeae-143b600a064e, f46b845a-7d75-41b5-b0ad-c41a6a8e9b12
-
-2. ❓ **Did I identify HTTP request maps?** YES
-   - Map c426b4d6-2aff-450e-b43b-59956c4dbc96 transforms D365 request to Oracle Fusion request
-
-3. ❓ **Did I extract actual field names from maps?** YES
-   - Documented in Section 5 (Map Analysis)
-
-4. ❓ **Did I compare profile field names vs map field names?** YES
-   - employeeNumber → personNumber
-   - absenceStatusCode → absenceStatusCd
-   - approvalStatusCode → approvalStatusCd
-
-5. ❓ **Did I mark map field names as AUTHORITATIVE?** YES
-   - Documented in Section 5
-
-6. ❓ **Did I analyze scripting functions in maps?** YES
-   - Map f46b845a-7d75-41b5-b0ad-c41a6a8e9b12 uses PropertyGet function (no scripting)
-   - No scripting functions in other maps
-
-7. ❓ **Did I extract element names from maps?** N/A
-   - This is REST API (not SOAP), no SOAP elements
-
-8. ❓ **Did I verify namespace prefixes from message shapes?** N/A
-   - This is REST API (not SOAP), no SOAP namespaces
-
-9. ❓ **Did I extract HTTP status codes for all return paths?** YES
-   - Documented in Section 14 (5 return paths with status codes)
-
-10. ❓ **Did I document response JSON for each return path?** YES
-    - Documented in Sections 14 and 15
-
-11. ❓ **Did I document populated fields for each return path?** YES
-    - Documented in Section 14 with source and populated by
-
-12. ❓ **Did I extract HTTP status codes for downstream operations?** YES
-    - shape33: Expected 200/201, Error 400/401/404/500
-
-13. ❓ **Did I create request/response JSON examples?** YES
-    - Documented in Section 15
-
-14. ❓ **Did I verify business logic FIRST before following dragpoints?** YES
-    - Documented in Step 0 of Section 12 (Execution Order)
-
-15. ❓ **Did I identify what each operation does and what it produces?** YES
-    - Documented in Section 12, Step 0
-
-16. ❓ **Did I identify which operations MUST execute first based on business logic?** YES
-    - shape38 MUST execute FIRST (produces properties)
-    - shape33 MUST execute BEFORE shape2 (produces status code)
-
-17. ❓ **Did I check data dependencies FIRST before following dragpoints?** YES
-    - Documented in Step 4, verified in Step 9
-
-18. ❓ **Did I use operation response analysis from Step 1c?** YES
-    - Referenced in Step 9
-
-19. ❓ **Did I use decision analysis from Step 7?** YES
-    - Referenced in Step 9
-
-20. ❓ **Did I use dependency graph from Step 4?** YES
-    - Referenced in Step 9
-
-21. ❓ **Did I use branch analysis from Step 8?** YES
-    - Referenced in Step 9
-
-22. ❓ **Did I verify all property reads happen after property writes?** YES
-    - Verified in Step 9
-
-23. ❓ **Did I follow topological sort order for sequential branches?** YES
-    - Branch shape20 analyzed, but corrected to PARALLEL (paths terminate independently)
-
-### Mandatory Sections Present
-
-- ✅ Section 1: Operations Inventory
-- ✅ Section 2: Input Structure Analysis (Step 1a)
-- ✅ Section 3: Response Structure Analysis (Step 1b)
-- ✅ Section 4: Operation Response Analysis (Step 1c)
-- ✅ Section 5: Map Analysis (Step 1d)
-- ✅ Section 6: Process Properties Analysis (Steps 2-3)
-- ✅ Section 7: Data Dependency Graph (Step 4)
-- ✅ Section 8: Control Flow Graph (Step 5)
-- ✅ Section 9: Decision Shape Analysis (Step 7)
-- ✅ Section 10: Branch Shape Analysis (Step 8)
-- ✅ Section 11: Subprocess Analysis (Step 7a)
-- ✅ Section 12: Execution Order (Step 9)
-- ✅ Section 13: Sequence Diagram (Step 10)
-- ✅ Section 14: HTTP Status Codes and Return Path Responses (Step 1e)
-- ✅ Section 15: Request/Response JSON Examples
-- ✅ Section 16: Field Mapping Analysis
-- ✅ Section 17: Critical Patterns Identified
-- ✅ Section 18: System Layer Identification
-- ✅ Section 19: Validation Checklist
-- ✅ Section 20: Self-Check Questions
-
----
-
-## 21. Function Exposure Decision Table
-
-### Process Layer Function Exposure Analysis
-
-**Process Name:** HCM_Leave Create  
-**Business Domain:** Human Resource (HCM)  
-**Business Capability:** Leave/Absence Management
-
-### Should This Process Be Exposed as a Process Layer Function?
-
-**Analysis:**
+**Should this process be exposed as a Process Layer Azure Function?**
 
 | Criteria | Evaluation | Score |
 |---|---|---|
-| **Orchestrates multiple System APIs** | No - Only calls Oracle Fusion HCM API (single system) | ❌ |
-| **Contains business logic** | Yes - Error handling, response transformation, notification | ✅ |
-| **Transforms data between systems** | Yes - D365 format → Oracle Fusion format | ✅ |
-| **Reusable across multiple consumers** | Yes - Can be called by D365, other HCM processes, or Experience APIs | ✅ |
-| **Encapsulates business domain logic** | Yes - Leave creation business rules | ✅ |
-| **Provides single view of entity** | No - Does not aggregate data from multiple systems | ❌ |
+| **Business Logic Orchestration** | ✅ YES - Orchestrates leave creation between D365 and Oracle HCM | +1 |
+| **Multiple System Integration** | ✅ YES - Integrates D365 (source) with Oracle HCM (target) | +1 |
+| **Data Transformation** | ✅ YES - Transforms D365 leave format to Oracle HCM format | +1 |
+| **Error Handling** | ✅ YES - Comprehensive error handling with notifications | +1 |
+| **Business Domain Entity** | ✅ YES - Leave/Absence is a core HR business entity | +1 |
+| **Reusability** | ✅ YES - Leave creation is reusable across HR processes | +1 |
+| **Single System CRUD** | ❌ NO - Not a simple CRUD operation | 0 |
+| **Pure Data Passthrough** | ❌ NO - Includes transformation and error handling | 0 |
 
-**Decision:** ✅ **YES - EXPOSE AS PROCESS LAYER FUNCTION**
+**Total Score:** 6/6 (Strong candidate for Process Layer)
+
+**DECISION:** ✅ **EXPOSE AS PROCESS LAYER FUNCTION**
+
+**Function Name:** `CreateLeaveEntry`  
+**HTTP Trigger:** POST /api/hcm/leave/create  
+**Layer:** Process Layer
 
 **Reasoning:**
-1. **Business Logic Encapsulation:** Contains error handling, response transformation, and notification logic
-2. **Reusability:** Can be called by multiple consumers (D365, other HCM processes, Experience APIs)
-3. **Domain Boundary:** Encapsulates HCM leave creation business capability
-4. **Transformation Logic:** Transforms between D365 and Oracle Fusion formats
-5. **Single System Orchestration:** While it only calls one System API, it adds value through error handling and standardized response format
+1. **Business Orchestration:** Process orchestrates leave creation workflow between D365 and Oracle HCM
+2. **Multi-System Integration:** Integrates two systems (D365 as source, Oracle HCM as target)
+3. **Data Transformation:** Transforms leave data format (field name changes, data mapping)
+4. **Error Handling:** Comprehensive error handling with email notifications
+5. **Business Entity:** Leave/Absence is a core HR business domain entity
+6. **Reusability:** Leave creation logic can be reused by multiple HR processes
 
-**Function Signature:**
+**Process Layer Responsibilities:**
+- Accept leave request from D365 (or other Experience Layer)
+- Transform to Oracle HCM format
+- Call Oracle HCM System Layer API
+- Handle errors and send notifications
+- Return standardized response
 
-```
-POST /api/hcm/leave/create
-Content-Type: application/json
+### System Layer Function Requirements
 
-Request:
-{
-  "employeeNumber": 9000604,
-  "absenceType": "Sick Leave",
-  "employer": "Al Ghurair Investment LLC",
-  "startDate": "2024-03-24",
-  "endDate": "2024-03-25",
-  "absenceStatusCode": "SUBMITTED",
-  "approvalStatusCode": "APPROVED",
-  "startDateDuration": 1,
-  "endDateDuration": 1
-}
+**System API 1: Oracle Fusion HCM Leave API**
 
-Response (Success - 200):
-{
-  "leaveResponse": {
-    "status": "success",
-    "message": "Data successfully sent to Oracle Fusion",
-    "personAbsenceEntryId": 300000123456789,
-    "success": "true"
-  }
-}
-
-Response (Error - 400/500):
-{
-  "leaveResponse": {
-    "status": "failure",
-    "message": "Error message details",
-    "success": "false"
-  }
-}
-```
-
-### Alternative: Should This Be a System Layer Function Instead?
-
-**Analysis:**
+**Should Oracle HCM operation be exposed as System Layer function?**
 
 | Criteria | Evaluation | Score |
 |---|---|---|
-| **Directly wraps single system of record** | Yes - Wraps Oracle Fusion HCM API | ✅ |
-| **No orchestration logic** | No - Contains error handling and notification | ❌ |
-| **Minimal transformation** | No - Transforms D365 format to Oracle Fusion format | ❌ |
-| **1:1 mapping to system API** | No - Adds error handling and notification logic | ❌ |
+| **Direct System Access** | ✅ YES - Direct HTTP call to Oracle HCM REST API | +1 |
+| **Single System Operation** | ✅ YES - Only interacts with Oracle HCM | +1 |
+| **CRUD Operation** | ✅ YES - Creates absence entry in Oracle HCM | +1 |
+| **Reusability** | ✅ YES - Can be reused by other HR processes | +1 |
+| **System Abstraction** | ✅ YES - Abstracts Oracle HCM API complexity | +1 |
 
-**Decision:** ❌ **NO - NOT A SYSTEM LAYER FUNCTION**
+**Total Score:** 5/5 (Strong candidate for System Layer)
+
+**DECISION:** ✅ **EXPOSE AS SYSTEM LAYER FUNCTION**
+
+**Function Name:** `CreateOracleHcmAbsence`  
+**HTTP Trigger:** POST /api/system/oracle-hcm/absences  
+**Layer:** System Layer
 
 **Reasoning:**
-- Contains business logic beyond simple system wrapping
-- Adds error notification capability
-- Transforms between different formats (not just wrapping Oracle API)
+1. **System Abstraction:** Abstracts Oracle Fusion HCM REST API
+2. **Single Responsibility:** Only creates absence entries in Oracle HCM
+3. **Reusability:** Can be called by multiple Process Layer functions (leave create, leave update, etc.)
+4. **System Insulation:** Insulates callers from Oracle HCM API changes
 
-### Recommended Architecture
+**System API 2: Office 365 Email API**
 
-**Layer:** Process Layer  
-**Function Name:** CreateLeave  
-**Namespace:** HCM.Leave  
-**Full Path:** /api/hcm/leave/create
+**Should email operations be exposed as System Layer functions?**
 
-**Dependencies:**
-- **System Layer:** Oracle Fusion HCM System API (to be created separately)
-  - Function: CreateAbsence
-  - Endpoint: POST /api/systems/oracle-fusion-hcm/absences
-  - Purpose: Direct wrapper for Oracle Fusion HCM REST API
+| Criteria | Evaluation | Score |
+|---|---|---|
+| **Direct System Access** | ✅ YES - Direct SMTP call to Office 365 | +1 |
+| **Single System Operation** | ✅ YES - Only interacts with Office 365 SMTP | +1 |
+| **Reusability** | ✅ YES - Email notification is reusable | +1 |
+| **Already Exists** | ✅ YES - Common subprocess used across processes | +1 |
 
-**Refactoring Recommendation:**
+**Total Score:** 4/4 (Strong candidate for System Layer)
 
-**Current Architecture:**
-```
-Process Layer (HCM_Leave Create)
-  └─→ Directly calls Oracle Fusion HCM API
-```
+**DECISION:** ✅ **EXPOSE AS SYSTEM LAYER FUNCTION** (or use existing email service)
 
-**Recommended Architecture:**
-```
-Process Layer (HCM.Leave.CreateLeave)
-  └─→ System Layer (OracleFusionHCM.Absence.CreateAbsence)
-      └─→ Oracle Fusion HCM API
-```
+**Function Name:** `SendEmailNotification`  
+**HTTP Trigger:** POST /api/system/email/send  
+**Layer:** System Layer (or Common Service)
 
-**Benefits:**
-1. **Separation of Concerns:** System Layer handles Oracle Fusion API specifics, Process Layer handles business logic
-2. **Reusability:** System Layer function can be reused by other Process Layer functions
-3. **Maintainability:** Changes to Oracle Fusion API only affect System Layer
-4. **Testability:** System Layer can be mocked for Process Layer testing
+**Reasoning:**
+1. **Common Service:** Email notification is a common service used across many processes
+2. **Reusability:** Can be called by any Process Layer function needing email notifications
+3. **System Abstraction:** Abstracts Office 365 SMTP complexity
 
-**Implementation Plan:**
-1. Create System Layer function: OracleFusionHCM.Absence.CreateAbsence
-2. Refactor Process Layer function: HCM.Leave.CreateLeave to call System Layer
-3. Move Oracle Fusion API connection and operation to System Layer
-4. Keep error handling and notification logic in Process Layer
+**Alternative:** Use existing Azure Communication Services or SendGrid integration
+
+### Function Exposure Summary
+
+**Process Layer Functions:** 1
+- CreateLeaveEntry (HCM Leave Create)
+
+**System Layer Functions:** 2
+- CreateOracleHcmAbsence (Oracle Fusion HCM)
+- SendEmailNotification (Office 365 Email - or use existing service)
+
+**Function Explosion Prevention:**
+- ✅ Only expose functions that provide business value
+- ✅ System Layer functions are reusable across multiple Process Layer functions
+- ✅ Email notification can be a shared service (not process-specific)
 
 ---
 
-## 22. Phase 1 Extraction Complete
+## 20. Edge Cases and Special Handling
 
-### Summary
+### Edge Case 1: GZIP Compressed Error Responses
 
-**Process Analyzed:** HCM_Leave Create  
-**Total Shapes:** 14 main process shapes + 12 subprocess shapes  
-**Total Operations:** 4 operations (1 entry point, 1 HTTP, 2 email)  
-**Total Decisions:** 2 decisions (HTTP status check, GZIP check) + 1 subprocess decision (attachment check)  
-**Total Branches:** 1 branch (error handling)  
-**Total Subprocesses:** 1 subprocess (Office 365 Email)  
-**Total Maps:** 3 maps (request transform, success response, error response)  
-**Total Profiles:** 5 profiles (request, response, Oracle response, error, dummy)
+**Detection:** Decision shape44 checks Content-Encoding header for "gzip"
 
-### Key Findings
+**Handling:**
+- If GZIP detected → shape45 (data process) decompresses using Groovy script
+- Groovy script: `new GZIPInputStream(dataContext.getStream(it))`
+- After decompression → Extract error message → Return error response
 
-1. **Process Layer Function:** Should be exposed as Process Layer API
-2. **Single System Orchestration:** Calls Oracle Fusion HCM API only
-3. **Error Handling:** Comprehensive error handling with Try/Catch, status checks, and email notifications
-4. **GZIP Support:** Handles GZIP compressed error responses from Oracle Fusion
-5. **Dual Error Notification:** Sends email to support team AND returns error response to caller
-6. **No SOAP:** This is a REST API integration (not SOAP)
+**Azure Function Implementation:**
+- Check response Content-Encoding header
+- If "gzip" → Decompress using GZipStream
+- Extract error message from decompressed content
+
+### Edge Case 2: Try/Catch with Dual Error Response
+
+**Detection:** Branch shape20 in Catch path with 2 sequential paths
+
+**Handling:**
+- Path 1: Send email notification (subprocess)
+- Path 2: Return error response to caller
+- Sequential execution ensures notification sent before return
+
+**Azure Function Implementation:**
+- Catch block: Try to send email notification (best effort)
+- Always return error response to caller
+- Log if email notification fails
+
+### Edge Case 3: Subprocess Without Explicit Return Path Mapping
+
+**Detection:** Subprocess shape21 has no return path mapping in main process
+
+**Handling:**
+- Subprocess terminates with Stop (continue=true)
+- Main process does not continue after subprocess (no dragpoints from shape21)
+- Branch path 2 handles the actual return to caller
+
+**Azure Function Implementation:**
+- Call email service asynchronously or synchronously
+- Do not wait for email response (fire-and-forget or log errors)
+- Continue to return error response to caller
+
+### Edge Case 4: Multiple Error Return Shapes
+
+**Detection:** 3 different error return shapes (shape36, shape43, shape48)
+
+**Handling:**
+- shape36: HTTP error (non-GZIP)
+- shape43: Try/Catch exception
+- shape48: GZIP decompression error
+- All use same error response profile but different HTTP status codes
+
+**Azure Function Implementation:**
+- Standardize error response format
+- Use appropriate HTTP status codes:
+  - 400: Bad Request (HTTP errors from Oracle)
+  - 500: Internal Server Error (exceptions, connection errors)
+- Include error message from Oracle or exception
+
+---
+
+## 21. Pre-Phase 2 Validation Gate
+
+### Phase 1 Completion Checklist
+
+**Input/Output Analysis:**
+- [x] Step 1a (Input Structure Analysis) - COMPLETE and DOCUMENTED (Section 2)
+- [x] Step 1b (Response Structure Analysis) - COMPLETE and DOCUMENTED (Section 3)
+- [x] Step 1c (Operation Response Analysis) - COMPLETE and DOCUMENTED (Section 4)
+- [x] Step 1d (Map Analysis) - COMPLETE and DOCUMENTED (Section 5)
+- [x] Step 1e (HTTP Status Codes and Return Path Responses) - COMPLETE and DOCUMENTED (Section 6)
+
+**Process Flow Analysis:**
+- [x] Step 2 (Property Writes) - COMPLETE and DOCUMENTED (Section 7)
+- [x] Step 3 (Property Reads) - COMPLETE and DOCUMENTED (Section 7)
+- [x] Step 4 (Data Dependency Graph) - COMPLETE and DOCUMENTED (Section 8)
+- [x] Step 5 (Control Flow Graph) - COMPLETE and DOCUMENTED (Section 9)
+- [x] Step 6 (Reverse Flow Mapping) - COMPLETE and DOCUMENTED (Section 9)
+- [x] Step 7 (Decision Analysis) - COMPLETE and DOCUMENTED (Section 10)
+- [x] Step 7a (Subprocess Analysis) - COMPLETE and DOCUMENTED (Section 14)
+- [x] Step 8 (Branch Analysis) - COMPLETE and DOCUMENTED (Section 11)
+- [x] Step 9 (Execution Order) - COMPLETE and DOCUMENTED (Section 12)
+- [x] Step 10 (Sequence Diagram) - COMPLETE and DOCUMENTED (Section 13)
+
+**Contract Verification:**
+- [x] Section 2 (Input Structure Analysis) - COMPLETE
+- [x] Section 3 (Response Structure Analysis) - COMPLETE
+- [x] Section 5 (Map Analysis) - COMPLETE
+- [x] Section 6 (HTTP Status Codes and Return Path Responses) - COMPLETE
+- [x] Section 18 (Request/Response JSON Examples) - COMPLETE
+
+**Self-Check Questions:**
+
+1. ❓ Did I analyze ALL map files? **YES** (3 maps analyzed)
+2. ❓ Did I extract actual field names from maps? **YES** (Section 5)
+3. ❓ Did I compare profile field names vs map field names? **YES** (Section 5)
+4. ❓ Did I mark map field names as AUTHORITATIVE? **YES** (Section 5)
+5. ❓ Did I analyze scripting functions in maps? **YES** (PropertyGet function - Section 5)
+6. ❓ Did I extract HTTP status codes for all return paths? **YES** (4 return paths - Section 6)
+7. ❓ Did I document response JSON for each return path? **YES** (Section 6)
+8. ❓ Did I document populated fields for each return path? **YES** (Section 6)
+9. ❓ Did I extract HTTP status codes for downstream operations? **YES** (Section 6)
+10. ❓ Did I create request/response JSON examples? **YES** (Section 18)
+
+**ALL SELF-CHECK ANSWERS: YES**
+
+### Validation Status
+
+✅ **PHASE 1 EXTRACTION COMPLETE**
+
+**All mandatory sections present:**
+- ✅ Operations Inventory (Section 1)
+- ✅ Input Structure Analysis (Section 2)
+- ✅ Response Structure Analysis (Section 3)
+- ✅ Operation Response Analysis (Section 4)
+- ✅ Map Analysis (Section 5)
+- ✅ HTTP Status Codes and Return Paths (Section 6)
+- ✅ Process Properties Analysis (Section 7)
+- ✅ Data Dependency Graph (Section 8)
+- ✅ Control Flow Graph (Section 9)
+- ✅ Decision Shape Analysis (Section 10)
+- ✅ Branch Shape Analysis (Section 11)
+- ✅ Execution Order (Section 12)
+- ✅ Sequence Diagram (Section 13)
+- ✅ Subprocess Analysis (Section 14)
+- ✅ Critical Patterns (Section 15)
+- ✅ Validation Checklist (Section 16)
+- ✅ System Layer Identification (Section 17)
+- ✅ Request/Response JSON Examples (Section 18)
+- ✅ Function Exposure Decision Table (Section 19)
+
+**All self-check questions answered: YES**
+
+**Sequence diagram references all prior steps: YES**
+
+**Ready to proceed to Phase 2: ✅ YES**
+
+---
+
+## 22. Summary and Key Findings
+
+### Process Overview
+
+**Business Purpose:** Synchronize leave/absence data from D365 to Oracle Fusion HCM
+
+**Integration Pattern:** Point-to-point integration with error notification
+
+**Key Operations:**
+1. Transform D365 leave request to Oracle HCM format
+2. POST leave data to Oracle Fusion HCM REST API
+3. Handle success/error responses
+4. Send email notification on errors
+
+### Critical Dependencies
+
+1. **URL Configuration → HTTP Operation**
+   - shape8 sets URL → shape33 uses URL for HTTP request
+
+2. **HTTP Operation → Status Check**
+   - shape33 executes HTTP POST → shape2 checks status code
+
+3. **Error Capture → Error Response**
+   - Error shapes write DPP_ErrorMessage → Error maps read DPP_ErrorMessage
+
+4. **Branch Sequential Execution**
+   - Path 1 writes DPP_ErrorMessage → Path 2 reads DPP_ErrorMessage
+
+### Execution Paths
+
+**Path 1: Success (HTTP 20*)**
+```
+Input → Map → URL setup → HTTP POST → Status check (TRUE) → Success map → Return 200
+```
+
+**Path 2: HTTP Error (non-20*, not GZIP)**
+```
+Input → Map → URL setup → HTTP POST → Status check (FALSE) → Content check (FALSE) → Error capture → Error map → Return 400
+```
+
+**Path 3: HTTP Error (non-20*, GZIP)**
+```
+Input → Map → URL setup → HTTP POST → Status check (FALSE) → Content check (TRUE) → GZIP decompress → Error capture → Error map → Return 400
+```
+
+**Path 4: Exception (Try/Catch)**
+```
+Input → Exception → Branch (sequential) → Path 1: Error notification (email) → Path 2: Error map → Return 500
+```
+
+### Recommended Azure Functions
+
+**Process Layer:**
+- **Function:** CreateLeaveEntry
+- **Trigger:** HTTP POST
+- **Route:** /api/hcm/leave/create
+- **Purpose:** Orchestrate leave creation between D365 and Oracle HCM
+
+**System Layer:**
+- **Function 1:** CreateOracleHcmAbsence
+- **Trigger:** HTTP POST
+- **Route:** /api/system/oracle-hcm/absences
+- **Purpose:** Create absence entry in Oracle Fusion HCM
+
+- **Function 2:** SendEmailNotification (or use existing service)
+- **Trigger:** HTTP POST
+- **Route:** /api/system/email/send
+- **Purpose:** Send email notifications via Office 365
 
 ### Next Steps
 
-**Phase 1 Complete:** ✅ All mandatory sections documented  
-**Ready for Phase 2:** ✅ Code generation can proceed
-
-**Recommended Actions:**
-1. Create System Layer function for Oracle Fusion HCM API
-2. Create Process Layer function for HCM Leave Create
-3. Implement error handling and notification logic
-4. Implement GZIP decompression for error responses
-5. Implement email notification subprocess
+1. ✅ Phase 1 extraction complete
+2. ⏭️ Ready for Phase 2: Code generation
+3. ⏭️ Generate Process Layer Azure Function (CreateLeaveEntry)
+4. ⏭️ Generate System Layer Azure Functions (CreateOracleHcmAbsence, SendEmailNotification)
+5. ⏭️ Generate DTOs based on field mappings
+6. ⏭️ Implement error handling patterns
+7. ⏭️ Implement GZIP decompression logic
+8. ⏭️ Implement email notification integration
 
 ---
 
 **Document Version:** 1.0  
-**Analysis Complete:** 2026-02-20  
-**Analyst:** Cloud Agent  
-**Status:** ✅ PHASE 1 EXTRACTION COMPLETE - READY FOR CODE GENERATION
+**Created:** 2026-02-20  
+**Status:** ✅ COMPLETE - Ready for Phase 2
